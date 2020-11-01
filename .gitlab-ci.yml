@@ -1,4 +1,4 @@
-image: docker:19.03.12
+image: youpy/docker-compose-git
 services:
   - docker:19.03.12-dind
 
@@ -22,6 +22,7 @@ before_script:
 build:
   stage: build
   script:
+    - docker-compose build --pull
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker build --pull -t $CONTAINER_BRANCH_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
