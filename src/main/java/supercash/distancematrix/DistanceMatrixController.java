@@ -24,7 +24,8 @@ import com.google.maps.model.TravelMode;
 public class DistanceMatrixController {
 	
 	private static final Logger log = LoggerFactory.getLogger(DistanceMatrixApplication.class);
-	
+
+        // TODO: Change this with Application Properties as it cannot be used in config service auto-refresh	
 	@Value("${google.gcp.distancematrix.credentials.apikey}")
 	String distanceMatrixApiKey;
 	

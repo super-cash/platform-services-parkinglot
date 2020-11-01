@@ -4,7 +4,7 @@ services:
 
   distance_matrix_service:
     # https://github.com/intuit/unmazedboot/releases/tag/v0.5.0
-    image: supercash/distance_matrix_service
+    image: supercash/distance-matrix-service
     build:
       context: .
       args:
@@ -19,6 +19,10 @@ services:
         - UNMAZEDBOOT_BUILDER_GIT_BRANCH=${CI_COMMIT_BRANCH:-unknown}
     environment:
       - DEBUG_ENV=true
+      # Rotate the token at https://developers.google.com/maps/gmp-get-started after errors
+      # {"description":"You must enable Billing on the Google Cloud Project at https://console.cloud.google.com/project/_/billing/enable 
+      # Learn more at https://developers.google.com/maps/gmp-get-started","error":500}%
+      - GOOGLE_GCP_DISTANCEMATRIX_CREDENTIALS_APIKEY=AIzaSyAaG2Mvdkp8dSgNXZ_uFjigx_6iVPOjo_4
       #- JAVA_OPTS=--marcello
     ports:
       - 8082:8080

@@ -27,3 +27,14 @@ FROM intuit/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-
 # Build stage for running the runtime image (MUST MATCH LINKER TYPE)
 # #####################################################################
 FROM intuit/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
+
+# Alpine needs the SSL certificates from the JVM
+# javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed
+# https://stackoverflow.com/questions/53246399/jdk8-jdk10-pkix-path-building-failed-suncertpathbuilderexception-unable-to/53246850#53246850
+# Inspected the builder docker run -ti intuit/unmazedboot-builder-gradle:5.0.0-jdk8-alpine-0.5.0 ls -la /usr/lib/jvm/ and found the correct path
+COPY --from=unmazedboot-builder-artifacts /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts /etc/ssl/certs/java/cacerts
+
+# The location of the custom jvm is /opt/jdk-custom/jre 
+# https://github.com/intuit/unmazedboot/blob/master/runner/custom-jlink-jdk/Dockerfile#L26
+RUN rm -f /opt/jdk-custom/jre/lib/security/cacerts
+RUN ln -s /etc/ssl/certs/java/cacerts /opt/jdk-custom/jre/lib/security/cacerts
