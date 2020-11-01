@@ -1,56 +1,116 @@
-image: youpy/docker-compose-git
-services:
-  - docker:19.03.12-dind
-
-stages:
-  - build
-  - test
-  - release
-  - deploy
+# Based on https://gitlab.com/andy.wilson/get-docker-compose-latest-version/blob/0f888504cd40feca0cfaecfa9007cdd1c3e5d1d3/.gitlab-ci.yml
+# https://stackoverflow.com/questions/39868369/run-docker-compose-build-in-gitlab-ci-yml/52734017#52734017
+# Use Docker-in-Docker service
+image:
+  name: docker/compose:1.27.3 # update tag to whatever version you want to use. https://hub.docker.com/r/docker/compose/tags
+  entrypoint: ["/bin/sh", "-c"]
 
 variables:
+  # When using dind service we need to instruct docker, to talk with the
+  # daemon started inside of the service. The daemon is available with
+  # a network connection instead of the default /var/run/docker.sock socket.
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+  #
+  # Note that if you're using Kubernetes executor, the variable should be set to
+  # tcp://localhost:2375 because of how Kubernetes executor connects services
+  # to the job container
+  DOCKER_HOST: tcp://docker:2375/
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance. # workaround GitLab running `sh`
+  # https://gitlab.com/gitlab-org/gitlab-ce/issues/30426
+  DOCKER_DRIVER: overlay2
   # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
+  # https://gitlab.com/gitlab-org/gitlab-foss/-/issues/64959#note_194582424
+  DOCKER_TLS_CERTDIR: ""
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_BRANCH_IMAGE: $CI_REGISTRY_IMAGE:${CI_COMMIT_BRANCH}
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
+services:
+  - name: docker:dind
+
 before_script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker version
+  - docker-compose version
+  - env
 
-build:
-  stage: build
+stages:
+  - setup
+  - lint
+  - docker-build
+  - docker-push
+
+# Run our pre-lint checks
+tools-version:
+  stage: setup
   script:
-    - docker-compose build --pull
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker build --pull -t $CONTAINER_BRANCH_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
+    - docker pull hadolint/hadolint
+    - docker run hadolint/hadolint hadolint --version
+    - docker pull mivok/markdownlint
+    - docker run mivok/markdownlint --version
 
-unit:
-  stage: test
+dockerfiles:
+  stage: lint
   script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - echo "docker run $CONTAINER_TEST_IMAGE /TO/BE/INCLUDED"
+    - echo 'hadolint ./Dockerfile' && docker run -i hadolint/hadolint hadolint - < ./Dockerfile
 
-#test2:
-#  stage: test
-#  script:
-#    - docker pull $CONTAINER_TEST_IMAGE
-#    - docker run $CONTAINER_TEST_IMAGE /script/to/run/another/test
-
-release-image:
-  stage: release
+docker-compose:
+  stage: lint
   script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-  only:
-    - master
+    - >
+      docker-compose
+      --file - < docker-compose.yaml
+      config
 
-#deploy:
-#  stage: deploy
-#  script:
-#    - ./deploy.sh
-#  only:
-#    - master
+
+# Lint the Dockerfile using Hadolint
+build-gitlab:
+  stage: docker-build
+  before_script:
+    # Private registry here in GitLabs require login
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#authenticating-to-the-container-registry
+    # https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token
+    # Variables are in the environment https://gitlab.com/groups/supercash/-/settings/ci_cd
+    # Look at the env vars above for details
+    - docker login -u ${GITLAB_DOCKER_LOGIN} -p ${GITLAB_DOCKER_PASSWORD} ${CI_REGISTRY}
+
+    # Process images with docker-compose config
+    - apk add --no-cache curl jq python py-pip
+    - pip install yq
+
+  script:
+      # Get the name of the original image by compose to store in a temporary script at dockerhub-images.sh
+      # So that we can run it in deploy https://gitlab.com/gitlab-org/gitlab-runner/issues/1099#note_4002529
+    - BUILDER_GIT_SHA=${CI_COMMIT_SHA}
+    - BUILDER_GIT_BRANCH=${CI_COMMIT_REF_NAME}
+    - if [ "${BUILDER_GIT_BRANCH}" = "master" ]; then DOCKER_IMAGE_TAG="latest"; else DOCKER_IMAGE_TAG="${BUILDER_GIT_BRANCH}"; fi
+    - echo "Setting the docker image tag as ${DOCKER_IMAGE_TAG}"
+    - docker-compose build --pull --parallel
+
+    - echo "Current docker images"
+    - docker images
+
+    - IMAGES=$(docker-compose config | yq '.' | jq -r '..|.image? | select(.!=null)')
+    - echo "Current images are the folloing ${IMAGES}"
+    - >
+      for IMAGE_NAME in ${IMAGES}; do
+        GITLAB_IMAGE="${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_TAG}";
+        echo "";
+        echo "=> processing image ${GITLAB_IMAGE}";
+        echo "";
+
+        echo "=> Tag image ${IMAGE_NAME} for gitlab as ${GITLAB_IMAGE}";
+        echo "docker tag ${IMAGE_NAME} ${GITLAB_IMAGE}";
+        docker tag ${IMAGE_NAME} ${GITLAB_IMAGE};
+        echo "";
+
+        echo "=> Pushing to Gitlab ${GITLAB_IMAGE}";
+        docker push ${GITLAB_IMAGE};
+        echo "";
+      done
+
+    # ^^^ Tag and push the image with the name of this repo to be reused in the deploy stage
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#container-registry-examples
+    # https://forum.gitlab.com/t/passing-docker-image-between-build-and-test-stage-in-gitlab-runner/2444/9"

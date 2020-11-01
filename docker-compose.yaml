@@ -8,9 +8,12 @@ services:
     build:
       context: .
       args:
-        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=0.5.0
-        - UNMAZEDBOOT_LINKER_VERSION=0.5.0
-        - UNMAZEDBOOT_RUNNER_VERSION=0.5.0
+        # https://hub.docker.com/r/intuit/unmazedboot-builder-gradle/tags/
+        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=5.0.0-jdk8-alpine-0.5.0
+        # https://hub.docker.com/r/intuit/unmazedboot-linker/tags/
+        - UNMAZEDBOOT_LINKER_VERSION=jdk11-alpine-0.5.0
+        # https://hub.docker.com/r/intuit/unmazedboot-runner/tags/
+        - UNMAZEDBOOT_RUNNER_VERSION=custom-jdk-alpine3.8-0.5.0
         # Variables from https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
         - UNMAZEDBOOT_BUILDER_GIT_SHA=${CI_COMMIT_SHORT_SHA:-000000}
         - UNMAZEDBOOT_BUILDER_GIT_BRANCH=${CI_COMMIT_BRANCH:-unknown}
