@@ -1,0 +1,30 @@
+# SpringBoot
+spring:
+  application:
+    name: distance-matrix-service
+
+logging:
+  level:
+    org.springframework.core.env: warn
+    org.springframework.jndi: warn
+
+# Default port is 8080
+#server.port=8080
+
+# SpringFox Swagger
+# https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /swagger/docs/v2
+
+# Super cash platform
+cash:
+  super:
+    platform:
+      distancematrix:
+        apiVersion: v1
+        language: pt-BR
+        # If it's not provided, it will be empty, which will cause it to fail at bootstrap
+        googleMapsApiToken: ${google.gcp.distancematrix.credentials.apikey:}
