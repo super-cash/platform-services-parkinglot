@@ -1,4 +1,4 @@
-package supercash.distancematrix;
+package ca$h.$uper.distancematrix;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

@@ -1,4 +1,4 @@
-package supercash.distancematrix;
+package ca$h.$uper.distancematrix;
 
 import java.io.IOException;
 import java.util.HashMap;
