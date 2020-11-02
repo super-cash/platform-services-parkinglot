@@ -46,6 +46,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * applications</a></li>http://www.ekiras.com/2016/02/how-to-do-exception-handling-in-springboot-rest-application.html
    * <li><a href="https://www.jayway.com/2014/10/19/spring-boot-error-responses/">Oct 2014: Spring
    * Boot error responses</a></li>
+   * https://www.baeldung.com/exception-handling-for-rest-with-spring
    * </ul>
    *
    * @param error is the exception that was thrown
