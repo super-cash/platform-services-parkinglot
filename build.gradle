@@ -49,5 +49,12 @@ dependencies {
     // Testing Frameworks
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation('com.jayway.jsonpath:json-path')
+
+    // https://stackoverflow.com/questions/37701330/spring-boot-dev-tools-turning-them-off-for-production/37702560#37702560
+    // Auto Reload while developing in IDEs
+    // https://www.youtube.com/watch?v=mQo3ZTdNx-A
+    // In STS Eclipse, make sure the project is with Build Automatic. Reload STS if adding manually first time
+    // https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
