@@ -14,8 +14,8 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 bootJar {
-    baseName = 'distance-matrix-service'
-    version =  '0.1.0'
+    archiveBaseName = 'distance-matrix-service'
+    archiveVersion =  '0.1.0'
 }
 
 repositories {
