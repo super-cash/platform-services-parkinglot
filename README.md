@@ -411,7 +411,13 @@ Killing distance-matrix-service_distance_matrix_service_1    ... done
 
 # API
 
-* Request
+* Go to the Swagger URL to discover the APIs available
+  * http://localhost:8082/swagger-ui/
+  * Keep the end `/` or else it fails to open
+* The OpenAPI endpoint for discovery is `/swagger/docs/v2`
+  * This is to support Gloo API Gateway (https://docs.solo.io/gloo/latest/installation/advanced_configuration/fds_mode/)
+
+## API Examples
 
 | Method | Endpoint | Headers | Payload |
 | ----- | ----- | ---- | ----- |
