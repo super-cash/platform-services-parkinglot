@@ -85,7 +85,7 @@ build-gitlab:
       # So that we can run it in deploy https://gitlab.com/gitlab-org/gitlab-runner/issues/1099#note_4002529
     - BUILDER_GIT_SHA=${CI_COMMIT_SHA}
     - BUILDER_GIT_BRANCH=${CI_COMMIT_REF_NAME}
-    - if [ "${BUILDER_GIT_BRANCH}" = "master" ]; then DOCKER_IMAGE_TAG="latest"; else DOCKER_IMAGE_TAG="${BUILDER_GIT_BRANCH}"; fi
+    - if [ "${BUILDER_GIT_BRANCH}" = "master" ]; then DOCKER_IMAGE_TAG="latest"; else DOCKER_IMAGE_TAG="$(echo ${BUILDER_GIT_BRANCH} |  sed 's,/,-,g')"; fi
     - echo "Setting the docker image tag as ${DOCKER_IMAGE_TAG}"
     - docker-compose build --pull --parallel
 

@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.4.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.5.RELEASE")
     }
 }
 
@@ -27,6 +27,12 @@ targetCompatibility = 1.8
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
+
+    // https://github.com/springfox/springfox/issues/3282#issuecomment-612009278
+    compile("org.springframework.plugin:spring-plugin-core")
+    // https://www.baeldung.com/swagger-2-documentation-for-spring-rest-api
+    compile('io.springfox:springfox-boot-starter:3.0.0')
+ 
     compile group: 'com.google.maps', name: 'google-maps-services', version: '0.9.3'
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('com.jayway.jsonpath:json-path')

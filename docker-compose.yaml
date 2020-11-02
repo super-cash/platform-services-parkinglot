@@ -2,14 +2,14 @@ version: "3.6"
 
 services:
 
-  distance_matrix_service:
+  distance-matrix-service:
     # https://github.com/intuit/unmazedboot/releases/tag/v0.5.0
     image: supercash/distance-matrix-service
     build:
       context: .
       args:
         # https://hub.docker.com/r/intuit/unmazedboot-builder-gradle/tags/
-        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=5.0.0-jdk8-alpine-0.5.0
+        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=6.7.0-jdk8-hotspot-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-linker/tags/
         - UNMAZEDBOOT_LINKER_VERSION=jdk11-alpine-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-runner/tags/
