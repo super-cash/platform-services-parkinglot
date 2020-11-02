@@ -1,4 +1,4 @@
-package cash.super_.platform.service.distancematrix;
+package cash.super_.platform.service;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

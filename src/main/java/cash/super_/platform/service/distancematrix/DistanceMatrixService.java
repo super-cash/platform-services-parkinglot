@@ -16,6 +16,7 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.DistanceMatrixElement;
 import com.google.maps.model.TravelMode;
+import cash.super_.platform.service.DistanceMatrixProperties;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixAddresses;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
 import cash.super_.platform.service.distancematrix.util.StringUtil;
