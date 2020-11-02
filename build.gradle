@@ -26,15 +26,28 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+
+    // Validator for the properties
+    // https://reflectoring.io/validate-spring-boot-configuration-parameters-at-startup/
+    // https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-validation
+    // https://www.baeldung.com/configuration-properties-in-spring-boot
+    implementation('org.springframework.boot:spring-boot-starter-validation')
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // https://github.com/springfox/springfox/issues/3282#issuecomment-612009278
-    compile("org.springframework.plugin:spring-plugin-core")
+    implementation("org.springframework.plugin:spring-plugin-core")
     // https://www.baeldung.com/swagger-2-documentation-for-spring-rest-api
-    compile('io.springfox:springfox-boot-starter:3.0.0')
+    implementation('io.springfox:springfox-boot-starter:3.0.0')
  
-    compile group: 'com.google.maps', name: 'google-maps-services', version: '0.9.3'
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('com.jayway.jsonpath:json-path')
+    // Google Maps API
+    implementation group: 'com.google.maps', name: 'google-maps-services', version: '0.9.3'
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
+
+    // Testing Frameworks
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('com.jayway.jsonpath:json-path')
 }
 
