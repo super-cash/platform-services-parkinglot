@@ -20,6 +20,8 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.TravelMode;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 public class DistanceMatrixController {
 	
@@ -29,10 +31,9 @@ public class DistanceMatrixController {
 	@Value("${google.gcp.distancematrix.credentials.apikey}")
 	String distanceMatrixApiKey;
 	
-	DistanceMatrixController() {
-
-	}
-	
+	// The name in swagger metadata is coming as "operationId":"distancematrixUsingPOST"
+	// https://stackoverflow.com/questions/38821763/how-to-customize-the-value-of-operationid-generated-in-api-spec-with-swagger/59044919#59044919
+	@ApiOperation(value = "", nickname = "/distancematrix")
 	@PostMapping(
             value = "/distancematrix",
             consumes = {"application/json"},
