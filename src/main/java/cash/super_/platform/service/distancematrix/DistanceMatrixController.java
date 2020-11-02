@@ -19,7 +19,7 @@ import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
 import io.swagger.annotations.ApiOperation;
 
 @Controller
-@RequestMapping("/${cash.super.platform.distancematrix.apiVersion}")
+@RequestMapping("/${cash.super.platform.service.distancematrix.apiVersion}")
 public class DistanceMatrixController extends AbstractController {
 
   private static final Logger LOG = LoggerFactory.getLogger(DistanceMatrixApplication.class);
@@ -38,7 +38,7 @@ public class DistanceMatrixController extends AbstractController {
       throws IOException, ApiException, InterruptedException {
 
     DistanceMatrixResult result = service.getDriveDistance(distanceMatrixAddresses);
-    LOG.info("Distance of %t is %t ", distanceMatrixAddresses, result);
+    LOG.info("Distance of {} is {} ", distanceMatrixAddresses, result);
 
     return new ResponseEntity<>(result, makeDefaultHttpHeaders(), HttpStatus.OK);
   }

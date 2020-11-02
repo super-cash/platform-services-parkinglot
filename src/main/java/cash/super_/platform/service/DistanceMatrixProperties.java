@@ -1,5 +1,7 @@
 package cash.super_.platform.service;
 
+import java.util.concurrent.TimeUnit;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,20 +10,23 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @Component
-@ConfigurationProperties("cash.super.platform.distancematrix")
+@ConfigurationProperties("cash.super.platform.service.distancematrix")
 public class DistanceMatrixProperties {
 
-  @NotNull
   @NotBlank
   private String googleMapsApiToken;
 
   @NotBlank
-  @NotNull
   private String language;
 
   @NotBlank
-  @NotNull
   private String apiVersion;
+
+  @Min(1)
+  private long resultsCacheDuration;
+
+  @NotNull
+  private TimeUnit resultsCacheTimeUnit;
 
   public String getGoogleMapsApiToken() {
     return googleMapsApiToken;
@@ -45,6 +50,22 @@ public class DistanceMatrixProperties {
 
   public void setApiVersion(String apiVersion) {
     this.apiVersion = apiVersion;
+  }
+
+  public long getResultsCacheDuration() {
+    return resultsCacheDuration;
+  }
+
+  public void setResultsCacheDuration(long resultsCacheMillisecondsDuration) {
+    this.resultsCacheDuration = resultsCacheMillisecondsDuration;
+  }
+
+  public TimeUnit getResultsCacheTimeUnit() {
+    return resultsCacheTimeUnit;
+  }
+
+  public void setResultsCacheTimeUnit(TimeUnit resultsCacheTimeUnit) {
+    this.resultsCacheTimeUnit = resultsCacheTimeUnit;
   }
 
 }

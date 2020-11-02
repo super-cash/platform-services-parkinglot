@@ -37,4 +37,9 @@ public class DistanceMatrixResult {
   public void setTime(long time) {
     this.time = time;
   }
+
+  @Override
+  public String toString() {
+    return "DistanceMatrixResult [distance=" + distance + ", time=" + time + "]";
+  }
 }
