@@ -104,10 +104,18 @@ build-gitlab:
         echo "=> Tag image ${IMAGE_NAME} for gitlab as ${GITLAB_IMAGE}";
         echo "docker tag ${IMAGE_NAME} ${GITLAB_IMAGE}";
         docker tag ${IMAGE_NAME} ${GITLAB_IMAGE};
+        docker tag ${IMAGE_NAME} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA};
+        docker tag ${IMAGE_NAME} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA};
         echo "";
 
         echo "=> Pushing to Gitlab ${GITLAB_IMAGE}";
         docker push ${GITLAB_IMAGE};
+        echo ""
+        echo "=> Pushing to Gitlab ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}";
+        docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA};
+        echo ""
+        echo "=> Pushing to Gitlab ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}";
+        docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA};
         echo "";
       done
 

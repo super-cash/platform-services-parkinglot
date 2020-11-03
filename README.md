@@ -442,6 +442,19 @@ Date: Sun, 01 Nov 2020 14:33:32 GMT
 {"distance":257055,"time":13516}%
 ```
 
+# Tracing
+
+* Start the `tools/zipkin` docker-compose stack, open the URL http://localhost:9411/zipkin
+* Start the this service and make the requests to start using tracing
+
+After making requests, go to `Zipkin screen -> Find a Trace -> [+] -> serviceName=distance-matrix-service -> [Run Query]`
+
+* It will show the traces for the requests
+* Expand the traces, copy the value of `Trace ID`
+  * Paste at the field `Search by trace ID` and press ENTER.
+
+The traces will show with the spans.
+
 # Troubleshooting
 
 * Rotate Google Maps token when getting errors about the token

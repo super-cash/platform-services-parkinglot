@@ -1,11 +1,8 @@
-package supercash.distancematrix;
+package cash.super_.platform.service.configuration;
 
-import static springfox.documentation.builders.PathSelectors.regex;
-
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -31,6 +28,9 @@ public class SwaggerConfig {
 
   private static final Contact SWAGGER_CONTACT = new Contact("Marcello de Sales",
       "https://gitlab.com/marcellodesales", "marcello@super.cash");
+
+  @Autowired
+  private DistanceMatrixProperties properties;
 
   /**
    * @return The Docket for the Publisher endpoints. According to the documentation, Docket stands for A summary or
@@ -59,7 +59,7 @@ public class SwaggerConfig {
         .contact(SWAGGER_CONTACT)
         .license("SuperCash Proprietary")
         .licenseUrl("https://github.com/supercash/proprietary")
-        //.version("v1")
+        .version(properties.getApiVersion())
         .build();
   }
 }

@@ -1,0 +1,60 @@
+# SpringBoot
+spring:
+  application:
+    name: distance-matrix-service
+  # Zipkin is the destination environment for the traces and it's disabled in development
+  zipkin:
+    enabled: false
+  # sleuth is the traces aggregator that's enabled by default, since the gradle dependency is declared with zipkin
+  # https://medium.com/@lombos.monika/distributed-tracing-latency-analysis-for-microservices-4ae3b82f3537
+  # Read Case 3 for these to propagate the the HTTP Headers
+  sleuth:
+    baggage:
+      remote-fields:
+        - "supercash_tid"
+        - "supercash_cid"
+      correlation-fields:
+        - "supercash_tid"
+        - "supercash_cid"
+
+logging:
+  level:
+    org.springframework.core.env: warn
+    org.springframework.jndi: warn
+    org.springframework.web: DEBUG
+    org.springframework.boot.context.config: DEBUG
+
+# Default port is 8080
+#server.port=8080 
+
+# SpringFox Swagger
+# https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /swagger/docs/v2
+
+# https://juplo.de/actuator-httptrace-does-not-work-with-spring-boot-2-2/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# Super cash platform
+cash:
+  super:
+    platform:
+      service:
+        distancematrix:
+          apiVersion: v1
+          language: pt-BR
+          # If it's not provided, it will be empty, which will cause it to fail at bootstrap
+          googleMapsApiToken: ${google.gcp.distancematrix.credentials.apikey:}
+
+          # Duration the results will stay in memory cache to then be evicted
+          resultsCacheDuration: 5
+
+          # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
+          resultsCacheTimeUnit: MINUTES

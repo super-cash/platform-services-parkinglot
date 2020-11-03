@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+
+This configuration of console with ch.qos.logback makes the output of the logs be in color.
+
+* Traces - https://medium.com/@lombos.monika/distributed-tracing-latency-analysis-for-microservices-4ae3b82f3537
+- When adding Trace Baggage Headers, add them here as well
+
+ -->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    <!-- You can override this to have a custom pattern -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p [${springAppName:-},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}][%X{supercash_tid:-},%X{supercash_cid:-}]) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+    <!-- Appender to log to console -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- Minimum logging level to be presented in the console logs-->
+            <level>DEBUG</level>
+        </filter>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

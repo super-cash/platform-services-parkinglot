@@ -1,9 +1,12 @@
 .classpath
 .gradle/
 .settings/
+.project
 bin/
 build/
 
 .idea/
 out/
-src/main/resources/application.properties
+
+zipkin/elasticsearch/
+zipkin/filebeat/
