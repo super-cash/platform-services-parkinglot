@@ -1,4 +1,4 @@
-package cash.super_.platform.service;
+package cash.super_.platform.service.configuration;
 
 import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;

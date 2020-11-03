@@ -22,7 +22,7 @@ import com.google.maps.model.TravelMode;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracer.SpanInScope;
-import cash.super_.platform.service.DistanceMatrixProperties;
+import cash.super_.platform.service.configuration.DistanceMatrixProperties;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixAddresses;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
 import cash.super_.platform.service.distancematrix.util.StringUtil;
