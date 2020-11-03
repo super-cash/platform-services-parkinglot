@@ -3,6 +3,7 @@ package cash.super_.platform.service.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import cash.super_.platform.service.distancematrix.DistanceMatrixProperties;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -11,7 +12,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
- * Configures Swagger using SpringFox project.
+ * Bootstraps Swagger using SpringFox project.
  *
  * http://springfox.github.io/springfox/docs/current/
  *
@@ -24,7 +25,7 @@ import springfox.documentation.spring.web.plugins.Docket;
  *
  */
 @Configuration
-public class SwaggerConfig {
+public class SwaggerBootstrap {
 
   private static final Contact SWAGGER_CONTACT = new Contact("Marcello de Sales",
       "https://gitlab.com/marcellodesales", "marcello@super.cash");
@@ -44,7 +45,7 @@ public class SwaggerConfig {
         .select()
         // Only show the endpoints from this package, not the error controller
         // https://stackoverflow.com/questions/32941917/remove-basic-error-controller-in-springfox-swaggerui/33720866#33720866
-        .apis(RequestHandlerSelectors.basePackage(SwaggerConfig.class.getPackage().getName()))
+        .apis(RequestHandlerSelectors.basePackage(SwaggerBootstrap.class.getPackage().getName()))
         .build();
   }
 

@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration;
+package cash.super_.platform.service.distancematrix;
 
 import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;
