@@ -24,7 +24,7 @@ import cash.super_.platform.service.distancematrix.AbstractController;
  *
  */
 @Component
-public class ResponseTrackingFilter extends OncePerRequestFilter {
+public class SleuthResponseTraceIdInjectorFilter extends OncePerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
