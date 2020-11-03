@@ -103,6 +103,7 @@ public class DistanceMatrixService extends CacheLoader<DistanceMatrixAddresses, 
     Span newSpan = tracer.nextSpan().name("grpc https://cloud.google.com/maps-apis/distance-matrix").start();
     try (SpanInScope ws = tracer.withSpanInScope(newSpan.start())) {
 
+      LOG.info("Requesting calculation of distance to google API: {}", addresses);
       DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApi);
 
       calculationResult = req.origins(addresses.getOriginAddress())

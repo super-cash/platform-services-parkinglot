@@ -5,6 +5,21 @@ spring:
   zipkin:
     base-url: http://localhost:9411/
 
+  # https://medium.com/@lombos.monika/distributed-tracing-latency-analysis-for-microservices-4ae3b82f3537
+  # Read Case 3 for these to propagate the the HTTP Headers
+  sleuth:
+    baggage:
+      remote-fields:
+        - "supercash_tid"
+        - "supercash_cid"
+      correlation-fields:
+        - "supercash_tid"
+        - "supercash_cid"
+
+#    keys:
+#      http:
+#        headers: supercash_tid,supercash_cid
+
 #  sleuth:
 #    sampler:
 #      probability: 100
