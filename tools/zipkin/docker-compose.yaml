@@ -1,0 +1,84 @@
+
+version: '3.5'
+
+services:
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    environment:
+      STORAGE_TYPE: elasticsearch
+      ES_HOSTS: elasticsearch:9200
+      ES_HTTP_LOGGING: BODY
+      ZIPKIN_LOG_LEVEL: INFO
+    ports:
+      # Port used for the Zipkin UI and HTTP Api
+      - "9411:9411"
+    networks:
+      - sleuth-example
+
+  zipkin-dependencies:
+    image: openzipkin/zipkin-dependencies
+    container_name: zipkin-dependencies
+    environment:
+      STORAGE_TYPE: elasticsearch
+      ES_HOSTS: elasticsearch:9200
+      ZIPKIN_LOG_LEVEL: INFO
+    networks:
+      - sleuth-example
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    ports:
+      - "9200:9200"
+    environment:
+      - "discovery.type=single-node"
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data:rw
+    networks:
+      - sleuth-example
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.2.0
+    ports:
+      - "25826:25826"
+      - "5044:5044"
+    volumes:
+      - ./logstash-pipeline:/usr/share/logstash/pipeline:ro
+    restart: on-failure
+    depends_on:
+      - elasticsearch
+    networks:
+      - sleuth-example
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.2.0
+    ports:
+      - "5601:5601"
+    restart: on-failure
+    depends_on:
+      - elasticsearch
+    networks:
+      - sleuth-example
+
+  filebeat:
+    container_name: filebeat
+    image: docker.elastic.co/beats/filebeat:7.2.0
+    volumes:
+      - ./filebeat.docker.yml:/usr/share/filebeat/filebeat.yaml:ro # Configuration file
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro           # Docker logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro                       # Additional information about containers
+      - ./filebeat/data:/usr/share/filebeat/data:rw                        # Persistence data
+    user: root                                                             # Allow access to log files and docker.sock
+    restart: on-failure
+    depends_on:
+      - logstash
+    networks:
+      - sleuth-example
+
+networks:
+  sleuth-example:
+    driver: bridge

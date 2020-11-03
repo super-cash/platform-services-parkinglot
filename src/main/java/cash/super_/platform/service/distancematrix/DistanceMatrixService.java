@@ -19,6 +19,9 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.DistanceMatrixElement;
 import com.google.maps.model.TravelMode;
+import brave.Span;
+import brave.Tracer;
+import brave.Tracer.SpanInScope;
 import cash.super_.platform.service.DistanceMatrixProperties;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixAddresses;
 import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
@@ -43,6 +46,9 @@ public class DistanceMatrixService extends CacheLoader<DistanceMatrixAddresses, 
    * The API is very expensive to be built
    */
   private GeoApiContext geoApi;
+
+  @Autowired
+  private Tracer tracer;
 
   /**
    * The Cache of results based on the input https://www.baeldung.com/guava-cache. It has an eviction
@@ -89,16 +95,28 @@ public class DistanceMatrixService extends CacheLoader<DistanceMatrixAddresses, 
       throws ApiException, InterruptedException, IOException {
     LOG.info("Addresses not in cache: {}", addresses);
 
-    DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApi);
+    // The calculation from Google
+    DistanceMatrix calculationResult;
 
-    DistanceMatrix calculationResult = req.origins(addresses.getOriginAddress())
-          .destinations(addresses.getDestinationAddress())
-          .mode(TravelMode.DRIVING)
-          .avoid(RouteRestriction.TOLLS)
-          .language(properties.getLanguage())
-          .await();
+    // Trace the google geo API Call
+    // https://www.baeldung.com/spring-cloud-sleuth-single-application
+    Span newSpan = tracer.nextSpan().name("grpc https://cloud.google.com/maps-apis/distance-matrix").start();
+    try (SpanInScope ws = tracer.withSpanInScope(newSpan.start())) {
 
-    if (calculationResult.rows.length == 0 || calculationResult.rows[0] == null
+      DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApi);
+
+      calculationResult = req.origins(addresses.getOriginAddress())
+            .destinations(addresses.getDestinationAddress())
+            .mode(TravelMode.DRIVING)
+            .avoid(RouteRestriction.TOLLS)
+            .language(properties.getLanguage())
+            .await();
+
+    } finally {
+        newSpan.finish();
+    }
+
+    if (calculationResult == null || calculationResult.rows.length == 0 || calculationResult.rows[0] == null
         || calculationResult.rows[0].elements.length == 0) {
       LOG.error("Couldn't calculate the distance. Result is empty: {}", calculationResult);
       throw new IllegalStateException("Can't calculate distance with the given input");
