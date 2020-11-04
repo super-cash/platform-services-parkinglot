@@ -12,7 +12,13 @@ buildscript {
 
         // For src/gradle/tests
         classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
+        classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
     }
+}
+
+plugins {
+    id 'application'
+    id 'jacoco'
 }
 
 apply plugin: 'java'
@@ -23,6 +29,9 @@ apply plugin: 'io.spring.dependency-management'
 
 // Test Infrastructure
 apply from: 'src/gradle/tests.gradle'
+
+// CODE COVERAGE: JaCoCo enabled
+apply from: 'src/gradle/jacoco.gradle'
 
 bootJar {
     archiveBaseName = 'distance-matrix-service'
