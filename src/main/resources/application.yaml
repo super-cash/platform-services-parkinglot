@@ -2,9 +2,12 @@
 spring:
   application:
     name: distance-matrix-service
+
   # Zipkin is the destination environment for the traces and it's disabled in development
+  # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
   zipkin:
     enabled: false
+
   # sleuth is the traces aggregator that's enabled by default, since the gradle dependency is declared with zipkin
   # https://medium.com/@lombos.monika/distributed-tracing-latency-analysis-for-microservices-4ae3b82f3537
   # Read Case 3 for these to propagate the the HTTP Headers
@@ -22,6 +25,7 @@ logging:
     org.springframework.core.env: warn
     org.springframework.jndi: warn
     org.springframework.web: DEBUG
+    # See which config files are loaded in a given environment
     org.springframework.boot.context.config: DEBUG
 
 # Default port is 8080
@@ -35,7 +39,6 @@ springfox:
       v2:
         path: /swagger/docs/v2
 
-# https://juplo.de/actuator-httptrace-does-not-work-with-spring-boot-2-2/
 management:
   endpoints:
     web:
