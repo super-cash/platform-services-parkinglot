@@ -34,9 +34,9 @@ import cash.super_.platform.service.distancematrix.util.StringUtil;
  *
  */
 @Service
-public class DistanceMatrixService extends CacheLoader<DistanceMatrixAddresses, DistanceMatrixResult> {
+public class DistanceMatrixGoogleGeoAPICachedProxyService extends CacheLoader<DistanceMatrixAddresses, DistanceMatrixResult> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DistanceMatrixService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DistanceMatrixGoogleGeoAPICachedProxyService.class);
 
   @Autowired
   private DistanceMatrixProperties properties;

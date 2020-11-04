@@ -39,8 +39,9 @@ before_script:
 stages:
   - setup
   - lint
-  - docker-build
-  - docker-push
+  - test
+  - build
+  #- push
 
 # Run our pre-lint checks
 tools-version:
@@ -64,10 +65,21 @@ docker-compose:
       --file - < docker-compose.yaml
       config
 
+all-tests:
+  stage: test
+  script:
+    - docker-compose -f tests.docker-compose.yaml up
+    - ls -laR ./build/docker-container-build-artifacts 
+# Wait for the fix of https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27106
+#  artifacts:
+#    paths:
+#      - ./build/docker-container-build-artifacts/build/reports/jacoco/test/jacocoTestReport.xml
+#    reports:
+#      junit: ./build/docker-container-build-artifacts/build/test-results/test/TEST*.xml
 
 # Lint the Dockerfile using Hadolint
-build-gitlab:
-  stage: docker-build
+build-push:
+  stage: build
   before_script:
     # Private registry here in GitLabs require login
     # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#authenticating-to-the-container-registry

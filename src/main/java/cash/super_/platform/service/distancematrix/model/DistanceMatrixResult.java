@@ -13,6 +13,11 @@ public class DistanceMatrixResult {
   private long distance;
   private long time;
 
+  // Used for deserialization
+  public DistanceMatrixResult() {
+    
+  }
+
   public DistanceMatrixResult(long distance, long time) {
     this.distance = distance;
     this.time = time;

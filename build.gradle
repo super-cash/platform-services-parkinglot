@@ -1,10 +1,24 @@
 buildscript {
     repositories {
         mavenCentral()
+
+        // For src/gradle/tests.gradle
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.5.RELEASE")
+
+        // For src/gradle/tests
+        classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
+        classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
     }
+}
+
+plugins {
+    id 'application'
+    id 'jacoco'
 }
 
 apply plugin: 'java'
@@ -12,6 +26,12 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+
+// Test Infrastructure
+apply from: 'src/gradle/tests.gradle'
+
+// CODE COVERAGE: JaCoCo enabled
+apply from: 'src/gradle/jacoco.gradle'
 
 bootJar {
     archiveBaseName = 'distance-matrix-service'
@@ -59,10 +79,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
-
-    // Testing Frameworks
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('com.jayway.jsonpath:json-path')
 
     // Cloud-specific for tracing
     implementation('org.springframework.cloud:spring-cloud-starter-zipkin')

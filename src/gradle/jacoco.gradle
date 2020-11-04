@@ -1,0 +1,22 @@
+
+description = 'JaCoCo Offline with PowerMock'
+
+apply plugin: 'com.github.ksoichiro.console.reporter'
+
+jacocoTestReport {
+  reports {
+    xml.enabled true // For CI/CD tools
+    html.enabled true // For humans
+  }
+}
+
+test {
+    jacoco {
+        enabled = true
+    }
+    finalizedBy jacocoTestReport, check
+}
+
+jacocoTestReport {
+    dependsOn test
+}
