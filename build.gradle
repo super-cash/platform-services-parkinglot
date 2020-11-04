@@ -13,6 +13,9 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+// Test Infrastructure
+apply from: 'src/gradle/tests.gradle'
+
 bootJar {
     archiveBaseName = 'distance-matrix-service'
     archiveVersion =  '0.1.0'
@@ -60,11 +63,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
 
-    // Testing Frameworks
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
-
     // Cloud-specific for tracing
     implementation('org.springframework.cloud:spring-cloud-starter-zipkin')
     implementation('org.springframework.cloud:spring-cloud-starter-openfeign')
@@ -75,9 +73,5 @@ dependencies {
     // In STS Eclipse, make sure the project is with Build Automatic. Reload STS if adding manually first time
     // https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-}
-
-test {
-    useJUnitPlatform()
 }
 
