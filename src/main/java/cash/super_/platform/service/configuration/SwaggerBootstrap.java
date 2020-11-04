@@ -3,6 +3,7 @@ package cash.super_.platform.service.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import cash.super_.platform.service.distancematrix.DistanceMatrixController;
 import cash.super_.platform.service.distancematrix.DistanceMatrixProperties;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -45,7 +46,7 @@ public class SwaggerBootstrap {
         .select()
         // Only show the endpoints from this package, not the error controller
         // https://stackoverflow.com/questions/32941917/remove-basic-error-controller-in-springfox-swaggerui/33720866#33720866
-        .apis(RequestHandlerSelectors.basePackage(SwaggerBootstrap.class.getPackage().getName()))
+        .apis(RequestHandlerSelectors.basePackage(DistanceMatrixController.class.getPackage().getName()))
         .build();
   }
 
