@@ -1,9 +1,17 @@
 buildscript {
     repositories {
         mavenCentral()
+
+        // For src/gradle/tests.gradle
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.5.RELEASE")
+
+        // For src/gradle/tests
+        classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
     }
 }
 
