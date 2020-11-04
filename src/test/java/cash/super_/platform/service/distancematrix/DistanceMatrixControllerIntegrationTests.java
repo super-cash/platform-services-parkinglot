@@ -28,7 +28,7 @@ import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
  */
 @SpringBootTest(properties = {},
     webEnvironment = WebEnvironment.RANDOM_PORT)
-@DisplayName("Distance Matrix Service Tests Mocking Google GeoAPI")
+@DisplayName("Distance Matrix Controller Integration Tests")
 @ActiveProfiles({"integration_tests"})
 public class DistanceMatrixControllerIntegrationTests {
 

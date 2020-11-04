@@ -71,7 +71,7 @@ all-tests:
     - docker-compose -f tests.docker-compose.yaml up
 
 # Lint the Dockerfile using Hadolint
-build-build:
+build-push:
   stage: build
   before_script:
     # Private registry here in GitLabs require login
