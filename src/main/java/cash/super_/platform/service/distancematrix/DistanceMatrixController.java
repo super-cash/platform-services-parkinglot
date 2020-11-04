@@ -24,13 +24,18 @@ public class DistanceMatrixController extends AbstractController {
 
   private static final Logger LOG = LoggerFactory.getLogger(DistanceMatrixApplication.class);
 
+  /**
+   * Where the call will come through
+   */
+  public static final String BASE_ENDPOINT = "/distancematrix";
+
   @Autowired
-  private DistanceMatrixService service;
+  private DistanceMatrixGoogleGeoAPICachedProxyService service;
 
   // The name in swagger metadata is coming as "operationId":"distancematrixUsingPOST"
   // https://stackoverflow.com/questions/38821763/how-to-customize-the-value-of-operationid-generated-in-api-spec-with-swagger/59044919#59044919
-  @ApiOperation(value = "", nickname = "/distancematrix")
-  @RequestMapping(value = "/distancematrix", method = RequestMethod.POST, consumes = {"application/json"},
+  @ApiOperation(value = "", nickname = BASE_ENDPOINT)
+  @RequestMapping(value = BASE_ENDPOINT, method = RequestMethod.POST, consumes = {"application/json"},
       produces = {"application/json"})
   public ResponseEntity<DistanceMatrixResult> calculateDistance(
       @RequestBody DistanceMatrixAddresses distanceMatrixAddresses,
