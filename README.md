@@ -442,7 +442,33 @@ Date: Sun, 01 Nov 2020 14:33:32 GMT
 {"distance":257055,"time":13516}%
 ```
 
-# Tracing
+# Automated Tests
+
+* Gradle tests using:
+  * Junit 5 for unit tests
+  * Jacoco for coverage
+
+> Note: make sure to use the same version as in `tests-docker-compose.yaml`.
+
+```console
+$ gradle tests 
+```
+* Using Docker to test
+  * This is the same command used in CI/CD
+  * Reports will be stored under in the mapped volume in `tests-docker-compose.yaml`
+
+```
+$ docker-compose -f tests.docker-compose.yaml up
+```
+
+* In Gitlab: https://docs.gitlab.com/ee/ci/pipelines/settings.html#test-coverage-parsing
+  * https://gitlab.com/supercash/services/distance-matrix-service/-/settings/ci_cd#js-general-pipeline-settings
+
+# Observability
+
+* How to relate Logging, Tracing and Metrics from the service.
+
+## Tracing
 
 * Start the `tools/zipkin` docker-compose stack, open the URL http://localhost:9411/zipkin
 * Start the this service and make the requests to start using tracing
