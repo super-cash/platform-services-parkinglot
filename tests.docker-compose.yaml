@@ -8,3 +8,5 @@ services:
     build:
       context: .
       dockerfile: tests.Dockerfile
+    volumes:
+      - ./build/docker-container-build-artifacts:/builder/build/
