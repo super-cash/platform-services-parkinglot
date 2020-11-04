@@ -1,0 +1,17 @@
+google:
+  gcp:
+    distancematrix:
+      credentials:
+        apikey: AIzaSyAaG2Mvdkp8dSgNXZ_uFjigx_6iVPOjo_4
+
+# Super cash platform
+cash:
+  super:
+    platform:
+      service:
+        distancematrix:
+          # Duration the results will stay in memory cache to then be evicted
+          resultsCacheDuration: 1
+
+          # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
+          resultsCacheTimeUnit: SECONDS
