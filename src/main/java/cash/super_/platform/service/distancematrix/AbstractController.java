@@ -29,9 +29,14 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   /**
    * @return The default headers for all Controller Calls
    */
-  protected HttpHeaders makeDefaultHttpHeaders() {
+  protected HttpHeaders makeDefaultHttpHeaders(Map<String, String> additionalHeaders) {
     HttpHeaders headers = new HttpHeaders();
     headers.add("api-version", properties.getApiVersion());
+
+    // Merge additional headers to the response
+    for (String key : additionalHeaders.keySet()) {
+      headers.add(key, additionalHeaders.get(key));
+    }
     return headers;
   }
 

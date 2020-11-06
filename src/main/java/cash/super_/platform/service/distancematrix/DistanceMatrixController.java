@@ -1,6 +1,8 @@
 package cash.super_.platform.service.distancematrix;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +41,22 @@ public class DistanceMatrixController extends AbstractController {
       produces = {"application/json"})
   public ResponseEntity<DistanceMatrixResult> calculateDistance(
       @RequestBody DistanceMatrixAddresses distanceMatrixAddresses,
-      @RequestHeader("$uperca$h_tid") Optional<String> transactionId)
+      @RequestHeader("supercash_tid") Optional<String> transactionId,
+      @RequestHeader("supercash_cid") Optional<String> clientId)
       throws IOException, ApiException, InterruptedException {
 
     DistanceMatrixResult result = service.getDriveDistance(distanceMatrixAddresses);
     LOG.info("Distance of {} is {} ", distanceMatrixAddresses, result);
 
-    return new ResponseEntity<>(result, makeDefaultHttpHeaders(), HttpStatus.OK);
+    // Propagate the headers back to the client
+    Map<String, String> responseHeaders = new HashMap<>();
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_tid", transactionId.get());
+    }
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_cid", clientId.get());
+    }
+
+    return new ResponseEntity<>(result, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }
 }
