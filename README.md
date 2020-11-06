@@ -448,7 +448,7 @@ Date: Sun, 01 Nov 2020 14:33:32 GMT
 
 * Gradle tests using:
   * Junit 5 for unit tests
-  * Jacoco for coverage
+  * Jacoco for coverage: shows percentage of coverage and generates reports
 
 > Note: make sure to use the same version as in `tests-docker-compose.yaml`.
 
@@ -463,8 +463,18 @@ $ gradle tests
 $ docker-compose -f tests.docker-compose.yaml up
 ```
 
-* In Gitlab: https://docs.gitlab.com/ee/ci/pipelines/settings.html#test-coverage-parsing
+* In Gitlab for code coverage: https://docs.gitlab.com/ee/ci/pipelines/settings.html#test-coverage-parsing
   * https://gitlab.com/supercash/services/distance-matrix-service/-/settings/ci_cd#js-general-pipeline-settings
+
+```
+$ gradle check
+
+Coverage summary:
+distance-matrix-service:   87.4%
+
+BUILD SUCCESSFUL in 1s
+10 actionable tasks: 1 executed, 9 up-to-date
+```
 
 # Observability
 

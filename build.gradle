@@ -12,6 +12,7 @@ buildscript {
 
         // For src/gradle/tests
         classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
+        // For src/gradle/jacoco
         classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
     }
 }
@@ -33,12 +34,19 @@ apply from: 'src/gradle/tests.gradle'
 // CODE COVERAGE: JaCoCo enabled
 apply from: 'src/gradle/jacoco.gradle'
 
+// CODE COVERAGE: JaCoCo enabled
+//apply from: 'src/gradle/swagger-client-stubs.gradle'
+
+group = "cash.super_.platform.services.distancematrix"
+version = '1.0.0-SNAPSHOT'
+
 bootJar {
-    archiveBaseName = 'distance-matrix-service'
-    archiveVersion =  '0.1.0'
+    archiveBaseName = rootProject.name
+    archiveVersion =  rootProject.version
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
