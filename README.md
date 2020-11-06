@@ -231,8 +231,10 @@ BUILD SUCCESSFUL in 1s
 After making requests, go to `Zipkin screen -> Find a Trace -> [+] -> serviceName=distance-matrix-service -> [Run Query]`
 
 * It will show the traces for the requests
-* Expand the traces, copy the value of `Trace ID`
+* Expand the traces, copy the value of `X-B3-TraceId`
   * Paste at the field `Search by trace ID` and press ENTER.
+
+### Trace ID on the Client 
 
 The traces will show with the spans.
 
@@ -245,7 +247,7 @@ $ curl -i localhost:8080/v1/distancematrix \
     -H 'content-type: application/json' \
     -d '{ "originAddress": "Maceio, Alagoas, Brazil", "destinationAddress": "Recife, Pernambuco, Brazil" }'
 HTTP/1.1 200
-X-Trace-ID: 3e635cc4b8771243
+X-B3-TraceId: 3e635cc4b8771243
 api-version: v1
 supercash_tid: 123
 supercash_cid: marcello
@@ -254,6 +256,17 @@ Transfer-Encoding: chunked
 Date: Fri, 06 Nov 2020 14:19:18 GMT
 
 {"distance":257055,"time":13519}%
+```
+
+### Trace ID on the server
+
+* All the logs will display the traceID 
+  * It is also included in the ACCESS logs
+
+```
+2020-11-06 12:24:11.890 DEBUG [app=distance-matrix-service,profiles=default][trace_id=700537f9e3441ecb,span_id=700537f9e3441ecb,span_xprt=true][supercash_tid=123,supercash_cid=marcello] 83605 --- [nio-8080-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [DistanceMatrixResult [distance=257055, time=13519]]
+2020-11-06 12:24:11.890 DEBUG [app=distance-matrix-service,profiles=default][trace_id=700537f9e3441ecb,span_id=700537f9e3441ecb,span_xprt=true][supercash_tid=123,supercash_cid=marcello] 83605 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+[ACCESS] - [06/Nov/2020:12:24:11 -0300] http_method=POST http_path=/v1/distancematrix http_query= http_protocol=HTTP/1.1 http_status=200 latency_total=584ms latency_commit=583ms response_size=43bytes - supercash_tid=123 supercash_cid=marcello x_b3_traceid=700537f9e3441ecb
 ```
 
 # Troubleshooting

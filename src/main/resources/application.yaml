@@ -46,14 +46,10 @@ server:
       buffered: false
       suffix:
       file-date-format:
-      # remote client IP (after adjustment by the remote ip valve)
-      # %l remote user (usually just `-`)
-      # %t timestamp of the request
-      # %D Time taken to process the request in millis
-      # %F Time taken to commit the response, in millis
-      # %B Bytes sent, excluding HTTP headers
-      # %S
-      pattern: "[ACCESS] %{org.apache.catalina.AccessLog.RemoteAddr}r %l %t %Dms %Fms %Bbytes %S supercash_tid=%{supercash_tid}i supercash_cid=%{supercash_cid}i"
+      # https://tomcat.apache.org/tomcat-8.0-doc/config/valve.html
+      # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
+      # https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+      pattern: "[ACCESS] %{org.apache.catalina.AccessLog.RemoteAddr}r %t http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S supercash_tid=%{supercash_tid}i supercash_cid=%{supercash_cid}i x_b3_traceid=%{X-B3-TraceId}o"
 
 # SpringFox Swagger
 # https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151

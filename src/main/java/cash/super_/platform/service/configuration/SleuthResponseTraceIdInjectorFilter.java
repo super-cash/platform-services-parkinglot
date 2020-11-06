@@ -28,7 +28,7 @@ public class SleuthResponseTraceIdInjectorFilter extends OncePerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
-  private static final String TRACE_ID_HEADER = "X-Trace-ID";
+  private static final String TRACE_ID_HEADER = "X-B3-TraceId";
 
   @Autowired
   private Tracer tracer;
