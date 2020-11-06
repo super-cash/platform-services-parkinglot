@@ -1,4 +1,4 @@
-# SpringBoot
+# SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
 spring:
   application:
     name: distance-matrix-service
@@ -27,9 +27,33 @@ logging:
     org.springframework.web: DEBUG
     # See which config files are loaded in a given environment
     org.springframework.boot.context.config: DEBUG
+    # Log level for the app container
+    logging.level.org.apache.tomcat: DEBUG
+    logging.level.org.apache.catalina: DEBUG
 
-# Default port is 8080
-#server.port=8080 
+# here we say that we want to enable accesslog
+# https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
+# https://stackoverflow.com/questions/36780680/how-do-you-tell-spring-boot-to-send-the-embedded-tomcats-access-logs-to-stdout/54566643#54566643
+server:
+  #port: 8080 default
+  tomcat:
+    accesslog:
+      enabled: true
+      # /dev/stdout is standard output, so we want tomcat
+      # to write to that file descriptor.
+      directory: /dev
+      prefix: stdout
+      buffered: false
+      suffix:
+      file-date-format:
+      # remote client IP (after adjustment by the remote ip valve)
+      # %l remote user (usually just `-`)
+      # %t timestamp of the request
+      # %D Time taken to process the request in millis
+      # %F Time taken to commit the response, in millis
+      # %B Bytes sent, excluding HTTP headers
+      # %S
+      pattern: "[ACCESS] %{org.apache.catalina.AccessLog.RemoteAddr}r %l %t %Dms %Fms %Bbytes %S supercash_tid=%{supercash_tid}i supercash_cid=%{supercash_cid}i"
 
 # SpringFox Swagger
 # https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
