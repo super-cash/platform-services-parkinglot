@@ -19,6 +19,7 @@ import cash.super_.platform.service.distancematrix.AbstractController;
  * Adds a tracing ID into the HTTP response
  * 
  * https://github.com/spring-cloud/spring-cloud-sleuth/issues/633#issuecomment-638367781
+ * https://github.com/spring-cloud/spring-cloud-sleuth/issues/1329#issue-430146912
  * 
  * @author marcellodesales
  *
