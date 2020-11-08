@@ -1,6 +1,9 @@
-package cash.super_.platform.service.distancematrix.util;
+package cash.super_.platform.service.parkingplus.util;
 
-public class StringUtil {
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+
+public class SecretsUtil {
 
   private static final int RANGE_SIZE = 4;
 

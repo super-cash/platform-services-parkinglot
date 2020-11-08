@@ -1,50 +1,36 @@
-package cash.super_.platform.service.distancematrix.model;
+package cash.super_.platform.service.parkingplus.model;
 
-import com.google.maps.model.DistanceMatrixElement;
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 
 /**
- * The distance result to be displayed for users.
+ * The status of parking tickets wrapped.
  *
  * @author marcellodesales
  *
  */
-public class DistanceMatrixResult {
+public class ParkingTicketStatus {
 
-  private long distance;
-  private long time;
+  private RetornoConsulta status;
 
   // Used for deserialization
-  public DistanceMatrixResult() {
+  public ParkingTicketStatus() {
     
   }
 
-  public DistanceMatrixResult(long distance, long time) {
-    this.distance = distance;
-    this.time = time;
+  public ParkingTicketStatus(RetornoConsulta ticketStatus) {
+    this.status = ticketStatus;
   }
 
-  public DistanceMatrixResult(DistanceMatrixElement calculationResults) {
-    this(calculationResults.distance.inMeters, calculationResults.duration.inSeconds);
+  public RetornoConsulta getStatus() {
+    return status;
   }
 
-  public long getDistance() {
-    return distance;
-  }
-
-  public void setDistance(long distance) {
-    this.distance = distance;
-  }
-
-  public long getTime() {
-    return time;
-  }
-
-  public void setTime(long time) {
-    this.time = time;
+  public void setStatus(RetornoConsulta ticketStatus) {
+    this.status = ticketStatus;
   }
 
   @Override
   public String toString() {
-    return "DistanceMatrixResult [distance=" + distance + ", time=" + time + "]";
+    return this.getClass().getSimpleName() + " [status=" + status + "]";
   }
 }
