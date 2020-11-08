@@ -29,6 +29,10 @@ This configuration of console with ch.qos.logback makes the output of the logs b
         </encoder>
     </appender>
 
+    <!-- https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045 -->
+    <logger name="feign.Logger" level="DEBUG" />
+    
+
     <root level="INFO">
         <appender-ref ref="console"/>
     </root>

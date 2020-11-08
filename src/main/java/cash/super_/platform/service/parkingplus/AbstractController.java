@@ -73,7 +73,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   @ExceptionHandler(Exception.class)
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.error("Error handling the request: ", error);
+    LOG.trace("Error handling the request: ", error);
     Map<String, Object> errorDetails = new HashMap<>();
     errorDetails.put("error", (long) 500);
     errorDetails.put("description", error.getMessage());

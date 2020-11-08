@@ -50,6 +50,9 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       // For the tracer
       newSpan.tag("ticketValue", String.valueOf(ticketStatus.getTarifa()));
       newSpan.tag("ticketPaidValue", String.valueOf(ticketStatus.getTarifaPaga()));
+    } catch (RuntimeException error) {
+      LOG.error("Couldn't get the status of ticket: {}", error.getMessage());
+      throw error;
 
     } finally {
       newSpan.finish();

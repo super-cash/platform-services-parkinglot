@@ -28,8 +28,15 @@ logging:
     # See which config files are loaded in a given environment
     org.springframework.boot.context.config: DEBUG
     # Log level for the app container
-    logging.level.org.apache.tomcat: DEBUG
-    logging.level.org.apache.catalina: DEBUG
+    #org.apache.tomcat: DEBUG
+    #org.apache.catalina: DEBUG
+    #cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL
 
 # here we say that we want to enable accesslog
 # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
@@ -80,3 +87,6 @@ cash:
 
           # Our user ID for the API
           userKey: wps2@18pofe12g5412
+
+          # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+          clientLogLevel: HEADERS

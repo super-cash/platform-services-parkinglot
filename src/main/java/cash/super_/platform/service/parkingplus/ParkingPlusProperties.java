@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import feign.Logger.Level;
 
 @Validated
 @Component
@@ -25,6 +26,8 @@ public class ParkingPlusProperties {
   private String apiVersion;
 
   private String host;
+
+  private Level clientLogLevel;
 
   public String getUserKey() {
     return userKey;
@@ -70,6 +73,14 @@ public class ParkingPlusProperties {
   public String toString() {
     return "ParkingPlusProperties [apiKeyId=" + apiKeyId + ", parkingLotId=" + parkingLotId + ", userKey="
         + SecretsUtil.obsfucate(userKey) + ", apiVersion=" + apiVersion + "]";
+  }
+
+  public Level getClientLogLevel() {
+    return clientLogLevel == null ? Level.BASIC : clientLogLevel;
+  }
+
+  public void setClientLogLevel(Level clientLogLevel) {
+    this.clientLogLevel = clientLogLevel;
   }
 
 }

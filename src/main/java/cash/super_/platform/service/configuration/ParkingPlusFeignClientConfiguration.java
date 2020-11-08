@@ -24,8 +24,11 @@ public class ParkingPlusFeignClientConfiguration {
   @Bean
   public ServicoPagamentoTicket2Api ticketApi() {
     ApiClient client = new ApiClient();
-    // Generated from swagger: https://demonstracao.parkingplus.com.br/servicos
+    // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
+    client.getFeignBuilder().logLevel(properties.getClientLogLevel());
     client.setBasePath(properties.getHost());
+    // Generated from swagger: https://demonstracao.parkingplus.com.br/servicos
     return client.buildClient(ServicoPagamentoTicket2Api.class);
   }
+
 }
