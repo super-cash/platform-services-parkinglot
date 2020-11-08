@@ -54,7 +54,7 @@ repositories {
         url "https://gitlab.com/api/v4/projects/22268428/packages/maven"
         credentials(HttpHeaderCredentials) {
             name "Private-Token"
-            value System.env.GITLAB_TOKEN
+            value "XyVw_6pxiiXAvHU6du9r" //System.env.GITLAB_TOKEN
         }
         authentication {
             header(HttpHeaderAuthentication)
