@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
     webEnvironment = WebEnvironment.RANDOM_PORT)
 @DisplayName("Distance Matrix Controller Integration Tests")
 @ActiveProfiles({"integration_tests"})
-public class DistanceMatrixControllerIntegrationTests {
+public class ParkingPlusProxyControllerIntegrationTests {
 
   @LocalServerPort
   int randomServerPort;
@@ -30,7 +30,7 @@ public class DistanceMatrixControllerIntegrationTests {
   private static final String DESTINATION = "Recife, Pernambuco, Brazil";
 
   @Autowired
-  private DistanceMatrixProperties properties;
+  private ParkingPlusProperties properties;
 
   private URI controllerEndpoint;
 
