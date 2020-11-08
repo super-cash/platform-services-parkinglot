@@ -23,14 +23,6 @@ cash:
   super:
     platform:
       service:
-        distancematrix:
-          apiVersion: v1
-          language: pt-BR
-          # If it's not provided, it will be empty, which will cause it to fail at bootstrap
-          googleMapsApiToken: ${google.gcp.distancematrix.credentials.apikey:}
-
-          # Duration the results will stay in memory cache to then be evicted
-          resultsCacheDuration: 30
-
-          # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
-          resultsCacheTimeUnit: HOURS
+        parkingplus:
+          # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+          clientLogLevel: BASIC

@@ -1,47 +1,48 @@
-package cash.super_.platform.service.distancematrix;
+package cash.super_.platform.service.parkingplus;
 
-import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
+import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import feign.Logger.Level;
 
 @Validated
 @Component
-@ConfigurationProperties("cash.super.platform.service.distancematrix")
-public class DistanceMatrixProperties {
+@ConfigurationProperties("cash.super.platform.service.parkingplus")
+public class ParkingPlusProperties {
+
+  @Min(0)
+  private long apiKeyId;
+
+  @Min(0)
+  private long parkingLotId;
 
   @NotBlank
-  private String googleMapsApiToken;
-
-  @NotBlank
-  private String language;
+  private String userKey;
 
   @NotBlank
   private String apiVersion;
 
-  @Min(1)
-  private long resultsCacheDuration;
+  private String host;
 
-  @NotNull
-  private TimeUnit resultsCacheTimeUnit;
+  private Level clientLogLevel;
 
-  public String getGoogleMapsApiToken() {
-    return googleMapsApiToken;
+  public String getUserKey() {
+    return userKey;
   }
 
-  public void setGoogleMapsApiToken(String googleMapsApiToken) {
-    this.googleMapsApiToken = googleMapsApiToken;
+  public void setUserKey(String userKey) {
+    this.userKey = userKey;
   }
 
-  public String getLanguage() {
-    return language;
+  public Long getApiKeyId() {
+    return apiKeyId;
   }
 
-  public void setLanguage(String language) {
-    this.language = language;
+  public void setApiKeyId(long apiKeyId) {
+    this.apiKeyId = apiKeyId;
   }
 
   public String getApiVersion() {
@@ -52,20 +53,34 @@ public class DistanceMatrixProperties {
     this.apiVersion = apiVersion;
   }
 
-  public long getResultsCacheDuration() {
-    return resultsCacheDuration;
+  public long getParkingLotId() {
+    return parkingLotId;
   }
 
-  public void setResultsCacheDuration(long resultsCacheMillisecondsDuration) {
-    this.resultsCacheDuration = resultsCacheMillisecondsDuration;
+  public void setParkingLotId(long parkingLotId) {
+    this.parkingLotId = parkingLotId;
   }
 
-  public TimeUnit getResultsCacheTimeUnit() {
-    return resultsCacheTimeUnit;
+  public String getHost() {
+    return host == null ? "https://demonstracao.parkingplus.com.br/servicos" : host;
   }
 
-  public void setResultsCacheTimeUnit(TimeUnit resultsCacheTimeUnit) {
-    this.resultsCacheTimeUnit = resultsCacheTimeUnit;
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  @Override
+  public String toString() {
+    return "ParkingPlusProperties [apiKeyId=" + apiKeyId + ", parkingLotId=" + parkingLotId + ", userKey="
+        + SecretsUtil.obsfucate(userKey) + ", apiVersion=" + apiVersion + "]";
+  }
+
+  public Level getClientLogLevel() {
+    return clientLogLevel == null ? Level.BASIC : clientLogLevel;
+  }
+
+  public void setClientLogLevel(Level clientLogLevel) {
+    this.clientLogLevel = clientLogLevel;
   }
 
 }

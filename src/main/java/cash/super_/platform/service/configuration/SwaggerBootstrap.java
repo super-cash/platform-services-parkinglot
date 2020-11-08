@@ -3,8 +3,8 @@ package cash.super_.platform.service.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import cash.super_.platform.service.distancematrix.DistanceMatrixController;
-import cash.super_.platform.service.distancematrix.DistanceMatrixProperties;
+import cash.super_.platform.service.parkingplus.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.ParkingPlusProxyController;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -32,7 +32,7 @@ public class SwaggerBootstrap {
       "https://gitlab.com/marcellodesales", "marcello@super.cash");
 
   @Autowired
-  private DistanceMatrixProperties properties;
+  private ParkingPlusProperties properties;
 
   /**
    * @return The Docket for the Publisher endpoints. According to the documentation, Docket stands for A summary or
@@ -46,7 +46,7 @@ public class SwaggerBootstrap {
         .select()
         // Only show the endpoints from this package, not the error controller
         // https://stackoverflow.com/questions/32941917/remove-basic-error-controller-in-springfox-swaggerui/33720866#33720866
-        .apis(RequestHandlerSelectors.basePackage(DistanceMatrixController.class.getPackage().getName()))
+        .apis(RequestHandlerSelectors.basePackage(ParkingPlusProxyController.class.getPackage().getName()))
         .build();
   }
 
@@ -55,8 +55,8 @@ public class SwaggerBootstrap {
    */
   private ApiInfo apiInfo() {
     return new ApiInfoBuilder()
-        .title("Super Cash - Distance Matrix Service")
-        .description("Gets the distance between two points")
+        .title("SuperCash - Parking Plus Proxy Services")
+        .description("Manage parking lot events such as ticket status and payments.")
         .termsOfServiceUrl("https://gitlab.com/supercash/privacy")
         .contact(SWAGGER_CONTACT)
         .license("SuperCash Proprietary")

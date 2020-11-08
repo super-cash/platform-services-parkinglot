@@ -1,8 +1,9 @@
-package cash.super_.platform.service.distancematrix;
+package cash.super_.platform.service.parkingplus;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
   @Autowired
-  protected DistanceMatrixProperties properties;
+  protected ParkingPlusProperties properties;
 
   /**
    * @return The default headers for all Controller Calls
@@ -38,6 +39,18 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
       headers.add(key, additionalHeaders.get(key));
     }
     return headers;
+  }
+
+  protected Map<String, String> setOptionalResponseHeaders(Optional<String> transactionId, Optional<String> clientId) {
+    // Propagate the headers back to the client
+    Map<String, String> responseHeaders = new HashMap<>();
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_tid", transactionId.get());
+    }
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_cid", clientId.get());
+    }
+    return responseHeaders;
   }
 
   /**
@@ -60,7 +73,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   @ExceptionHandler(Exception.class)
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.error("Error handling the request: ", error);
+    LOG.trace("Error handling the request: ", error);
     Map<String, Object> errorDetails = new HashMap<>();
     errorDetails.put("error", (long) 500);
     errorDetails.put("description", error.getMessage());

@@ -1,132 +1,62 @@
-package cash.super_.platform.service.distancematrix;
+package cash.super_.platform.service.parkingplus;
 
-import java.io.IOException;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.maps.DirectionsApi.RouteRestriction;
-import com.google.maps.DistanceMatrixApi;
-import com.google.maps.DistanceMatrixApiRequest;
-import com.google.maps.GeoApiContext;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.DistanceMatrixElement;
-import com.google.maps.model.TravelMode;
 import brave.Span;
-import brave.Tracer;
 import brave.Tracer.SpanInScope;
-import cash.super_.platform.service.distancematrix.model.DistanceMatrixAddresses;
-import cash.super_.platform.service.distancematrix.model.DistanceMatrixResult;
-import cash.super_.platform.service.distancematrix.util.StringUtil;
+import cash.super_.platform.client.parkingplus.model.PagamentoEfetuado;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketPaymentsMadeQuery;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketPaymentsMadeStatus;
+import cash.super_.platform.service.parkingplus.util.SecretsUtil;
 
 /**
- * The Service as also a cache loader, as a separate class would not be different. Too little to be
- * added in isolation. Based on https://www.baeldung.com/guava-cache.
+ * Proxy service to Retrieve the status of tickets, process payments, etc.
+ * 
+ * https://demonstracao.parkingplus.com.br/servicos/swagger-ui.html#!/servico-pagamento-ticket-2/pagamentosEfetuadosUsingGET
  *
  * @author marcellodesales
  *
  */
 @Service
-public class DistanceMatrixGoogleGeoAPICachedProxyService extends CacheLoader<DistanceMatrixAddresses, DistanceMatrixResult> {
+public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotProxyService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DistanceMatrixGoogleGeoAPICachedProxyService.class);
-
-  @Autowired
-  private DistanceMatrixProperties properties;
-
-  /**
-   * The API is very expensive to be built
-   */
-  private GeoApiContext geoApi;
-
-  @Autowired
-  private Tracer tracer;
-
-  /**
-   * The Cache of results based on the input https://www.baeldung.com/guava-cache. It has an eviction
-   * policy of x minutes for older results to be removed.
-   */
-  private LoadingCache<DistanceMatrixAddresses, DistanceMatrixResult> cache;
-
-  @PostConstruct
-  public void postConstruct() {
-    // this call if extremely expensive and must be cached
-    String googleApiToken = properties.getGoogleMapsApiToken();
-    LOG.info("Bootstrapping the Google Geo API with token: {}", StringUtil.obsfucate(googleApiToken));
-    geoApi = new GeoApiContext.Builder().apiKey(googleApiToken).build();
-    LOG.info("Initialized Google Geo API");
-
-    // If we need to cache locations that are frequently searched, we can add them here
-    LOG.info("Bootstrapping the Results Cache; eviction time of {} {}", properties.getResultsCacheDuration(),
-        properties.getResultsCacheTimeUnit());
-    cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(properties.getResultsCacheDuration(), properties.getResultsCacheTimeUnit()).build(this);
-    LOG.info("Initialized the Results Cache");
-  }
-
-  public DistanceMatrixResult getDriveDistance(DistanceMatrixAddresses addresses)
-      throws ApiException, InterruptedException, IOException {
-
-    LOG.debug("Got the requested addresses for calculation: {}", addresses);
+  public ParkingTicketPaymentsMadeStatus getPaymentsMade(ParkingTicketPaymentsMadeQuery paymentsMadeQuery) {
+    LOG.debug("Query the payments made by a user: {}", paymentsMadeQuery);
 
     // Verify the input of addresses
-    Preconditions.checkArgument(addresses != null, "The addresses must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(addresses.getOriginAddress()), "The origin must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(addresses.getDestinationAddress()),
-        "The destination must be provided");
+    Preconditions.checkArgument(paymentsMadeQuery != null, "The ticket must be provided");
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(paymentsMadeQuery.getUserId()),
+        "User ID must be provided to query payments");
 
-    DistanceMatrixResult distanceResult = cache.getUnchecked(addresses);
-    return distanceResult;
-  }
-
-  /**
-   * Loads a given addresses key when it is NOT in cache.
-   */
-  @Override
-  public DistanceMatrixResult load(DistanceMatrixAddresses addresses)
-      throws ApiException, InterruptedException, IOException {
-    LOG.info("Addresses not in cache: {}", addresses);
-
-    // The calculation from Google
-    DistanceMatrix calculationResult;
+     List<PagamentoEfetuado> paymentsMade = new ArrayList<PagamentoEfetuado>();
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application
-    Span newSpan = tracer.nextSpan().name("grpc https://cloud.google.com/maps-apis/distance-matrix").start();
-    try (SpanInScope ws = tracer.withSpanInScope(newSpan.start())) {
+    Span newSpan = tracer.nextSpan().name("REST https://parkingplus.com.br/2/pagamentosEfetuados").start();
+    try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
+      LOG.info("Requesting payments made status query: {}", paymentsMadeQuery);
 
-      LOG.info("Requesting calculation of distance to google API: {}", addresses);
-      DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApi);
+      String udid = paymentsMadeQuery.getUserId();
+      long apiKeyId = properties.getApiKeyId();
+      String apiKey = SecretsUtil.makeApiKey(udid, properties.getUserKey());
 
-      calculationResult = req.origins(addresses.getOriginAddress())
-            .destinations(addresses.getDestinationAddress())
-            .mode(TravelMode.DRIVING)
-            .avoid(RouteRestriction.TOLLS)
-            .language(properties.getLanguage())
-            .await();
+      paymentsMade = parkingTicketPaymentsApi.pagamentosEfetuadosUsingGET(apiKey, udid, apiKeyId,
+          paymentsMadeQuery.getPaginationStart(), paymentsMadeQuery.getPaginationLimit());
 
     } finally {
-        newSpan.finish();
+      newSpan.finish();
     }
 
-    if (calculationResult == null || calculationResult.rows.length == 0 || calculationResult.rows[0] == null
-        || calculationResult.rows[0].elements.length == 0) {
-      LOG.error("Couldn't calculate the distance. Result is empty: {}", calculationResult);
-      throw new IllegalStateException("Can't calculate distance with the given input");
+    if (paymentsMade.isEmpty()) {
+      LOG.error("Couldn't get the payment status with query: " + paymentsMadeQuery);
+      throw new IllegalStateException("Can't get the status of payments with query");
     }
 
-    DistanceMatrixElement distanceMatrixElement = calculationResult.rows[0].elements[0];
-
-    DistanceMatrixResult distanceResult = new DistanceMatrixResult(distanceMatrixElement);
-    LOG.debug("Caching the distance of {} as {}", addresses, distanceResult);
-    return distanceResult;
+    LOG.debug("Payments made: {}", paymentsMade);
+    return new ParkingTicketPaymentsMadeStatus(paymentsMade);
   }
 
 }
