@@ -1,35 +1,41 @@
-package cash.super_.platform.service.distancematrix.model;
+package cash.super_.platform.service.parkingplus.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DistanceMatrixAddresses {
+public class ParkingTicket {
 
-  private String originAddress;
-  private String destinationAddress;
+  /**
+   * The userId that's mapped to udid
+   */
+  private String userId;
+  /**
+   * The ticket number
+   */
+  private String ticketNumber;
 
-  public String getOriginAddress() {
-    return originAddress;
+  public String getTicketNumber() {
+    return ticketNumber;
   }
 
-  public void setOriginAddress(String originAddress) {
-    this.originAddress = originAddress;
+  public void setTicketNumber(String ticketNumber) {
+    this.ticketNumber = ticketNumber;
   }
 
-  public String getDestinationAddress() {
-    return destinationAddress;
+  public String getUserId() {
+    return userId;
   }
 
-  public void setDestinationAddress(String destinationAddress) {
-    this.destinationAddress = destinationAddress;
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((destinationAddress == null) ? 0 : destinationAddress.hashCode());
-    result = prime * result + ((originAddress == null) ? 0 : originAddress.hashCode());
+    result = prime * result + ((ticketNumber == null) ? 0 : ticketNumber.hashCode());
+    result = prime * result + ((userId == null) ? 0 : userId.hashCode());
     return result;
   }
 
@@ -41,23 +47,23 @@ public class DistanceMatrixAddresses {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    DistanceMatrixAddresses other = (DistanceMatrixAddresses) obj;
-    if (destinationAddress == null) {
-      if (other.destinationAddress != null)
+    ParkingTicket other = (ParkingTicket) obj;
+    if (ticketNumber == null) {
+      if (other.ticketNumber != null)
         return false;
-    } else if (!destinationAddress.equals(other.destinationAddress))
+    } else if (!ticketNumber.equals(other.ticketNumber))
       return false;
-    if (originAddress == null) {
-      if (other.originAddress != null)
+    if (userId == null) {
+      if (other.userId != null)
         return false;
-    } else if (!originAddress.equals(other.originAddress))
+    } else if (!userId.equals(other.userId))
       return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "DistanceMatrixAddresses [originAddress=" + originAddress + ", destinationAddress="
-        + destinationAddress + "]";
+    return "ParkingTicket [userId=" + userId + ", ticketNumber=" + ticketNumber + "]";
   }
+
 }
