@@ -25,7 +25,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
   @Autowired
-  protected DistanceMatrixProperties properties;
+  protected ParkingPlusProperties properties;
 
   /**
    * @return The default headers for all Controller Calls
@@ -39,6 +39,18 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
       headers.add(key, additionalHeaders.get(key));
     }
     return headers;
+  }
+
+  protected Map<String, String> setOptionalResponseHeaders(Optional<String> transactionId, Optional<String> clientId) {
+    // Propagate the headers back to the client
+    Map<String, String> responseHeaders = new HashMap<>();
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_tid", transactionId.get());
+    }
+    if (transactionId.isPresent()) {
+      responseHeaders.put("supercash_cid", clientId.get());
+    }
+    return responseHeaders;
   }
 
   /**
