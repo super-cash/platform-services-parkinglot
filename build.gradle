@@ -48,6 +48,18 @@ bootJar {
 repositories {
     mavenLocal()
     mavenCentral()
+
+    // https://github.com/gradle/gradle/issues/5571#issuecomment-403879538
+    maven {
+        url "https://gitlab.com/api/v4/projects/22268428/packages/maven"
+        credentials(HttpHeaderCredentials) {
+            name "Private-Token"
+            value System.env.GITLAB_TOKEN
+        }
+        authentication {
+            header(HttpHeaderAuthentication)
+        }
+    }
 }
 
 sourceCompatibility = 1.8
@@ -82,8 +94,8 @@ dependencies {
     // https://www.baeldung.com/swagger-2-documentation-for-spring-rest-api
     implementation('io.springfox:springfox-boot-starter:3.0.0')
  
-    // Google Maps API
-    implementation group: 'com.google.maps', name: 'google-maps-services', version: '0.9.3'
+    // Parking Plus
+    implementation group: 'cash.super_.platform.client', name: 'parking-plus-client-feign', version: '1.0.0-SNAPSHOT'
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
