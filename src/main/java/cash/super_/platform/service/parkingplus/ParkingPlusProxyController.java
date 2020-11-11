@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import cash.super_.platform.service.parkingplus.model.ParkingGarageSales;
 import cash.super_.platform.service.parkingplus.model.ParkingTicket;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorization;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
@@ -32,6 +33,10 @@ public class ParkingPlusProxyController extends AbstractController {
    */
   private static final String TICKETS_STATUS_ENDPOINT = BASE_ENDPOINT + "/tickets/status";
   /**
+   * The endpoint for the authorization
+   */
+  private static final String TICKETS_SALES_ENDPOINT = BASE_ENDPOINT + "/sales";
+  /**
    * The endpoint for the tickets status
    */
   private static final String PAYMENTS_STATUS_ENDPOINT = BASE_ENDPOINT + "/payments/status";
@@ -48,6 +53,9 @@ public class ParkingPlusProxyController extends AbstractController {
 
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+
+  @Autowired
+  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
   // The name in swagger metadata is coming as "operationId":"distancematrixUsingPOST"
   // https://stackoverflow.com/questions/38821763/how-to-customize-the-value-of-operationid-generated-in-api-spec-with-swagger/59044919#59044919
@@ -93,5 +101,18 @@ public class ParkingPlusProxyController extends AbstractController {
     Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "", nickname = TICKETS_SALES_ENDPOINT)
+  @RequestMapping(value = TICKETS_SALES_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
+  public ResponseEntity<ParkingGarageSales> retrieveParkingSales(
+      @RequestHeader("supercash_tid") Optional<String> transactionId,
+      @RequestHeader("supercash_cid") Optional<String> clientId) throws IOException, InterruptedException {
+
+    ParkingGarageSales currentParkingGarageSales = parkingSalesService.fetchCurrentGarageSales();
+
+    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
+
+    return new ResponseEntity<>(currentParkingGarageSales, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }
 }
