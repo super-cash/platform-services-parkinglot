@@ -14,6 +14,8 @@ public class ParkingTicket {
    */
   private String ticketNumber;
 
+  private Long saleId;
+
   public String getTicketNumber() {
     return ticketNumber;
   }
@@ -30,10 +32,19 @@ public class ParkingTicket {
     this.userId = userId;
   }
 
+  public Long getSaleId() {
+    return saleId;
+  }
+
+  public void setSaleId(Long saleId) {
+    this.saleId = saleId;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result = prime * result + ((saleId == null) ? 0 : saleId.hashCode());
     result = prime * result + ((ticketNumber == null) ? 0 : ticketNumber.hashCode());
     result = prime * result + ((userId == null) ? 0 : userId.hashCode());
     return result;
@@ -48,6 +59,11 @@ public class ParkingTicket {
     if (getClass() != obj.getClass())
       return false;
     ParkingTicket other = (ParkingTicket) obj;
+    if (saleId == null) {
+      if (other.saleId != null)
+        return false;
+    } else if (!saleId.equals(other.saleId))
+      return false;
     if (ticketNumber == null) {
       if (other.ticketNumber != null)
         return false;

@@ -33,6 +33,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     request.setIdGaragem(1L);
     request.setNumeroTicket(ticket.getTicketNumber());
     request.setUdid(ticket.getUserId());
+    request.setIdPromocao(ticket.getSaleId());
 
     RetornoConsulta ticketStatus;
 
@@ -50,6 +51,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       // For the tracer
       newSpan.tag("ticketValue", String.valueOf(ticketStatus.getTarifa()));
       newSpan.tag("ticketPaidValue", String.valueOf(ticketStatus.getTarifaPaga()));
+
     } catch (RuntimeException error) {
       LOG.error("Couldn't get the status of ticket: {}", error.getMessage());
       throw error;
