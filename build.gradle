@@ -45,11 +45,18 @@ bootJar {
     archiveVersion =  rootProject.version
 }
 
+// For SNAPSHOT dependencies, pull them right away
+// https://stackoverflow.com/questions/42058626/how-to-get-newest-snapshot-of-a-dependency-without-changing-version-in-gradle/42058780#42058780
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
 
     // https://github.com/gradle/gradle/issues/5571#issuecomment-403879538
+    // https://gitlab.com/gitlab-org/gitlab/-/issues/207920#note_443711163
     maven {
         url "https://gitlab.com/api/v4/projects/22268428/packages/maven"
         credentials(HttpHeaderCredentials) {

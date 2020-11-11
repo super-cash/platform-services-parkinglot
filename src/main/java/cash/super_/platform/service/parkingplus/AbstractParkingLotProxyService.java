@@ -14,7 +14,7 @@ import cash.super_.platform.service.parkingplus.util.SecretsUtil;
  * @author marcellodesales
  *
  */
-public class AbstractParkingLotProxyService {
+public abstract class AbstractParkingLotProxyService {
 
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractParkingLotProxyService.class);
 

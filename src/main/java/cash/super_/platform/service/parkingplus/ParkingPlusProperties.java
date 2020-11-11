@@ -1,7 +1,9 @@
 package cash.super_.platform.service.parkingplus;
 
+import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +30,12 @@ public class ParkingPlusProperties {
   private String host;
 
   private Level clientLogLevel;
+
+  @Min(1)
+  private long salesCacheDuration;
+
+  @NotNull
+  private TimeUnit salesCacheTimeUnit;
 
   public String getUserKey() {
     return userKey;
@@ -83,4 +91,19 @@ public class ParkingPlusProperties {
     this.clientLogLevel = clientLogLevel;
   }
 
+  public long getSalesCacheDuration() {
+    return salesCacheDuration;
+  }
+
+  public void setSalesCacheDuration(long salesCacheDuration) {
+    this.salesCacheDuration = salesCacheDuration;
+  }
+
+  public TimeUnit getSalesCacheTimeUnit() {
+    return salesCacheTimeUnit;
+  }
+
+  public void setSalesCacheTimeUnit(TimeUnit salesCacheTimeUnit) {
+    this.salesCacheTimeUnit = salesCacheTimeUnit;
+  }
 }
