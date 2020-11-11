@@ -90,3 +90,9 @@ cash:
 
           # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
           clientLogLevel: HEADERS
+
+          # Duration the results will stay in memory cache to then be evicted
+          salesCacheDuration: 10
+
+          # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
+          salesCacheTimeUnit: DAYS
