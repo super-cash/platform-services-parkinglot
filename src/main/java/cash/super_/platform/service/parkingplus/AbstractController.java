@@ -41,14 +41,14 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     return headers;
   }
 
-  protected Map<String, String> setOptionalResponseHeaders(Optional<String> transactionId, Optional<String> clientId) {
+  protected Map<String, String> setOptionalResponseHeaders(Optional<String> transactionId, Optional<String> userId) {
     // Propagate the headers back to the client
     Map<String, String> responseHeaders = new HashMap<>();
     if (transactionId.isPresent()) {
       responseHeaders.put("supercash_tid", transactionId.get());
     }
     if (transactionId.isPresent()) {
-      responseHeaders.put("supercash_cid", clientId.get());
+      responseHeaders.put("supercash_uid", userId.get());
     }
     return responseHeaders;
   }

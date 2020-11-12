@@ -64,11 +64,11 @@ public class ParkingPlusProxyController extends AbstractController {
       produces = {"application/json"})
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(@RequestBody ParkingTicket parkingTicket,
       @RequestHeader("supercash_tid") Optional<String> transactionId,
-      @RequestHeader("supercash_cid") Optional<String> clientId) throws IOException, InterruptedException {
+      @RequestHeader("supercash_uid") Optional<String> userId) throws IOException, InterruptedException {
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkingTicket);
 
-    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
+    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, userId);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }
@@ -79,11 +79,11 @@ public class ParkingPlusProxyController extends AbstractController {
   public ResponseEntity<ParkingTicketPaymentsMadeStatus> getParkingTicketPaymentsStatus(
       @RequestBody ParkingTicketPaymentsMadeQuery paymentsMadeQuery,
       @RequestHeader("supercash_tid") Optional<String> transactionId,
-      @RequestHeader("supercash_cid") Optional<String> clientId) throws IOException, InterruptedException {
+      @RequestHeader("supercash_uid") Optional<String> userId) throws IOException, InterruptedException {
 
     ParkingTicketPaymentsMadeStatus parkingTicketStatus = paymentsService.getPaymentsMade(paymentsMadeQuery);
 
-    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
+    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, userId);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }
@@ -94,11 +94,11 @@ public class ParkingPlusProxyController extends AbstractController {
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
       @RequestBody ParkingTicketAuthorization paymentAuthorization,
       @RequestHeader("supercash_tid") Optional<String> transactionId,
-      @RequestHeader("supercash_cid") Optional<String> clientId) throws IOException, InterruptedException {
+      @RequestHeader("supercash_uid") Optional<String> userId) throws IOException, InterruptedException {
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(paymentAuthorization);
 
-    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
+    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, userId);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }
@@ -107,11 +107,11 @@ public class ParkingPlusProxyController extends AbstractController {
   @RequestMapping(value = TICKETS_SALES_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingGarageSales> retrieveParkingSales(
       @RequestHeader("supercash_tid") Optional<String> transactionId,
-      @RequestHeader("supercash_cid") Optional<String> clientId) throws IOException, InterruptedException {
+      @RequestHeader("supercash_uid") Optional<String> userId) throws IOException, InterruptedException {
 
     ParkingGarageSales currentParkingGarageSales = parkingSalesService.fetchCurrentGarageSales();
 
-    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, clientId);
+    Map<String, String> responseHeaders = setOptionalResponseHeaders(transactionId, userId);
 
     return new ResponseEntity<>(currentParkingGarageSales, makeDefaultHttpHeaders(responseHeaders), HttpStatus.OK);
   }

@@ -55,7 +55,7 @@ public class ParkingPlusProxyControllerIntegrationTests {
 //
 //    HttpHeaders headers = new HttpHeaders();
 //    headers.set("supercash_tid", "transaction-" + UUID.randomUUID().toString().substring(0, 7));
-//    headers.set("supercash_cid", "customer-" + UUID.randomUUID().toString().substring(0, 7));
+//    headers.set("supercash_uid", "customer-" + UUID.randomUUID().toString().substring(0, 7));
 //
 //    HttpEntity<ParkingTicket> request = new HttpEntity<>(addresses, headers);
 //
