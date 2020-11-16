@@ -15,6 +15,7 @@ import brave.Span;
 import brave.Tracer;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.Promocao;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.model.ParkingGarageSales;
 import cash.super_.platform.service.parkingplus.util.JsonUtil;
 import cash.super_.platform.service.parkingplus.util.SecretsUtil;
@@ -37,6 +38,14 @@ public class ParkingPlusParkingSalesCachedProxyService
 
   @Autowired
   private Tracer tracer;
+
+  /**
+   * @return The number of supercash sales for the current parkinglot configured
+   */
+  public long getNumberOfSales() {
+    ParkingGarageSales supercashSales = cache.getUnchecked(properties.getParkingLotId());
+    return supercashSales.getCurrent().size();
+  }
 
   @PostConstruct
   public void postConstruct() {
@@ -89,15 +98,22 @@ public class ParkingPlusParkingSalesCachedProxyService
       List<String> tiposPromocao = null;
       String numeroTicket = null;
       String token = null;
-      // These are all parking sales for this garage, no matter who the third-party integrator is.
-      for (Promocao sale : this.parkingTicketPaymentsApi.getPromocoesUsingGET(apiKey, apiKeyId, parkingGarageId,
-          guidGaragem, tiposPromocao, numeroTicket, token)) {
 
-        // Just add the ones for Supercash
-        if (sale.getNome().startsWith("SUPERCASH")) {
-          supercashParkingSales.add(sale);
+      try {
+        // These are all parking sales for this garage, no matter who the third-party integrator is.
+        for (Promocao sale : this.parkingTicketPaymentsApi.getPromocoesUsingGET(apiKey, apiKeyId, parkingGarageId,
+            guidGaragem, tiposPromocao, numeroTicket, token)) {
+
+          // Just add the ones for Supercash
+          if (sale.getNome().startsWith("SUPERCASH")) {
+            supercashParkingSales.add(sale);
+          }
         }
+
+      } catch (Exception e) {
+        LOG.error("Couldn't fetch supercash sales. Contact the WSP Representatives!");
       }
+
 
       if (supercashParkingSales.size() == 0) {
         LOG.error("Couldn't fetch the supercash sales. Contact the WSP Representative about it!");

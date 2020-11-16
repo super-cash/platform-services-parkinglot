@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 
 /**
  * Requires network connectivity as it will call Google's API.

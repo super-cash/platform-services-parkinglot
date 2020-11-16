@@ -5,13 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.client.parkingplus.invoker.ApiClient;
-import cash.super_.platform.service.parkingplus.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 
 /**
  * Bootstraps the feign clients as described in the client documentation. Haven't found any documentation
  * on how to setup the client
  *
  * https://gitlab.com/supercash/clients/parking-plus-client-feign/-/blob/master/src/main/java/cash/super_/platform/client/parkingplus/invoker/ApiClient.java#L136-147
+ * 
+ * https://www.javacodegeeks.com/2018/06/provide-client-libraries-apis.html
+ * https://arnoldgalovics.com/generating-feign-clients-with-swagger-codegen-and-gradle/
+ * 
  * @author marcellodesales
  *
  */

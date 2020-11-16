@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus;
+package cash.super_.platform.service.parkingplus.autoconfig;
 
 import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;
@@ -13,7 +13,7 @@ import feign.Logger.Level;
 @Validated
 @Component
 @ConfigurationProperties("cash.super.platform.service.parkingplus")
-public class ParkingPlusProperties {
+public class ParkingPlusProperties extends SupercashServiceProperties {
 
   @Min(0)
   private long apiKeyId;
@@ -25,11 +25,9 @@ public class ParkingPlusProperties {
   private String userKey;
 
   @NotBlank
-  private String apiVersion;
-
   private String host;
 
-  private Level clientLogLevel;
+  private Level clientLogLevel = Level.BASIC;
 
   @Min(1)
   private long salesCacheDuration;
@@ -53,14 +51,6 @@ public class ParkingPlusProperties {
     this.apiKeyId = apiKeyId;
   }
 
-  public String getApiVersion() {
-    return apiVersion;
-  }
-
-  public void setApiVersion(String apiVersion) {
-    this.apiVersion = apiVersion;
-  }
-
   public long getParkingLotId() {
     return parkingLotId;
   }
@@ -70,7 +60,7 @@ public class ParkingPlusProperties {
   }
 
   public String getHost() {
-    return host == null ? "https://demonstracao.parkingplus.com.br/servicos" : host;
+    return host;
   }
 
   public void setHost(String host) {
@@ -80,11 +70,11 @@ public class ParkingPlusProperties {
   @Override
   public String toString() {
     return "ParkingPlusProperties [apiKeyId=" + apiKeyId + ", parkingLotId=" + parkingLotId + ", userKey="
-        + SecretsUtil.obsfucate(userKey) + ", apiVersion=" + apiVersion + "]";
+        + SecretsUtil.obsfucate(userKey) + ", apiVersion=" + this.getApiVersion() + "]";
   }
 
   public Level getClientLogLevel() {
-    return clientLogLevel == null ? Level.BASIC : clientLogLevel;
+    return clientLogLevel;
   }
 
   public void setClientLogLevel(Level clientLogLevel) {
