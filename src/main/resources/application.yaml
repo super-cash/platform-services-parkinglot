@@ -20,6 +20,8 @@ spring:
         - "supercash_tid"
         - "supercash_cid"
 
+# https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
+# https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
   level:
     org.springframework.core.env: warn

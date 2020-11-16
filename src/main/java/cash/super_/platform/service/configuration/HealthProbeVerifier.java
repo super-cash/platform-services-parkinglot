@@ -70,7 +70,7 @@ public class HealthProbeVerifier {
 
         // The number of supercash sales must be available in order for the service to work as we depend on them
         if (salesCacheService.getCacheSize() > 0 && salesCacheService.getNumberOfSales() > 0) {
-          LOG.error("Parking Plus Readiness Health Probe: Built cache with {} entries",
+          LOG.info("Parking Plus Readiness Health Probe: Built cache with {} entries",
               salesCacheService.getNumberOfSales());
           AvailabilityChangeEvent.publish(appContext, ReadinessState.ACCEPTING_TRAFFIC);
 
