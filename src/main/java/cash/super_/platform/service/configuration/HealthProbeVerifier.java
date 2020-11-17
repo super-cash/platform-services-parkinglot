@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.availability.ApplicationAvailability;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
+import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,8 @@ import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties
  * https://www.baeldung.com/spring-liveness-readiness-probes#1-readiness-and-liveness-state-transitions
  * Kubernetes will check the endpoint /actuator/health/liveness and it needs to return HTTP 200. If
  * this can't connect to the Parking Plus server for some reason, then the probe must fail.
+ * 
+ * https://spring.io/blog/2020/03/25/liveness-and-readiness-probes-with-spring-boot
  *
  * @author marcellodesales
  *
@@ -72,11 +75,13 @@ public class HealthProbeVerifier {
         if (salesCacheService.getCacheSize() > 0 && salesCacheService.getNumberOfSales() > 0) {
           LOG.info("Parking Plus Readiness Health Probe: Built cache with {} entries",
               salesCacheService.getNumberOfSales());
+          AvailabilityChangeEvent.publish(appContext, LivenessState.CORRECT);
           AvailabilityChangeEvent.publish(appContext, ReadinessState.ACCEPTING_TRAFFIC);
 
         } else {
           LOG.error("Parking Plus Readiness Health Probe: Failed. Cache is Empty.");
           AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+          AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
         }
 
         LOG.debug("Current readiness={}; Will check probe again in {} {}", applicationAvailability.getReadinessState(),
