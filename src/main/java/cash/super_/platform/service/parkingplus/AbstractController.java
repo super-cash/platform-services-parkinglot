@@ -3,7 +3,6 @@ package cash.super_.platform.service.parkingplus;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,11 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
 
+  /**
+   * Where the call will come through
+   */
+  public static final String BASE_ENDPOINT = "/parking_lots";
+
   @Autowired
   protected ParkingPlusProperties properties;
 
@@ -40,18 +44,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
       headers.add(key, additionalHeaders.get(key));
     }
     return headers;
-  }
-
-  protected Map<String, String> setOptionalResponseHeaders(Optional<String> transactionId, Optional<String> userId) {
-    // Propagate the headers back to the client
-    Map<String, String> responseHeaders = new HashMap<>();
-    if (transactionId.isPresent()) {
-      responseHeaders.put("supercash_tid", transactionId.get());
-    }
-    if (transactionId.isPresent()) {
-      responseHeaders.put("supercash_uid", userId.get());
-    }
-    return responseHeaders;
   }
 
   /**

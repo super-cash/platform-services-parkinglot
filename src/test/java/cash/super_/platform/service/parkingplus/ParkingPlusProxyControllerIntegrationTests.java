@@ -40,7 +40,7 @@ public class ParkingPlusProxyControllerIntegrationTests {
     String hostname = "http://localhost";
     String apiVersion = properties.getApiVersion();
     String baseUrl =
-        String.format("%s:%d/%s%s", hostname, randomServerPort, apiVersion, ParkingPlusProxyController.BASE_ENDPOINT);
+        String.format("%s:%d/%s%s", hostname, randomServerPort, apiVersion, ParkingPlusSalesController.BASE_ENDPOINT);
     controllerEndpoint = new URI(baseUrl);
   }
 
