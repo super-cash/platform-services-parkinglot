@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import feign.FeignException;
 
 /**
  * Abstract controller error that can be reused by other services.
@@ -67,9 +69,29 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @ExceptionHandler(Exception.class)
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
     LOG.trace("Error handling the request: ", error);
+    if (error instanceof FeignException.Forbidden) {
+      FeignException.Forbidden feignError = (FeignException.Forbidden)error;
+      int status = feignError.status();
+      String message = feignError.getMessage();
+      if (status == 403 && message.contains("não encontrado")) {
+        return makeErrorResponse(error, 404, message, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+
+    return makeErrorResponse(error, -1, error.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  // https://stackoverflow.com/questions/63052223/restcontrolleradvice-not-called-with-spring-boot-2-3/63053195#63053195
+  @ExceptionHandler(value = {MissingRequestHeaderException.class})
+  public ResponseEntity<Object> handleJacksonError(final MissingRequestHeaderException paramsMissing, final WebRequest request) {
+    return makeErrorResponse(paramsMissing, -1, paramsMissing.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  private ResponseEntity<Object> makeErrorResponse(Exception errorCause, int originatingStatusCode, String message, HttpStatus returnStatusCode) {
+    LOG.trace("Error handling the request: ", errorCause);
     Map<String, Object> errorDetails = new HashMap<>();
-    errorDetails.put("error", (long) 500);
-    errorDetails.put("description", error.getMessage());
-    return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    errorDetails.put("error", originatingStatusCode == -1 ? returnStatusCode.value() : originatingStatusCode);
+    errorDetails.put("description", message);
+    return new ResponseEntity<>(errorDetails, returnStatusCode);
   }
 }
