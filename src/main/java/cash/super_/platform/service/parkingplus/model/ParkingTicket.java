@@ -1,19 +1,19 @@
 package cash.super_.platform.service.parkingplus.model;
 
+import javax.validation.constraints.NotBlank;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ParkingTicket {
 
   /**
-   * The userId that's mapped to udid
-   */
-  private String userId;
-  /**
    * The ticket number
    */
+  @NotBlank
   private String ticketNumber;
-
+  /**
+   * Optional value to verify the status of a ticket
+   */
   private Long saleId;
 
   public String getTicketNumber() {
@@ -22,14 +22,6 @@ public class ParkingTicket {
 
   public void setTicketNumber(String ticketNumber) {
     this.ticketNumber = ticketNumber;
-  }
-
-  public String getUserId() {
-    return userId;
-  }
-
-  public void setUserId(String userId) {
-    this.userId = userId;
   }
 
   public Long getSaleId() {
@@ -46,7 +38,6 @@ public class ParkingTicket {
     int result = 1;
     result = prime * result + ((saleId == null) ? 0 : saleId.hashCode());
     result = prime * result + ((ticketNumber == null) ? 0 : ticketNumber.hashCode());
-    result = prime * result + ((userId == null) ? 0 : userId.hashCode());
     return result;
   }
 
@@ -69,17 +60,12 @@ public class ParkingTicket {
         return false;
     } else if (!ticketNumber.equals(other.ticketNumber))
       return false;
-    if (userId == null) {
-      if (other.userId != null)
-        return false;
-    } else if (!userId.equals(other.userId))
-      return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "ParkingTicket [userId=" + userId + ", ticketNumber=" + ticketNumber + "]";
+    return "ParkingTicket [ticketNumber=" + ticketNumber + ", saleId=" + saleId + "]";
   }
 
 }

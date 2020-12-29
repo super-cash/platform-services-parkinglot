@@ -2,10 +2,12 @@ package cash.super_.platform.service.parkingplus;
 
 import java.io.IOException;
 import java.util.HashMap;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
 import io.swagger.annotations.ApiOperation;
 
 @Controller
+@Validated
 @RequestMapping("/${cash.super.platform.service.parkingplus.apiVersion}")
 public class ParkingPlusTicketsController extends AbstractController {
 
@@ -31,12 +34,11 @@ public class ParkingPlusTicketsController extends AbstractController {
   @ApiOperation(value = "", nickname = TICKETS_STATUS_ENDPOINT)
   @RequestMapping(value = TICKETS_STATUS_ENDPOINT, method = RequestMethod.POST, consumes = {"application/json"},
       produces = {"application/json"})
-  public ResponseEntity<ParkingTicketStatus> getTicketStatus(@RequestBody ParkingTicket parkingTicket,
+  public ResponseEntity<ParkingTicketStatus> getTicketStatus(@Valid @RequestBody ParkingTicket parkingTicket,
       @RequestHeader("supercash_tid") String transactionId,
       @RequestHeader("supercash_uid") String userId) throws IOException, InterruptedException {
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkingTicket);
-
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, parkingTicket);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }

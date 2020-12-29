@@ -31,6 +31,12 @@ public class ParkingPlusFeignClientConfiguration {
     // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
     client.getFeignBuilder().logLevel(properties.getClientLogLevel());
     client.setBasePath(properties.getHost());
+
+    // ADd the tracing client to call other microservices
+    // https://github.com/yandok/DistributedTracing-Example/blob/master/DistributedTracing-AppB/src/main/java/yan/dok/OpenTracingAppB/GreetingController.java#L27
+    //TODO: https://medium.com/@klaus.dobbler/introducing-distributed-tracing-to-a-docker-swarm-landscape-f92c033e36db
+    //client.getFeignBuilder().client(new TracingClient)
+
     // Generated from swagger: https://demonstracao.parkingplus.com.br/servicos
     return client.buildClient(ServicoPagamentoTicket2Api.class);
   }

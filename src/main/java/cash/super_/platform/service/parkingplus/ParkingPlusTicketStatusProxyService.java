@@ -32,10 +32,12 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(1L);
     request.setNumeroTicket(ticket.getTicketNumber());
-    request.setUdid(ticket.getUserId());
-    request.setIdPromocao(ticket.getSaleId());
+    request.setUdid(userId);
 
-    RetornoConsulta ticketStatus;
+    // Paid tickets will resolve an an error
+    if (ticket.getSaleId() != null) {
+      request.setIdPromocao(ticket.getSaleId());
+    }
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application
@@ -45,7 +47,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
       LOG.info("Requesting parking plus ticket status: {}", ticket);
 
-      String apiKey = SecretsUtil.makeApiKey(ticket.getUserId(), properties.getUserKey());
+      String apiKey = SecretsUtil.makeApiKey(userId, properties.getUserKey());
       ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId());
 
       // For the tracer
@@ -60,7 +62,12 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       newSpan.finish();
     }
 
-    LOG.debug("Ticket status: {}", ticketStatus);
+    try {
+      LOG.debug("Ticket status: {}", JsonUtil.toJson(ticketStatus));
+
+    } catch (JsonProcessingException jsonError) {
+      LOG.error("Error getting ticket json", jsonError);
+    }
     return new ParkingTicketStatus(ticketStatus);
   }
 
