@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.util.SecretsUtil;
 
 /**

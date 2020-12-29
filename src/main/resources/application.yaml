@@ -15,11 +15,13 @@ spring:
     baggage:
       remote-fields:
         - "supercash_tid"
-        - "supercash_cid"
+        - "supercash_uid"
       correlation-fields:
         - "supercash_tid"
-        - "supercash_cid"
+        - "supercash_uid"
 
+# https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
+# https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
   level:
     org.springframework.core.env: warn
@@ -31,6 +33,8 @@ logging:
     #org.apache.tomcat: DEBUG
     #org.apache.catalina: DEBUG
     #cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api: DEBUG
+    cash.super_.platform.service.configuration: DEBUG
+    cash.super_.platform.service.parkingplus: DEBUG
 
 feign:
   client:
@@ -56,7 +60,7 @@ server:
       # https://tomcat.apache.org/tomcat-8.0-doc/config/valve.html
       # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
       # https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
-      pattern: "[ACCESS] %h %t %{org.apache.catalina.AccessLog.RemoteAddr}r http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S %u supercash_tid=%{supercash_tid}i supercash_cid=%{supercash_cid}i x_b3_traceid=%{X-B3-TraceId}o"
+      pattern: "[ACCESS] %h %t %{org.apache.catalina.AccessLog.RemoteAddr}r http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S %u tid=%{supercash_tid}i uid=%{supercash_uid}i x_b3_traceid=%{X-B3-TraceId}o"
 
 # SpringFox Swagger
 # https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
@@ -72,13 +76,25 @@ management:
       exposure:
         include: "*"
 
+  # Liveness and Readiness probe endpoints only work with this setup
+  # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
 # Super cash platform
 cash:
   super:
     platform:
       service:
         parkingplus:
+          # Our API Version
           apiVersion: v1
+
+          # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
+          host: https://demonstracao.parkingplus.com.br/servicos
+
           # Value provided by parking plus
           apiKeyId: 1
 
@@ -92,7 +108,13 @@ cash:
           clientLogLevel: HEADERS
 
           # Duration the results will stay in memory cache to then be evicted
-          salesCacheDuration: 10
+          salesCacheDuration: 5
 
           # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
           salesCacheTimeUnit: DAYS
+
+          # kubernetes readiness probe, reusing the cache and updating it
+          # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
+          healthProbe:
+            readinessInterval: 1
+            readinessTimeUnit: HOURS

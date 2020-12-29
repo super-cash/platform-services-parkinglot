@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 
 /**
  * Requires network connectivity as it will call Google's API.
@@ -39,7 +40,7 @@ public class ParkingPlusProxyControllerIntegrationTests {
     String hostname = "http://localhost";
     String apiVersion = properties.getApiVersion();
     String baseUrl =
-        String.format("%s:%d/%s%s", hostname, randomServerPort, apiVersion, ParkingPlusProxyController.BASE_ENDPOINT);
+        String.format("%s:%d/%s%s", hostname, randomServerPort, apiVersion, ParkingPlusSalesController.BASE_ENDPOINT);
     controllerEndpoint = new URI(baseUrl);
   }
 
@@ -55,7 +56,7 @@ public class ParkingPlusProxyControllerIntegrationTests {
 //
 //    HttpHeaders headers = new HttpHeaders();
 //    headers.set("supercash_tid", "transaction-" + UUID.randomUUID().toString().substring(0, 7));
-//    headers.set("supercash_cid", "customer-" + UUID.randomUUID().toString().substring(0, 7));
+//    headers.set("supercash_uid", "customer-" + UUID.randomUUID().toString().substring(0, 7));
 //
 //    HttpEntity<ParkingTicket> request = new HttpEntity<>(addresses, headers);
 //

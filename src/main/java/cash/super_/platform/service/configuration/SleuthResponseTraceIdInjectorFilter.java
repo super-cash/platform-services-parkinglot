@@ -13,7 +13,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import brave.Span;
 import brave.Tracer;
-import cash.super_.platform.service.parkingplus.AbstractController;
 
 /**
  * Adds a tracing ID into the HTTP response
@@ -27,7 +26,7 @@ import cash.super_.platform.service.parkingplus.AbstractController;
 @Component
 public class SleuthResponseTraceIdInjectorFilter extends OncePerRequestFilter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractController.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SleuthResponseTraceIdInjectorFilter.class);
 
   private static final String TRACE_ID_HEADER = "X-B3-TraceId";
 
