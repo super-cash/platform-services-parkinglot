@@ -1,4 +1,5 @@
 ### Builder Arguments
+ARG CI_JOB_URL=${CI_JOB_URL:---no-CI_JOB_URL-provided--}
 ARG UNMAZEDBOOT_BUILDER_GIT_SHA=${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
 ARG UNMAZEDBOOT_BUILDER_GIT_BRANCH=${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-master}
 ARG UNMAZEDBOOT_BUILDER_GRADLE_BUILD_CMD="gradle build -x test"
@@ -8,6 +9,9 @@ ARG UNMAZEDBOOT_BUILDER_GRADLE_VERSION=${UNMAZEDBOOT_BUILDER_GRADLE_VERSION:-lat
 
 ### Linker Argumentss
 ARG UNMAZEDBOOT_LINKER_VERSION=${UNMAZEDBOOT_LINKER_VERSION:-latest}
+
+# Bug running Custom JVM without jdk.crypto.cryptoki  https://stackoverflow.com/questions/58027309/how-to-enable-ecdhe-ciphers-with-openjdk-14-on-an-alpine-docker-container/58059795#58059795
+ARG UNMAZEDBOOT_LINKER_JDK_MODULES=java.base,java.logging,java.xml,jdk.unsupported,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,jdk.crypto.cryptoki
 
 ### Runner Arguments
 ARG UNMAZEDBOOT_RUNNER_PORT="8080"
