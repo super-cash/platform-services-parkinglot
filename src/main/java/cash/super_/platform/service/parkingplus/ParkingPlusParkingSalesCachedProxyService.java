@@ -47,6 +47,19 @@ public class ParkingPlusParkingSalesCachedProxyService
     return supercashSales.getCurrent().size();
   }
 
+  /**
+   * @return The number of supercash sales for the current parkinglot configured
+   */
+  public Promocao getSale(final long saleId) {
+    ParkingGarageSales supercashSales = cache.getUnchecked(properties.getParkingLotId());
+    for (Promocao sale : supercashSales.getCurrent()) {
+      if (sale.getSystemId() == saleId) {
+        return sale;
+      }
+    }
+    return null;
+  }
+
   @PostConstruct
   public void postConstruct() {
     // this call if extremely expensive and must be cached
