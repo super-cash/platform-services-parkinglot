@@ -1,16 +1,17 @@
-package cash.super_.platform.service.parkingplus;
+package cash.super_.platform.service.parkingplus.ticket;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
-import cash.super_.platform.service.parkingplus.model.ParkingTicket;
+import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.service.parkingplus.util.JsonUtil;
 import cash.super_.platform.service.parkingplus.util.SecretsUtil;
 
@@ -29,8 +30,8 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
-  public ParkingTicketStatus getStatus(String userId, ParkingTicket ticket) {
-    LOG.debug("Looking for the status of ticket: {}", ticket);
+  public ParkingTicketStatus getStatus(String userId, String ticketId, Optional<Long> saleId) {
+    LOG.debug("Looking for the status of ticket: {}", ticketId);
 
     RetornoConsulta ticketStatus;
 
@@ -43,15 +44,20 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       ticketStatus.setGaragem("GARAGEM A");
       ticketStatus.setIdGaragem(1L);
       ticketStatus.setMensagem("Saldo atual is under testing...");
-      ticketStatus.setIdPromocao(ticket.getSaleId());
-      ticketStatus.setNumeroTicket(ticket.getTicketNumber());
+      if (saleId.isPresent()) {
+        ticketStatus.setIdPromocao(saleId.get());
+      }
+      ticketStatus.setNumeroTicket(ticketId);
       ticketStatus.setPromocaoAtingida(false);
       ticketStatus.setPromocoesDisponiveis(true);
       ticketStatus.setSetor("ESTACIONAMENTO");
       ticketStatus.setTicketValido(true);
 
       int total = 52500;
-      int discount = parkingSalesService.getSale(ticket.getSaleId()).getValorDesconto();
+      int discount = 0;
+      if (saleId.isPresent()) {
+        discount = parkingSalesService.getSale(saleId.get()).getValorDesconto();
+      }
 
       ticketStatus.setTarifa(total - discount);
       ticketStatus.setTarifaPaga(0);
@@ -63,17 +69,16 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     }
 
     // Verify the input of addresses
-    Preconditions.checkArgument(ticket != null, "The ticket must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticket.getTicketNumber()), "Parking ticket number must be provided");
+    Preconditions.checkArgument(ticketId != null, "The ticket must be provided");
 
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(1L);
-    request.setNumeroTicket(ticket.getTicketNumber());
+    request.setNumeroTicket(ticketId);
     request.setUdid(userId);
 
     // Paid tickets will resolve an an error
-    if (ticket.getSaleId() != null) {
-      request.setIdPromocao(ticket.getSaleId());
+    if (saleId.isPresent()) {
+      request.setIdPromocao(saleId.get());
     }
 
     // Trace the google geo API Call
@@ -82,7 +87,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     newSpan.remoteServiceName("parkingplus");
 
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
-      LOG.info("Requesting parking plus ticket status: {}", ticket);
+      LOG.info("Requesting parking plus ticket status: {}", ticketId);
 
       String apiKey = SecretsUtil.makeApiKey(userId, properties.getUserKey());
       ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId());
