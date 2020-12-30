@@ -12,8 +12,8 @@ import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import cash.super_.platform.service.parkingplus.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
 
 /**
  * This is explained on

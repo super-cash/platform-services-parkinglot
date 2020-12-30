@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus;
+package cash.super_.platform.service.parkingplus.sales;
 
 import java.util.ArrayList;
 import java.util.List;

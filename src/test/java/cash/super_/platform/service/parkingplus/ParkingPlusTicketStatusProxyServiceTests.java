@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketPaymentsProxyService;
 
 
 // https://www.infoworld.com/article/3543268/junit-5-tutorial-part-2-unit-testing-spring-mvc-with-junit-5.html

@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus;
+package cash.super_.platform.service.parkingplus.ticket;
 
 import java.io.IOException;
 import java.util.HashMap;

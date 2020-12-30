@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus;
+package cash.super_.platform.service.parkingplus.sales;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.cache.CacheLoader;
