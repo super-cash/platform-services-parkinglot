@@ -120,4 +120,17 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     errorDetails.put("description", message);
     return new ResponseEntity<>(errorDetails, returnStatusCode);
   }
+
+  /**
+   * Verifies if the request is valid based on the inputs
+   * TODO: Make sure we can remove the headerUserId and still map it to the loggers
+   *
+   * @param headerUserId
+   * @param userId
+   */
+  protected void isRequestValid(String headerUserId, String userId) {
+    if (!headerUserId.equals(userId)) {
+      throw new IllegalArgumentException("Supercash Error: UserID must be provided in both header and path");
+    }
+  }
 }
