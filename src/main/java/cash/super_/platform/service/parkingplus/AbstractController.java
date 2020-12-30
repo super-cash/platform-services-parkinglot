@@ -72,19 +72,27 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
     LOG.trace("Error handling the request: ", error);
+    if (error instanceof IllegalArgumentException) {
+      return makeErrorResponse(error, error.getMessage(), HttpStatus.BAD_REQUEST);
+    }
     if (error instanceof FeignException.NotFound) {
       FeignException.NotFound feignError = (FeignException.NotFound)error;
       String message = feignError.getMessage();
       if (message.contains("errorCode") && message.contains(":31")) {
         return makeErrorResponse(error, message, HttpStatus.BAD_REQUEST);
-      }
+      } else return makeErrorResponse(error, message, HttpStatus.NOT_FOUND);
     }
     if (error instanceof FeignException.Forbidden) {
       FeignException.Forbidden feignError = (FeignException.Forbidden)error;
-      int status = feignError.status();
       String message = feignError.getMessage();
-      if (status == 403 && (message.contains("não encontrado") || message.contains("não existe"))) {
+      if (message.contains("id da promoção não existe!")) {
+        return makeErrorResponse(error, message, HttpStatus.BAD_REQUEST);
+      }
+      if (message.contains("não encontrado") || message.contains("não existe")) {
         return makeErrorResponse(error, message, HttpStatus.NOT_FOUND);
+      }
+      if (message.contains("possui um desconto aplicado")) {
+        return makeErrorResponse(error, message, HttpStatus.FORBIDDEN);
       }
     }
 
