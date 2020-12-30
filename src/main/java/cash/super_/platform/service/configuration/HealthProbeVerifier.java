@@ -45,15 +45,20 @@ public class HealthProbeVerifier {
 
   @PostConstruct
   public void checkProbes() {
+    // We need first to build the cache in order to be healthy / receive traffic
+    // https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
+    AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+    AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
+
     // Just refuse traffic if the sales cache is empty. This happens only once during the bootstrap
     // and when the cache needs to be rebuilt
     LOG.info("We can't receive traffic until the cache is built");
 
-    // We need first to build the cache in order to be healthy / receive traffic
-    // https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
-    AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+    LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
+        applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
+        properties.getHealthProbe().getReadinessInterval(), properties.getHealthProbe().getReadinessTimeUnit());
 
-    LOG.debug("Bootstrapped the probes helper");
+    LOG.debug("Bootstrapping the probes helper");
     checkReadiness();
   }
 
@@ -68,23 +73,30 @@ public class HealthProbeVerifier {
         // The ACCEPTING_TRAFFIC state represents that the application is ready to accept traffic
         // The REFUSING_TRAFFIC state means that the application is not willing to accept any requests yet
 
-        // Fetch the supercash sales first and keep it in cache
-        salesCacheService.fetchCurrentGarageSales();
+        try {
+          // Fetch the supercash sales first and keep it in cache
+          // Since it throws a runtime exception, just try it and verify the state below
+          salesCacheService.fetchCurrentGarageSales();
+
+        } catch (RuntimeException runtimeError) {
+          LOG.error("Error populating the Sales Cache %s", runtimeError.getMessage());
+        }
 
         // The number of supercash sales must be available in order for the service to work as we depend on them
-        if (salesCacheService.getCacheSize() > 0 && salesCacheService.getNumberOfSales() > 0) {
+        if (salesCacheService.getCacheSize() == 0 || salesCacheService.getNumberOfSales() == 0) {
+          LOG.error("Parking Plus Readiness Health Probe: Failed. Cache is Empty.");
+          AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+          AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
+
+        } else {
           LOG.info("Parking Plus Readiness Health Probe: Built cache with {} entries",
               salesCacheService.getNumberOfSales());
           AvailabilityChangeEvent.publish(appContext, LivenessState.CORRECT);
           AvailabilityChangeEvent.publish(appContext, ReadinessState.ACCEPTING_TRAFFIC);
-
-        } else {
-          LOG.error("Parking Plus Readiness Health Probe: Failed. Cache is Empty.");
-          AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
-          AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
         }
 
-        LOG.debug("Current readiness={}; Will check probe again in {} {}", applicationAvailability.getReadinessState(),
+        LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
+            applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
             properties.getHealthProbe().getReadinessInterval(), properties.getHealthProbe().getReadinessTimeUnit());
       }
 
