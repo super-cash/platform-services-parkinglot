@@ -45,6 +45,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     paymentRequest.setPermitirValorExcedente(true);
     paymentRequest.setPermitirValorParcial(true);
     paymentRequest.setUdid(userId);
+    paymentRequest.setValor(paymentAuthorization.getRequest().getValor());
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application
