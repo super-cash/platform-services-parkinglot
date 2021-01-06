@@ -12,8 +12,8 @@ import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import cash.super_.platform.service.parkingplus.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
 
 /**
  * This is explained on
@@ -79,7 +79,7 @@ public class HealthProbeVerifier {
           salesCacheService.fetchCurrentGarageSales();
 
         } catch (RuntimeException runtimeError) {
-          LOG.error("Error populating the Sales Cache %s", runtimeError.getMessage());
+          LOG.error("Error populating the Sales Cache: {}", runtimeError.getMessage());
         }
 
         // The number of supercash sales must be available in order for the service to work as we depend on them
