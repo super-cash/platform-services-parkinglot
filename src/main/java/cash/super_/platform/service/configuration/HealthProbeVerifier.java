@@ -79,7 +79,7 @@ public class HealthProbeVerifier {
           salesCacheService.fetchCurrentGarageSales();
 
         } catch (RuntimeException runtimeError) {
-          LOG.error("Error populating the Sales Cache %s", runtimeError.getMessage());
+          LOG.error("Error populating the Sales Cache: {}", runtimeError.getMessage());
         }
 
         // The number of supercash sales must be available in order for the service to work as we depend on them
