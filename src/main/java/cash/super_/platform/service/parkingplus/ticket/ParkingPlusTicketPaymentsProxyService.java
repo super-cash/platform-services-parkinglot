@@ -53,8 +53,8 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
     }
 
     if (paymentsMade.isEmpty()) {
-      LOG.error("Couldn't get the payment status with query: " + paymentsMadeQuery);
-      throw new IllegalStateException("Can't get the status of payments with query");
+      LOG.error("There's no payments for user {} ", userId);
+      throw new IllegalStateException("There's no payments for user=" + userId);
     }
 
     LOG.debug("Payments made: {}", paymentsMade);

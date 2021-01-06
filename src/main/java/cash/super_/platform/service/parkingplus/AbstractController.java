@@ -75,6 +75,11 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     if (error instanceof IllegalArgumentException) {
       return makeErrorResponse(error, error.getMessage(), HttpStatus.BAD_REQUEST);
     }
+    if (error instanceof IllegalStateException) {
+      if (error.getMessage().contains("There's no payments for user=")) {
+        return makeErrorResponse(error, error.getMessage(), HttpStatus.NOT_FOUND);
+      }
+    }
     if (error instanceof FeignException.NotFound) {
       FeignException.NotFound feignError = (FeignException.NotFound)error;
       String message = feignError.getMessage();
@@ -91,7 +96,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
       if (message.contains("não encontrado") || message.contains("não existe")) {
         return makeErrorResponse(error, message, HttpStatus.NOT_FOUND);
       }
-      if (message.contains("possui um desconto aplicado")) {
+      if (message.contains("possui um desconto aplicado") || message.contains("Transação já realizada.")) {
         return makeErrorResponse(error, message, HttpStatus.FORBIDDEN);
       }
     }

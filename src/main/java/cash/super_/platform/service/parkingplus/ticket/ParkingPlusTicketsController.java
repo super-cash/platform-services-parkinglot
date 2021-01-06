@@ -88,6 +88,10 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
+    if (!ticketId.equals(paymentAuthorization.getRequest().getNumeroTicket())) {
+      throw new IllegalArgumentException("The ticket number in the body must be the same as path 'numeroTicket'!");
+    }
+
     ParkingTicketAuthorizedPaymentStatus paymentStatus =
         paymentAuthService.authorizePayment(userId, paymentAuthorization);
 
