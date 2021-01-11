@@ -30,8 +30,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getNumeroTicket()),
         "Ticket ID must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getIdTransacao()),
-        "Transaction ID for payment must be submitted (and the same)");
     Preconditions.checkArgument(payRequest.getValor() > 0,
         "The value of the ticket must be greater than 0");
 
@@ -42,6 +40,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     payRequest.setPermitirValorExcedente(true);
     payRequest.setPermitirValorParcial(true);
     payRequest.setUdid(userId);
+
+    payRequest.setIdTransacao(SecretsUtil.makeApiKey(payRequest.getNumeroTicket(), payRequest.getUdid(),
+        String.valueOf(payRequest.getValor())));
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application
@@ -82,8 +83,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getNumeroTicket()),
         "Ticket ID must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getIdTransacao()),
-        "Transaction ID for payment must be submitted (and the same)");
     Preconditions.checkArgument(payRequest.getValor() > 0,
         "The ticket value must be greater than 0");
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getEnderecoIp()),
@@ -104,6 +103,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     payRequest.setIdGaragem(properties.getParkingLotId());
     payRequest.setPermitirValorExcedente(true);
     payRequest.setUdid(userId);
+
+    payRequest.setIdTransacao(SecretsUtil.makeApiKey(payRequest.getNumeroTicket(), payRequest.getUdid(),
+        String.valueOf(payRequest.getValor())));
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application
