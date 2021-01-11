@@ -90,6 +90,9 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     if (error instanceof FeignException.Forbidden) {
       FeignException.Forbidden feignError = (FeignException.Forbidden)error;
       String message = feignError.getMessage();
+      if (message.contains("Valor Inválido")) {
+        return makeErrorResponse(error, message, HttpStatus.BAD_REQUEST);
+      }
       if (message.contains("id da promoção não existe!")) {
         return makeErrorResponse(error, message, HttpStatus.BAD_REQUEST);
       }

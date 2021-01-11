@@ -83,7 +83,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getNumeroTicket()),
         "Ticket ID must be provided");
-    Preconditions.checkArgument(payRequest.getValor() > 0,
+    Preconditions.checkArgument(payRequest.getValor() != null && payRequest.getValor() > 0,
         "The ticket value must be greater than 0");
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getEnderecoIp()),
         "The client's device ip address must be provided");
