@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import cash.super_.platform.service.parkingplus.AbstractController;
-import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorization;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketPayment;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketPaymentsMadeStatus;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
@@ -83,17 +83,31 @@ public class ParkingPlusTicketsController extends AbstractController {
       @RequestHeader("supercash_uid") String headerUserId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
-      @RequestBody ParkingTicketAuthorization paymentAuthorization)
+      @RequestBody ParkingTicketPayment paymentRequest)
       throws IOException, InterruptedException {
 
     isRequestValid(headerUserId, userId);
 
-    if (!ticketId.equals(paymentAuthorization.getRequest().getNumeroTicket())) {
-      throw new IllegalArgumentException("The ticket number in the body must be the same as path 'numeroTicket'!");
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
+    if (paymentRequest.getAuthorizedRequest() != null) {
+      if (!ticketId.equals(paymentRequest.getAuthorizedRequest().getNumeroTicket())) {
+        throw new IllegalArgumentException("The authorized ticket number in body is different than URL 'numeroTicket'");
+      }
+
+      paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getAuthorizedRequest());
+
+    } else if (paymentRequest.getRequest() != null) {
+      if (!ticketId.equals(paymentRequest.getRequest().getNumeroTicket())) {
+        throw new IllegalArgumentException("The ticket number in the body must is different than URL 'numeroTicket'");
+      }
+
+      paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getRequest());
+
+    } else {
+      throw new IllegalArgumentException("You must provide either the request or authorizedRequest");
     }
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus =
-        paymentAuthService.authorizePayment(userId, paymentAuthorization);
+
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
