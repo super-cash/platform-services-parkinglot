@@ -14,11 +14,11 @@ spring:
   sleuth:
     baggage:
       remote-fields:
-        - "supercash_tid"
-        - "supercash_uid"
+        - "X-Supercash-Tid"
+        - "X-Supercash-Uid"
       correlation-fields:
-        - "supercash_tid"
-        - "supercash_uid"
+        - "X-Supercash-Tid"
+        - "X-Supercash-Uid"
 
 # https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
 # https://www.baeldung.com/spring-boot-changing-log-level-at-runtime

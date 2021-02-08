@@ -17,7 +17,7 @@ This configuration of console with ch.qos.logback makes the output of the logs b
     <!-- You can override this to have a custom pattern -->
     <!--  https://logback.qos.ch/manual/layouts.html#ClassicPatternLayout -->
     <property name="CONSOLE_LOG_PATTERN"
-              value="%clr(%d{yyyy-MM-dd'T'HH:mm:ss,SSSZ}){faint} %clr(%5p [app=${springAppName:-},prof=${springProfilesActive:-default}][tid=%X{X-B3-TraceId:-},sid=%X{X-B3-SpanId:-},sxp=%X{X-Span-Export:-}][uid=%X{supercash_uid:-}]) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+              value="%clr(%d{yyyy-MM-dd'T'HH:mm:ss,SSSZ}){faint} %clr(%5p [app=${springAppName:-},prof=${springProfilesActive:-default}][tid=%X{X-B3-TraceId:-},sid=%X{X-B3-SpanId:-},sxp=%X{X-Span-Export:-}][uid=%X{X-Supercash-Uid:-}]) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
     <!-- Appender to log to console -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

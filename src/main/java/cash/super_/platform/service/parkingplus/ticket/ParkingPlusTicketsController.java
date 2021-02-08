@@ -51,8 +51,8 @@ public class ParkingPlusTicketsController extends AbstractController {
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingTicketPaymentsMadeStatus> getParkingTicketPaymentsStatus(
-      @RequestHeader("supercash_tid") String transactionId, 
-      @RequestHeader("supercash_uid") String headerUserId,
+      @RequestHeader("X-Supercash-Tid") String transactionId, 
+      @RequestHeader("X-Supercash-Uid") String headerUserId,
       @PathVariable("supercash_uid") String userId,
       @RequestParam("page_start") Optional<Integer> paginationStart,
       @RequestParam("page_limit") Optional<Integer> paginationLimit) throws IOException, InterruptedException {
@@ -79,8 +79,8 @@ public class ParkingPlusTicketsController extends AbstractController {
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
       consumes = {"application/json"}, produces = {"application/json"})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
-      @RequestHeader("supercash_tid") String transactionId,
-      @RequestHeader("supercash_uid") String headerUserId,
+      @RequestHeader("X-Supercash-Tid") String transactionId,
+      @RequestHeader("X-Supercash-Uid") String headerUserId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
       @RequestBody ParkingTicketPayment paymentRequest)
@@ -127,8 +127,8 @@ public class ParkingPlusTicketsController extends AbstractController {
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}", method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
-      @RequestHeader("supercash_tid") String transactionId,
-      @RequestHeader("supercash_uid") String headerUserId,
+      @RequestHeader("X-Supercash-Tid") String transactionId,
+      @RequestHeader("X-Supercash-Uid") String headerUserId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
       @RequestParam("saleId") Optional<Long> saleId) throws IOException, InterruptedException {

@@ -29,8 +29,8 @@ public class ParkingPlusSalesController extends AbstractController {
   @ApiOperation(value = "", nickname = TICKETS_SALES_ENDPOINT)
   @RequestMapping(value = TICKETS_SALES_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingGarageSales> retrieveParkingSales(
-      @RequestHeader("supercash_tid") String transactionId,
-      @RequestHeader("supercash_uid") String headerUserId,
+      @RequestHeader("X-Supercash-Tid") String transactionId,
+      @RequestHeader("X-Supercash-Uid") String headerUserId,
       @PathVariable("supercash_uid") String userId) throws IOException, InterruptedException {
 
     isRequestValid(headerUserId, userId);
