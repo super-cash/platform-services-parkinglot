@@ -81,30 +81,29 @@ all-tests:
 build-push:
   stage: build
   before_script:
+    - echo "Login to the container registry ${CI_REGISTRY}"
     # Private registry here in GitLabs require login
     # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#authenticating-to-the-container-registry
     # https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token
     # Variables are in the environment https://gitlab.com/groups/supercash/-/settings/ci_cd
     # Look at the env vars above for details
     - docker login -u ${GITLAB_DOCKER_LOGIN} -p ${GITLAB_DOCKER_PASSWORD} ${CI_REGISTRY}
-
-    # Process images with docker-compose config
-    - apk add --no-cache curl jq python py-pip
-    - pip install yq
+    - echo "Pulling utility images"
+    - docker pull imega/jq & docker pull mikefarah/yq
 
   script:
       # Get the name of the original image by compose to store in a temporary script at dockerhub-images.sh
       # So that we can run it in deploy https://gitlab.com/gitlab-org/gitlab-runner/issues/1099#note_4002529
     - BUILDER_GIT_SHA=${CI_COMMIT_SHA}
     - BUILDER_GIT_BRANCH=${CI_COMMIT_REF_NAME}
-    - if [ "${BUILDER_GIT_BRANCH}" = "master" ]; then DOCKER_IMAGE_TAG="latest"; else DOCKER_IMAGE_TAG="$(echo ${BUILDER_GIT_BRANCH} |  sed 's,/,-,g')"; fi
+    - DOCKER_IMAGE_TAG="${CI_COMMIT_SHORT_SHA}-${CI_COMMIT_REF_SLUG}"
     - echo "Setting the docker image tag as ${DOCKER_IMAGE_TAG}"
     - docker-compose build --pull --parallel
 
     - echo "Current docker images"
     - docker images
 
-    - IMAGES=$(docker-compose config | yq '.' | jq -r '..|.image? | select(.!=null)')
+    - IMAGES=$(docker-compose config | docker run --rm -i mikefarah/yq e '.' - -j | docker run --rm -i imega/jq -r '..|.image? | select(.!=null)')
     - echo "Current images are the folloing ${IMAGES}"
     - >
       for IMAGE_NAME in ${IMAGES}; do
@@ -116,15 +115,11 @@ build-push:
         echo "=> Tag image ${IMAGE_NAME} for gitlab as ${GITLAB_IMAGE}";
         echo "docker tag ${IMAGE_NAME} ${GITLAB_IMAGE}";
         docker tag ${IMAGE_NAME} ${GITLAB_IMAGE};
-        docker tag ${IMAGE_NAME} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA};
         docker tag ${IMAGE_NAME} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA};
         echo "";
 
         echo "=> Pushing to Gitlab ${GITLAB_IMAGE}";
         docker push ${GITLAB_IMAGE};
-        echo ""
-        echo "=> Pushing to Gitlab ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}";
-        docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA};
         echo ""
         echo "=> Pushing to Gitlab ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}";
         docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA};
