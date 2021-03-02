@@ -1,5 +1,6 @@
 FROM gradle:6.7.0-jdk8-hotspot
 
+# Just the builder
 WORKDIR /builder
 
 # Just copy the needed ones
