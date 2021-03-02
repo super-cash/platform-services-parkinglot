@@ -2,4 +2,4 @@
 # Reusing the pipeline
 
 include:
-  remote: 'https://gitlab.com/marcellodesales/dockerized-cicd-pipeline/raw/master/.gitlab-cicd-dockerized-pipeline.yaml'
+  remote: 'https://gitlab.com/marcellodesales/dockerized-cicd-pipeline/raw/develop/.gitlab-cicd-dockerized-pipeline.yaml'
