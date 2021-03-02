@@ -1,6 +1,6 @@
 FROM gradle:6.7.0-jdk8-hotspot
 
-# Just the builder
+# Just the builder tests
 WORKDIR /builder
 
 # Just copy the needed ones
