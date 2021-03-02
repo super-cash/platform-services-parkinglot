@@ -1,4 +1,10 @@
 # SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+
+# https://www.baeldung.com/spring-boot-info-actuator-custom
+info:
+  java-vendor: ${java.specification.vendor}
+  description: "Make payments using parkingplus service"
+
 spring:
   application:
     name: parking-plus-service

@@ -17,7 +17,7 @@ import java.util.Collection;
  * 
  * https://demonstracao.parkingplus.com.br/servicos/swagger-ui.html#!/servico-pagamento-ticket-2/pagarTicketAutorizadoUsingPOST
  *
- * @author marcellodesales
+ * @author leandro
  *
  */
 @Service
