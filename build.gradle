@@ -50,7 +50,7 @@ java {
 }
 
 
-group = "cash.super_.platform.services.distancematrix"
+group = "cash.super_.platform.service.parkingplus"
 version = '1.0.0-SNAPSHOT'
 
 bootJar {
