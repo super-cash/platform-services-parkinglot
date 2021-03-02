@@ -88,6 +88,8 @@ cash:
   super:
     platform:
       service:
+        pagarme:
+          url: http://localhost:8120/v1
         parkingplus:
           # Our API Version
           apiVersion: v1

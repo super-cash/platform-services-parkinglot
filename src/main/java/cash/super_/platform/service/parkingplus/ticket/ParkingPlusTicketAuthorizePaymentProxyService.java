@@ -1,5 +1,8 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
+import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
+import me.pagar.model.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -22,6 +25,9 @@ import cash.super_.platform.service.parkingplus.util.SecretsUtil;
  */
 @Service
 public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParkingLotProxyService {
+
+  @Autowired
+  PagarmePaymentProcessorService pagarmePaymentProcessorService;
 
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, PagamentoAutorizadoRequest payRequest) {
     LOG.debug("Payment auth request: {}", payRequest);
@@ -98,6 +104,24 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getPortador()),
         "The credit card full name must be provided");
 
+    try {
+      Transaction paymentResult = pagarmePaymentProcessorService.processPayment(userId, payRequest);
+      if (paymentResult != null && paymentResult.getCurrentStatus() == Transaction.Status.PAID) {
+        RetornoPagamento authorizedPayment = getRetornoPagamento(userId, payRequest);
+        LOG.debug("Payment processor done: {}", paymentResult);
+        return new ParkingTicketAuthorizedPaymentStatus(authorizedPayment);
+
+      } else {
+        throw new RuntimeException("Payment not authorized.");
+      }
+
+    } catch (Exception pagarmePaymentError) {
+      LOG.error("Error processing payment with Pagarme: {}", pagarmePaymentError.getMessage());
+      throw pagarmePaymentError;
+    }
+  }
+
+  private RetornoPagamento getRetornoPagamento(String userId, PagamentoRequest payRequest) {
     RetornoPagamento authorizedPayment;
     payRequest.setBandeira("supercash");
     payRequest.setIdGaragem(properties.getParkingLotId());
@@ -134,9 +158,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     } finally {
       newSpan.finish();
     }
-
-    LOG.debug("Payment made: {}", authorizedPayment);
-    return new ParkingTicketAuthorizedPaymentStatus(authorizedPayment);
+    return authorizedPayment;
   }
 
 }
