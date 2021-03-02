@@ -9,7 +9,7 @@ services:
       context: .
       args:
         # https://hub.docker.com/r/intuit/unmazedboot-builder-gradle/tags/
-        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=6.7.0-jdk8-hotspot-0.5.0
+        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=6.7.1-jdk15-hotspot-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-linker/tags/
         - UNMAZEDBOOT_LINKER_VERSION=jdk11-alpine-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-runner/tags/

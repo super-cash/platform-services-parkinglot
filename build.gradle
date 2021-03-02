@@ -8,11 +8,12 @@ buildscript {
         }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.5.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.8.RELEASE")
 
         // For src/gradle/tests
         classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
         // For src/gradle/jacoco
+        // JDK 15 not working yet https://github.com/emeraldpay/polkaj/commit/9f4baeb09baa95cbe25a223817378240aa4909b2
         classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
     }
 }
@@ -36,6 +37,15 @@ apply from: 'src/gradle/jacoco.gradle'
 
 // CODE COVERAGE: JaCoCo enabled
 //apply from: 'src/gradle/swagger-client-stubs.gradle'
+
+// https://github.com/gradle/gradle/issues/14500
+// TODO: Upgrade to 15 when Jacoco supports https://github.com/emeraldpay/polkaj/commit/9f4baeb09baa95cbe25a223817378240aa4909b2
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(14)
+    }
+}
+
 
 group = "cash.super_.platform.services.distancematrix"
 version = '1.0.0-SNAPSHOT'
@@ -68,9 +78,6 @@ repositories {
         }
     }
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 ext {
     set('springCloudVersion', "Hoxton.SR8")

@@ -37,9 +37,9 @@ FROM intuit/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
 # https://stackoverflow.com/questions/53246399/jdk8-jdk10-pkix-path-building-failed-suncertpathbuilderexception-unable-to/53246850#53246850
 # Inspected the builder docker run -ti intuit/unmazedboot-builder-gradle:5.0.0-jdk8-alpine-0.5.0 ls -la /usr/lib/jvm/ and found the correct path
 # ALPINE: COPY --from=unmazedboot-builder-artifacts /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts /etc/ssl/certs/java/cacerts
-COPY --from=unmazedboot-builder-artifacts /opt/java/openjdk/jre/lib/security/cacerts /etc/ssl/certs/java/cacerts
+COPY --from=unmazedboot-builder-artifacts /opt/java/openjdk/lib/security/cacerts /etc/ssl/certs/java/cacerts
 
-# The location of the custom jvm is /opt/jdk-custom/jre 
+# The location of the custom jvm is /opt/jdk-custom/jre
 # https://github.com/intuit/unmazedboot/blob/master/runner/custom-jlink-jdk/Dockerfile#L26
 RUN rm -f /opt/jdk-custom/jre/lib/security/cacerts
 RUN ln -s /etc/ssl/certs/java/cacerts /opt/jdk-custom/jre/lib/security/cacerts
