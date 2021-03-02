@@ -29,6 +29,9 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+// PROCESS RESOURCES FROM src/main/resources INTO THE BUILD DIR
+apply from: 'src/gradle/build-info.gradle'
+
 // Test Infrastructure
 apply from: 'src/gradle/tests.gradle'
 

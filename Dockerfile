@@ -32,6 +32,8 @@ FROM intuit/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-
 # #####################################################################
 FROM intuit/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
 
+ENV BUILD_COMMIT ${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
+ENV BUILD_BRANCH ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
 # Alpine needs the SSL certificates from the JVM
 # javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed
 # https://stackoverflow.com/questions/53246399/jdk8-jdk10-pkix-path-building-failed-suncertpathbuilderexception-unable-to/53246850#53246850
