@@ -47,7 +47,7 @@ public class PagarmePaymentIntegrationTests {
   }
 
   @Test
-  @DisplayName("Test Get Distance Matrix Success")
+  @DisplayName("Test Get Making Payment with Pagarme Success")
   public void testMakeTransaction() throws Exception {
     Transaction transaction = new Transaction();
 
