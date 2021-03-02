@@ -14,24 +14,18 @@ import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketPayments
 // https://github.com/powermock/powermock/issues/1078
 // https://stackoverflow.com/questions/63834940/springboot-cant-resolve-runwith-cannot-find-symbol/63835256#63835256
 // https://www.baeldung.com/mockito-junit-5-extension
-@SpringBootTest(properties = {"cash.super.platform.service.distancematrix.googleMapsApiToken=fake-token"})
-@DisplayName("Distance Matrix Service Tests Mocking Google GeoAPI")
+@SpringBootTest(properties = {"cash.super.platform.service.parkingplus.prop=false"})
+@DisplayName("ParkingPlust Status tests")
 public class ParkingPlusTicketStatusProxyServiceTests {
-
-  private static final String ORIGIN = "Maceio, Alagoas, Brazil";
-  private static final String DESTINATION = "Recife, Pernambuco, Brazil";
 
   @Autowired
   private ParkingPlusProperties properties;
-
-//  @Mock
-//  private GeoApiContext geoApiContext;
 
   @InjectMocks
   private ParkingPlusTicketPaymentsProxyService service;
 
   @Test
-  @DisplayName("Test service to Distance Matrix Success mocking Google Geo API")
+  @DisplayName("Test service distance matrix address")
   @Disabled
   public void testGetDistanceMatrixForAddresses() throws Exception {
 //    ParkingTicket addresses = new ParkingTicket();

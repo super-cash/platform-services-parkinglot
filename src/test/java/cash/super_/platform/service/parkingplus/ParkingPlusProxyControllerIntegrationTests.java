@@ -3,6 +3,7 @@ package cash.super_.platform.service.parkingplus;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import cash.super_.platform.service.parkingplus.sales.ParkingPlusSalesController
  */
 @SpringBootTest(properties = {},
     webEnvironment = WebEnvironment.RANDOM_PORT)
-@DisplayName("Distance Matrix Controller Integration Tests")
+@DisplayName("ParkingPlus Controller Integration Tests")
 @ActiveProfiles({"integration_tests"})
 public class ParkingPlusProxyControllerIntegrationTests {
 
@@ -37,6 +38,7 @@ public class ParkingPlusProxyControllerIntegrationTests {
   private URI controllerEndpoint;
 
   @BeforeEach
+  @Disabled("Disabled setup for now!")
   public void setup() throws URISyntaxException {
     String hostname = "http://localhost";
     String apiVersion = properties.getApiVersion();
@@ -46,7 +48,8 @@ public class ParkingPlusProxyControllerIntegrationTests {
   }
 
   @Test
-  @DisplayName("Test Get Distance Matrix Success")
+  @DisplayName("Test Parking Proxy Success")
+  @Disabled
   public void testGetDistanceMatrixForAddresses() throws Exception {
 //    ParkingTicket addresses = new ParkingTicket();
 //    addresses.setDestinationAddress(DESTINATION);

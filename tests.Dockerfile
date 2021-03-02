@@ -9,7 +9,7 @@ COPY build.gradle /builder
 # The settings
 COPY settings.gradle /builder
 
-# The source dir
+# The source dir 
 COPY src/ /builder/src
 
 # Run gradle in the container
