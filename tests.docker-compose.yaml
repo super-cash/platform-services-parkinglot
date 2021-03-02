@@ -2,7 +2,7 @@ version: "3.6"
 
 services:
 
-  # Test cases declared, now
+  # Test cases declared
   tests:
     image: supercash/service-tests
     build:

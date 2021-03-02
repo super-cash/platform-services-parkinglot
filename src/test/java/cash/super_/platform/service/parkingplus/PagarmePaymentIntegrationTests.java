@@ -5,7 +5,9 @@ import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
 import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
 import cash.super_.platform.service.parkingplus.sales.ParkingPlusSalesController;
 import me.pagar.model.*;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ import java.util.Collection;
  */
 @SpringBootTest(properties = {},
     webEnvironment = WebEnvironment.RANDOM_PORT)
-@DisplayName("Pagarme Payment Integration Tests")
+@DisplayName("Pagarme Payment in ParkingLot Integration Tests")
 @ActiveProfiles({"integration_tests"})
 public class PagarmePaymentIntegrationTests {
 
@@ -37,17 +39,9 @@ public class PagarmePaymentIntegrationTests {
   @Autowired
   private PagarmeClientService pagarmeClientService;
 
-  @BeforeEach
-  public void setup() {
-//    String hostname = "http://localhost";
-//    String apiVersion = properties.getApiVersion();
-//    String baseUrl =
-//        String.format("%s:%d/%s%s", hostname, randomServerPort, apiVersion, ParkingPlusSalesController.BASE_ENDPOINT);
-//    controllerEndpoint = new URI(baseUrl);
-  }
-
   @Test
   @DisplayName("Test Get Making Payment with Pagarme Success")
+  @Disabled
   public void testMakeTransaction() throws Exception {
     Transaction transaction = new Transaction();
 
@@ -82,11 +76,6 @@ public class PagarmePaymentIntegrationTests {
     address.setStreetNumber("7");
     billing.setAddress(address);
 
-//    Shipping shipping = new Shipping();
-//    shipping.setAddress(address);
-//    shipping.setName(payRequest.getPortador());
-//    shipping.setFee(0);
-
     Collection<Item> items = new ArrayList<>();
     Item item = new Item();
     item.setId("2312312323");
@@ -95,7 +84,6 @@ public class PagarmePaymentIntegrationTests {
     item.setTitle("Estacionamento Maceió Shopping");
     item.setUnitPrice(10000);
 
-//    transaction.setShipping(shipping);
     transaction.setBilling(billing);
     transaction.setItems(items);
     transaction.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
@@ -109,14 +97,10 @@ public class PagarmePaymentIntegrationTests {
     transaction.setCapture(true);
     transaction.setAsync(false);
 
-    Transaction t = pagarmeClientService.requestPayment(transaction);
-    if (t == null) {
-      throw new RuntimeException("Transaction response is null.");
-    }
-
-    if (t.getCurrentStatus() != Transaction.Status.PAID) {
-      throw new RuntimeException("Transaction status it not PAID.");
-    }
+    Transaction responseTransaction = pagarmeClientService.requestPayment(transaction);
+    Assertions.assertThat(responseTransaction).isNotNull();
+    Assertions.assertThat(responseTransaction.getCurrentStatus()).isNotNull();
+    Assertions.assertThat(responseTransaction.getCurrentStatus()).isEqualTo(Transaction.Status.PAID);
   }
 
 }

@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 // Without this property the build fails
 @SpringBootTest(properties = {"cash.super.platform.service.distancematrix.googleMapsApiToken=fake-token"})
 @AutoConfigureMockMvc
-//@ActiveProfiles({"dev"})
 @DisplayName("Basic Smoke tests")
 public class ApplicationContextLoadTest {
 
