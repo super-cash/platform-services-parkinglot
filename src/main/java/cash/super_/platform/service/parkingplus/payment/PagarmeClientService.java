@@ -10,4 +10,5 @@ public interface PagarmeClientService {
 
     @PostMapping("/transactions/credit")
     public Transaction requestPayment(@RequestBody Transaction transaction);
+
 }

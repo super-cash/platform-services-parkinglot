@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   protected HttpHeaders makeDefaultHttpHeaders(Map<String, String> additionalHeaders) {
     HttpHeaders headers = new HttpHeaders();
-    headers.add("api-version", properties.getApiVersion());
 
     // Merge additional headers to the response
     for (String key : additionalHeaders.keySet()) {
@@ -66,7 +66,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * </ul>
    *
    * @param error is the exception that was thrown
-   * @param response is the response object.
    * @throws IOException while sending the error back to the client.
    */
   @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})

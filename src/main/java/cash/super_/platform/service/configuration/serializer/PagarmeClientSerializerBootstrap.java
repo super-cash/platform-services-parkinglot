@@ -1,25 +1,15 @@
-package cash.super_.platform.service.configuration;
+package cash.super_.platform.service.configuration.serializer;
 
+import cash.super_.platform.service.configuration.filter.SleuthResponseTraceIdInjectorFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import me.pagar.model.Address;
-import net.bytebuddy.implementation.bind.MethodDelegationBinder;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-
-import java.util.List;
 
 /**
  * Example of overriding the API we can't control as the getCreatedAt fails with the error. the Address from the Pagarme
@@ -38,7 +28,7 @@ import java.util.List;
  * https://gist.github.com/m-x-k/e0208e1d6452e2b16d3b5c9651d5f760
  */
 @Component
-public class PagarmeClientBootstrap {
+public class PagarmeClientSerializerBootstrap {
 
     private static final Logger LOG = LoggerFactory.getLogger(SleuthResponseTraceIdInjectorFilter.class);
 
