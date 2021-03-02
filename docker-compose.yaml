@@ -3,8 +3,9 @@ version: "3.6"
 services:
 
   parking-plus-service:
-    # https://github.com/intuit/unmazedboot/releases/tag/v0.5.0
+    
     image: supercash/parking-plus-service
+    
     build:
       context: .
       args:
