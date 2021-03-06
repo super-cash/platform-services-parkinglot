@@ -2,9 +2,9 @@ version: "3.6"
 
 services:
 
-  parking-plus-service:
-    
-    image: supercash/parking-plus-service
+  # The service for parking lots
+  parking-lot-service:    
+    image: supercash/parking-lot-service
     
     build:
       context: .
@@ -20,11 +20,6 @@ services:
         - UNMAZEDBOOT_BUILDER_GIT_BRANCH=${CI_COMMIT_BRANCH:-unknown}
     environment:
       - DEBUG_ENV=true
-      # Rotate the token at https://developers.google.com/maps/gmp-get-started after errors
-      # {"description":"You must enable Billing on the Google Cloud Project at https://console.cloud.google.com/project/_/billing/enable 
-      # Learn more at https://developers.google.com/maps/gmp-get-started","error":500}%
-      - GOOGLE_GCP_DISTANCEMATRIX_CREDENTIALS_APIKEY=AIzaSyAaG2Mvdkp8dSgNXZ_uFjigx_6iVPOjo_4
-      #- JAVA_OPTS=--marcello
     ports:
       - 8082:8080
     # volumes:
