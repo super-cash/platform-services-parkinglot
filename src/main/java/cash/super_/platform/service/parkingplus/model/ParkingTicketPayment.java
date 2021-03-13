@@ -4,7 +4,7 @@ import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 
 /**
- * The status of parking tickets wrapped.
+ * The ticket payment body.
  *
  * @author marcellodesales
  *

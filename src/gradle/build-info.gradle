@@ -1,0 +1,22 @@
+// https://stackoverflow.com/questions/47283048/how-to-capture-build-info-using-gradle-and-spring-boot
+ext {
+  commit = System.env.UNMAZEDBOOT_BUILDER_GIT_SHA ?: "--env-var-UNMAZEDBOOT_BUILDER_GIT_SHA-not-provided--"
+  branch = System.env.UNMAZEDBOOT_BUILDER_GIT_BRANCH ?: "--env-var-UNMAZEDBOOT_BUILDER_GIT_BRANCH-not-provided--"
+  // https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+  pipelineUrl = System.env.CI_JOB_URL ?: "--env-var-CI_JOB_URL-not-provided--"
+}
+
+// https://www.vojtechruzicka.com/spring-boot-version/
+// https://www.baeldung.com/spring-boot-info-actuator-custom requests to /actuator/info will show these
+// See the bean BuildProperties
+springBoot {
+    buildInfo {
+        properties {
+            additional = [
+                'git.commit': commit,
+                'git.branch': branch,
+                'git.pipeline': pipelineUrl
+            ]
+        }
+    }
+}

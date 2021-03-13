@@ -20,6 +20,10 @@ spring:
         - "X-Supercash-Tid"
         - "X-Supercash-Uid"
 
+  jackson:
+    mapper:
+      accept_case_insensitive_enums: true
+
 # https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
 # https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
@@ -88,6 +92,8 @@ cash:
   super:
     platform:
       service:
+        pagarme:
+          url: http://localhost:8120/v1
         parkingplus:
           # Our API Version
           apiVersion: v1
@@ -112,6 +118,27 @@ cash:
 
           # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
           salesCacheTimeUnit: DAYS
+
+          # The ticket title of the item in the transaction
+          ticketItemTitle: "Estacionamento Maceió Shopping"
+
+          # The service title of the item in the transaction
+          serviceFeeItemTitle: "Taxa de Serviço"
+
+          # Our client recipient id in the gateway
+          clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
+
+          # Our recipient id in the gateway
+          ourRecipientId: re_cklqszzdc03ra0p9tf9vgkcgl
+
+          # The percentage our client will receive per each transaction
+          clientPercentage: 95
+
+          # The percentage we will receive per each transaction
+          ourPercentage: 5
+
+          # Our additional service fee (in Real cents)
+          ourFee: 100
 
           # kubernetes readiness probe, reusing the cache and updating it
           # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example

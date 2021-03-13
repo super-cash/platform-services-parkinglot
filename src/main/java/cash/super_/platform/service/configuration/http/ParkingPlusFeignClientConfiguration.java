@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration;
+package cash.super_.platform.service.configuration.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

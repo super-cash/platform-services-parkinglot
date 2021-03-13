@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration;
+package cash.super_.platform.service.configuration.actuator;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

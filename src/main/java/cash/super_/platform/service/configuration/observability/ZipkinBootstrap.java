@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration;
+package cash.super_.platform.service.configuration.observability;
 
 import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
 import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;

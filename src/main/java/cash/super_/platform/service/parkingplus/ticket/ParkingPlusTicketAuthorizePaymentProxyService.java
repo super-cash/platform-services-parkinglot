@@ -1,5 +1,8 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
+import cash.super_.platform.service.pagarme.transactions.models.Transaction;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
 import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -34,7 +37,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
         "The value of the ticket must be greater than 0");
 
     RetornoPagamento authorizedPayment;
-    payRequest.setBandeira("supercash");
+    payRequest.setBandeira("Supercash");
     payRequest.setFaturado(true);
     payRequest.setIdGaragem(properties.getParkingLotId());
     payRequest.setPermitirValorExcedente(true);
@@ -50,7 +53,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
       long apiKeyId = properties.getApiKeyId();
       String apiKey = SecretsUtil.makeApiKey(new String[] {payRequest.getNumeroTicket(), payRequest.getUdid(),
-          payRequest.getBandeira(), payRequest.getIdTransacao(), properties.getUserKey()});
+              payRequest.getIdTransacao(), properties.getUserKey()});
 
 
       LOG.info("Requesting authorization for payment: {}", payRequest);
@@ -99,7 +102,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
         "The credit card full name must be provided");
 
     RetornoPagamento authorizedPayment;
-    payRequest.setBandeira("supercash");
+    payRequest.setBandeira("Supercash");
     payRequest.setIdGaragem(properties.getParkingLotId());
     payRequest.setPermitirValorExcedente(true);
     payRequest.setUdid(userId);
@@ -123,6 +126,53 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
       if (authorizedPayment == null) {
         LOG.error("Couldn't authorize payment: " + payRequest);
+        throw new IllegalStateException("Can't get the status of payments with query");
+      }
+
+      // For the tracer
+      newSpan.tag("ticketNumber", String.valueOf(authorizedPayment.getNumeroTicket()));
+      newSpan.tag("receipt", String.valueOf(authorizedPayment.getComprovante()));
+      newSpan.tag("rpsNumber", String.valueOf(authorizedPayment.getRps()));
+
+    } finally {
+      newSpan.finish();
+    }
+
+    LOG.debug("Payment made: {}", authorizedPayment);
+    return new ParkingTicketAuthorizedPaymentStatus(authorizedPayment);
+  }
+
+  public ParkingTicketAuthorizedPaymentStatus authorizePaymentWithSupercash(String userId, TransactionRequest
+          payRequest, TransactionResponseSummary payResponse) {
+    LOG.debug("Payment auth request after Supercash payment request/response: {} {}", payRequest,
+            payResponse);
+
+    PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
+
+    wpsAuthorizedPaymentRequest.setNumeroTicket(payRequest.getItems().get(0).getId());
+    wpsAuthorizedPaymentRequest.setBandeira("Supercash");
+    wpsAuthorizedPaymentRequest.setFaturado(true);
+    wpsAuthorizedPaymentRequest.setIdGaragem(properties.getParkingLotId());
+    wpsAuthorizedPaymentRequest.setPermitirValorExcedente(true);
+    wpsAuthorizedPaymentRequest.setPermitirValorParcial(true);
+    wpsAuthorizedPaymentRequest.setUdid(userId);
+    wpsAuthorizedPaymentRequest.setIdTransacao(payResponse.getUuid().toString());
+
+    RetornoPagamento authorizedPayment = null;
+    Span newSpan = tracer.nextSpan().name("REST https://parkingplus.com.br/2/pagamentosEfetuados").start();
+    try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
+      long apiKeyId = properties.getApiKeyId();
+      String apiKey = SecretsUtil.makeApiKey(new String[] {wpsAuthorizedPaymentRequest.getNumeroTicket(),
+              payRequest.getMetadata().get("device_id"), payRequest.getUuid().toString(), properties.getUserKey()});
+      LOG.info("Requesting authorization for payment: {}", payRequest);
+
+      // Authorize the payment
+      authorizedPayment = parkingTicketPaymentsApi.pagarTicketAutorizadoUsingPOST(apiKey, wpsAuthorizedPaymentRequest,
+              apiKeyId);
+
+      if (authorizedPayment == null) {
+        LOG.error("Couldn't authorize payment in WPS, although the payment status is {}. WPS request: {}",
+                payResponse.getStatus(), wpsAuthorizedPaymentRequest);
         throw new IllegalStateException("Can't get the status of payments with query");
       }
 
