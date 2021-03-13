@@ -1,10 +1,4 @@
 # SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
-
-# https://www.baeldung.com/spring-boot-info-actuator-custom
-info:
-  java-vendor: ${java.specification.vendor}
-  description: "Make payments using parkingplus service"
-
 spring:
   application:
     name: parking-plus-service
@@ -95,7 +89,7 @@ cash:
     platform:
       service:
         pagarme:
-          url: http://localhost:8120/v1
+          url: http://localhost:8120
         parkingplus:
           # Our API Version
           apiVersion: v1
@@ -120,6 +114,24 @@ cash:
 
           # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
           salesCacheTimeUnit: DAYS
+
+          # The item title in the transaction
+          itemTitle: "Estacionamento Maceió Shopping"
+
+          # Our client recipient id in the gateway
+          clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
+
+          # Our recipient id in the gateway
+          ourRecipientId: re_cklqszzdc03ra0p9tf9vgkcgl
+
+          # The percentage our client will receive per each transaction
+          clientPercentage: 95
+
+          # The percentage we will receive per each transaction
+          ourPercentage: 5
+
+          # Our additional service fee (in Real cents)
+          ourFee: 100
 
           # kubernetes readiness probe, reusing the cache and updating it
           # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example

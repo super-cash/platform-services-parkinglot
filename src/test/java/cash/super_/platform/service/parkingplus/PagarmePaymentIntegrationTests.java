@@ -1,13 +1,8 @@
 package cash.super_.platform.service.parkingplus;
 
-import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
-import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
-import cash.super_.platform.service.parkingplus.sales.ParkingPlusSalesController;
-import me.pagar.model.*;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Requires network connectivity as it will call Google's API.
@@ -41,9 +35,9 @@ public class PagarmePaymentIntegrationTests {
 
   @Test
   @DisplayName("Test Get Making Payment with Pagarme Success")
-  @Disabled
+//  @Disabled
   public void testMakeTransaction() throws Exception {
-    Transaction transaction = new Transaction();
+    TransactionRequest transaction = new TransactionRequest();
 
     Customer customer = new Customer();
     customer.setType(Customer.Type.INDIVIDUAL);
@@ -53,14 +47,14 @@ public class PagarmePaymentIntegrationTests {
     customer.setEmail("test@super.cash");
     customer.setCountry("br");
 
-    Collection<Document> documents = new ArrayList();
+    List<Document> documents = new ArrayList();
     Document document = new Document();
     document.setType(Document.Type.CPF);
     document.setNumber("03817304412");
     documents.add(document);
     customer.setDocuments(documents);
 
-    Collection<String> phones = new ArrayList();
+    List<String> phones = new ArrayList();
     phones.add("+5511982657575");
     customer.setPhoneNumbers(phones);
 
@@ -76,7 +70,7 @@ public class PagarmePaymentIntegrationTests {
     address.setStreetNumber("7");
     billing.setAddress(address);
 
-    Collection<Item> items = new ArrayList<>();
+    List<Item> items = new ArrayList<>();
     Item item = new Item();
     item.setId("2312312323");
     item.setQuantity(1);
@@ -97,10 +91,10 @@ public class PagarmePaymentIntegrationTests {
     transaction.setCapture(true);
     transaction.setAsync(false);
 
-    Transaction responseTransaction = pagarmeClientService.requestPayment(transaction);
+    TransactionResponseSummary responseTransaction = pagarmeClientService.requestPayment(transaction);
     Assertions.assertThat(responseTransaction).isNotNull();
-    Assertions.assertThat(responseTransaction.getCurrentStatus()).isNotNull();
-    Assertions.assertThat(responseTransaction.getCurrentStatus()).isEqualTo(Transaction.Status.PAID);
+    Assertions.assertThat(responseTransaction.getStatus()).isNotNull();
+    Assertions.assertThat(responseTransaction.getStatus()).isEqualTo(Transaction.Status.PAID);
   }
 
 }

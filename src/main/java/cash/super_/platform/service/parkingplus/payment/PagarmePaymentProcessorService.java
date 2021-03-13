@@ -1,16 +1,18 @@
 package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
-import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
-import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
-import me.pagar.model.*;
+import cash.super_.platform.service.pagarme.transactions.models.*;
+import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -31,73 +33,64 @@ public class PagarmePaymentProcessorService {
   @Autowired
   private PagarmeClientService pagarmeClientService;
 
-  public Transaction processPayment(String userId, PagamentoRequest payRequest) {
-    Transaction transaction = new Transaction();
-    LOG.debug("Payment auth request: {}", payRequest);
+  @Autowired
+  private ParkingPlusProperties parkingPlusProperties;
 
-    Customer customer = new Customer();
-    customer.setType(Customer.Type.INDIVIDUAL);
-    customer.setExternalId(userId);
-    customer.setName(payRequest.getPortador());
-    customer.setBirthday("1981-12-08");
-    customer.setEmail("test@super.cash");
-    customer.setCountry("br");
+  public TransactionResponseSummary processPayment(String userId, TransactionRequest payRequest) {
 
-    Collection<Document> documents = new ArrayList();
-    Document document = new Document();
-//    if (payRequest.getDadosCpf() != null) {
-//      document.setType(Document.Type.CPF);
-//
-//    } else {
-//      document.setType(Document.Type.CNPJ);
-//    }
-//    document.setNumber(payRequest.getCpfCnpj().toString());
-    document.setType(Document.Type.CPF);
-    document.setNumber("03817304412");
-    documents.add(document);
-    customer.setDocuments(documents);
+    String ticketNumber = payRequest.getItems().get(0).getId();
+    Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticketNumber),
+            "Ticket ID must be provided");
+    Preconditions.checkArgument(payRequest.getAmount() > 0,
+            "The value of the ticket must be greater than 0");
+    Map<String, String> metadata = payRequest.getMetadata();
+    Preconditions.checkArgument(metadata.get("device_id") != null, "The device_id metadata field must be provided");
+    Preconditions.checkArgument(metadata.get("ip") != null, "The ip metadata field must be provided");
+    Preconditions.checkArgument(metadata.get("lapsed_time") != null, "The lapsed_time must be provided");
 
-    Collection<String> phones = new ArrayList();
-    phones.add("+5511982657575");
-    customer.setPhoneNumbers(phones);
-
-    Billing billing = new Billing();
-    billing.setName(payRequest.getPortador());
-    Address address  = new Address();
-    address.setCity("Maceió");
-    address.setCountry("br");
-    address.setState("sp");
-    address.setNeighborhood("Parque Miami");
-    address.setStreet("Rua Rio Jari");
-    address.setZipcode("09133180");
-    address.setStreetNumber("7");
-    billing.setAddress(address);
-
-//    Shipping shipping = new Shipping();
-//    shipping.setAddress(address);
-//    shipping.setName(payRequest.getPortador());
-//    shipping.setFee(0);
-
-    Collection<Item> items = new ArrayList<>();
-    Item item = new Item();
-    item.setId(payRequest.getNumeroTicket());
+    Item item = payRequest.getItems().get(0);
     item.setQuantity(1);
-    item.setTangible(Boolean.FALSE);
-    item.setTitle("Estacionamento Maceió Shopping");
-    item.setUnitPrice(payRequest.getValor());
+    item.setTangible(false);
+    item.setTitle(parkingPlusProperties.getItemTitle());
+    item.setUnitPrice(payRequest.getAmount());
+    payRequest.addMetadata("ticket_number", item.getId());
 
-//    transaction.setShipping(shipping);
-    transaction.setBilling(billing);
-    transaction.setItems(items);
-    transaction.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
-    transaction.setAmount(payRequest.getValor());
-    transaction.setCardHolderName(payRequest.getPortador());
-    transaction.setCardNumber(payRequest.getCartaoDeCredito().toString());
-    transaction.setCardCvv(payRequest.getCodigoDeSeguranca());
-    transaction.setCardExpirationDate(payRequest.getValidade());
-    transaction.setCustomer(customer);
+    List<SplitRule> splitRules = new ArrayList<>();
+    SplitRule ourClient = new SplitRule();
+    ourClient.setRecipientId(parkingPlusProperties.getClientRecipientId());
+    ourClient.setLiable(true);
+    ourClient.setChargeRemainderFee(true);
+    ourClient.setChargeProcessingFee(false);
+    SplitRule us = new SplitRule();
+    us.setRecipientId(parkingPlusProperties.getOurRecipientId());
+    us.setLiable(true);
+    us.setChargeRemainderFee(true);
+    us.setChargeProcessingFee(false);
 
-    return pagarmeClientService.requestPayment(transaction);
+    Integer total = payRequest.getAmount();
+
+    /* Calculate our client amount to receive, based on percentage negociated. */
+    Integer ourClientAmount = total * (parkingPlusProperties.getClientPercentage() / 100);
+    ourClient.setAmount(ourClientAmount);
+
+    /*
+     * Calculate our amount to receive, based on percentage negociated and on the additional service fee.
+     * Note that in case we loose any cents, we solve this by calculate any potencial remind.
+     */
+    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
+    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
+    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
+
+    splitRules.add(ourClient);
+    splitRules.add(us);
+    payRequest.setSplitRules(splitRules);
+
+    payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
+    payRequest.setCapture(true);
+    payRequest.setAsync(false);
+
+    return pagarmeClientService.requestPayment(payRequest);
   }
 
 }

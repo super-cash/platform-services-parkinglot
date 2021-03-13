@@ -50,7 +50,7 @@ java {
 }
 
 
-group = "cash.super_.platform.service.parkingplus"
+group = "cash.super_.platform.service"
 version = '1.0.0-SNAPSHOT'
 
 bootJar {
@@ -120,9 +120,6 @@ dependencies {
     // Cloud-specific for tracing
     implementation('org.springframework.cloud:spring-cloud-starter-zipkin')
     implementation('org.springframework.cloud:spring-cloud-starter-openfeign')
-
-    //pagarme sdk
-    implementation("me.pagar:pagarme-java:2.1.1")
 
     // https://stackoverflow.com/questions/37701330/spring-boot-dev-tools-turning-them-off-for-production/37702560#37702560
     // Auto Reload while developing in IDEs

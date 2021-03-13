@@ -3,6 +3,12 @@ package cash.super_.platform.service.parkingplus.ticket;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
+
+import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
+import cash.super_.platform.service.pagarme.transactions.models.Transaction;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
+import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +44,9 @@ public class ParkingPlusTicketsController extends AbstractController {
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
+  @Autowired
+  PagarmePaymentProcessorService pagarmePaymentProcessorService;
+
   /**
    * Gets the current list of tickets for a given user
    * @param transactionId
@@ -66,7 +75,7 @@ public class ParkingPlusTicketsController extends AbstractController {
   }
 
   /**
-   * Pays a ticket for a given user
+   * Pays a ticket for a given user using WPS infra
    * @param transactionId
    * @param userId
    * @param ticketId
@@ -76,7 +85,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @throws InterruptedException
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
+  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/payWithWPS", method = RequestMethod.POST,
       consumes = {"application/json"}, produces = {"application/json"})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
       @RequestHeader("X-Supercash-Tid") String transactionId,
@@ -107,7 +116,40 @@ public class ParkingPlusTicketsController extends AbstractController {
       throw new IllegalArgumentException("You must provide either the request or authorizedRequest");
     }
 
+    return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+  }
 
+  /**
+   * Pays a ticket for a given user using Supercash
+   * @param transactionId
+   * @param userId
+   * @param ticketId
+   * @param paymentAuthorization
+   * @return
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
+  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
+          consumes = {"application/json"}, produces = {"application/json"})
+  public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Uid") String headerUserId,
+          @PathVariable("supercash_uid") String userId,
+          @PathVariable("ticket_id") String ticketId,
+          @RequestBody TransactionRequest paymentRequest)
+          throws IOException, InterruptedException {
+
+    isRequestValid(headerUserId, userId);
+
+    TransactionResponseSummary transactionResponse = pagarmePaymentProcessorService.processPayment(userId,
+            paymentRequest);
+
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
+    if (transactionResponse.getStatus() == Transaction.Status.PAID) {
+//      paymentStatus = paymentAuthService.authorizePaymentWithSupercash(userId, paymentRequest, transactionResponse);
+      System.out.println("Ticket " + ticketId + " paid successfully.");
+    }
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
