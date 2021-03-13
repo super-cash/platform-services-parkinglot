@@ -228,6 +228,10 @@ public class Transaction {
         this.items = items;
     }
 
+    public void addItem(Item item) {
+        this.items.add(item);
+    }
+
     public Map<String, String> getMetadata() {
         return metadata;
     }

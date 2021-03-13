@@ -49,13 +49,6 @@ public class PagarmePaymentProcessorService {
     Preconditions.checkArgument(metadata.get("ip") != null, "The ip metadata field must be provided");
     Preconditions.checkArgument(metadata.get("lapsed_time") != null, "The lapsed_time must be provided");
 
-    Item item = payRequest.getItems().get(0);
-    item.setQuantity(1);
-    item.setTangible(false);
-    item.setTitle(parkingPlusProperties.getItemTitle());
-    item.setUnitPrice(payRequest.getAmount());
-    payRequest.addMetadata("ticket_number", item.getId());
-
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
     ourClient.setRecipientId(parkingPlusProperties.getClientRecipientId());
@@ -66,26 +59,43 @@ public class PagarmePaymentProcessorService {
     us.setRecipientId(parkingPlusProperties.getOurRecipientId());
     us.setLiable(true);
     us.setChargeRemainderFee(true);
-    us.setChargeProcessingFee(false);
+    us.setChargeProcessingFee(true);
 
     Integer total = payRequest.getAmount();
 
     /* Calculate our client amount to receive, based on percentage negociated. */
-    Integer ourClientAmount = total * (parkingPlusProperties.getClientPercentage() / 100);
-    ourClient.setAmount(ourClientAmount);
+    Double ourClientAmount = total * (parkingPlusProperties.getClientPercentage().doubleValue() / 100);
+    ourClient.setAmount(ourClientAmount.intValue());
 
     /*
      * Calculate our amount to receive, based on percentage negociated and on the additional service fee.
      * Note that in case we loose any cents, we solve this by calculate any potencial remind.
      */
-    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
-    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
-    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
+//    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
+//    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
+//    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
+    us.setAmount(total - ourClientAmount.intValue() + parkingPlusProperties.getOurFee());
 
     splitRules.add(ourClient);
     splitRules.add(us);
-    payRequest.setSplitRules(splitRules);
 
+    Item item = payRequest.getItems().get(0);
+    item.setQuantity(1);
+    item.setTangible(false);
+    item.setTitle(parkingPlusProperties.getTicketItemTitle());
+    item.setUnitPrice(payRequest.getAmount());
+
+    Item tsItem = new Item();
+    tsItem.setId("TS-1");
+    tsItem.setQuantity(1);
+    tsItem.setTangible(false);
+    tsItem.setTitle(parkingPlusProperties.getServiceFeeItemTitle());
+    tsItem.setUnitPrice(parkingPlusProperties.getOurFee());
+    payRequest.addItem(tsItem);
+
+    payRequest.setAmount(payRequest.getAmount() + parkingPlusProperties.getOurFee());
+    payRequest.setSplitRules(splitRules);
+    payRequest.addMetadata("ticket_number", item.getId());
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
     payRequest.setCapture(true);
     payRequest.setAsync(false);

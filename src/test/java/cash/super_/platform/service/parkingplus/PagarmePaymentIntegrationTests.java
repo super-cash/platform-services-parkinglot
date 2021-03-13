@@ -75,11 +75,7 @@ public class PagarmePaymentIntegrationTests {
     address.setStreetNumber("7");
     billing.setAddress(address);
 
-<<<<<<< HEAD
     List<Item> items = new ArrayList<>();
-=======
-    Collection<Item> items = new ArrayList<>();
->>>>>>> 0db7214dc931277eeaf2c5a7f581f76503052290
     Item item = new Item();
     item.setId("2312312323");
     item.setQuantity(1);

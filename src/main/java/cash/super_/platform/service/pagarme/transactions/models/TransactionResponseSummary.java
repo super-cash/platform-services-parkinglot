@@ -27,7 +27,7 @@ public class TransactionResponseSummary {
      * Supercash internal ID, defined when a request enter for payment.
      */
     @JsonProperty(value = "uuid")
-    private Integer uuid;
+    private String uuid;
 
     /**
      * Para cada atualização no processamento da transação, esta propriedade
@@ -59,11 +59,11 @@ public class TransactionResponseSummary {
         this.paidAmount = paidAmount;
     }
 
-    public Integer getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(Integer uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 

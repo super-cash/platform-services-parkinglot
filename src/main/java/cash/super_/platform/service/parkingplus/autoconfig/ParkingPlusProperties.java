@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
 import feign.Logger.Level;
 
 @Validated
@@ -37,7 +36,10 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private TimeUnit salesCacheTimeUnit;
 
   @NotNull
-  private String itemTitle;
+  private String ticketItemTitle;
+
+  @NotNull
+  private String serviceFeeItemTitle;
 
   @NotNull
   private String clientRecipientId;
@@ -112,12 +114,20 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.salesCacheTimeUnit = salesCacheTimeUnit;
   }
 
-  public String getItemTitle() {
-    return itemTitle;
+  public String getTicketItemTitle() {
+    return ticketItemTitle;
   }
 
-  public void setItemTitle(String itemTitle) {
-    this.itemTitle = itemTitle;
+  public void setTicketItemTitle(String ticketItemTitle) {
+    this.ticketItemTitle = ticketItemTitle;
+  }
+
+  public String getServiceFeeItemTitle() {
+    return serviceFeeItemTitle;
+  }
+
+  public void setServiceFeeItemTitle(String serviceFeeItemTitle) {
+    this.serviceFeeItemTitle = serviceFeeItemTitle;
   }
 
   public String getClientRecipientId() {
@@ -170,7 +180,7 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
             ", clientLogLevel=" + clientLogLevel +
             ", salesCacheDuration=" + salesCacheDuration +
             ", salesCacheTimeUnit=" + salesCacheTimeUnit +
-            ", itemTitle='" + itemTitle + '\'' +
+            ", itemTitle='" + ticketItemTitle + '\'' +
             ", clientRecipientId='" + clientRecipientId + '\'' +
             ", ourRecipientId='" + ourRecipientId + '\'' +
             ", clientPercentage=" + clientPercentage +

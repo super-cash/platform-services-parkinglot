@@ -20,6 +20,10 @@ spring:
         - "X-Supercash-Tid"
         - "X-Supercash-Uid"
 
+  jackson:
+    mapper:
+      accept_case_insensitive_enums: true
+
 # https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
 # https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
@@ -89,7 +93,7 @@ cash:
     platform:
       service:
         pagarme:
-          url: http://localhost:8120
+          url: http://localhost:8120/v1
         parkingplus:
           # Our API Version
           apiVersion: v1
@@ -115,8 +119,11 @@ cash:
           # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
           salesCacheTimeUnit: DAYS
 
-          # The item title in the transaction
-          itemTitle: "Estacionamento Maceió Shopping"
+          # The ticket title of the item in the transaction
+          ticketItemTitle: "Estacionamento Maceió Shopping"
+
+          # The service title of the item in the transaction
+          serviceFeeItemTitle: "Taxa de Serviço"
 
           # Our client recipient id in the gateway
           clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
