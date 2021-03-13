@@ -2,7 +2,12 @@ package cash.super_.platform.service.parkingplus;
 
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
+import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusSalesController;
+import me.pagar.model.*;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +75,11 @@ public class PagarmePaymentIntegrationTests {
     address.setStreetNumber("7");
     billing.setAddress(address);
 
+<<<<<<< HEAD
     List<Item> items = new ArrayList<>();
+=======
+    Collection<Item> items = new ArrayList<>();
+>>>>>>> 0db7214dc931277eeaf2c5a7f581f76503052290
     Item item = new Item();
     item.setId("2312312323");
     item.setQuantity(1);

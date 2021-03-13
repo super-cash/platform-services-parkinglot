@@ -14,6 +14,7 @@ import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketPayments
 // https://github.com/powermock/powermock/issues/1078
 // https://stackoverflow.com/questions/63834940/springboot-cant-resolve-runwith-cannot-find-symbol/63835256#63835256
 // https://www.baeldung.com/mockito-junit-5-extension
+// https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-test-auto-configuration.html <<< Test Slices
 @SpringBootTest(properties = {"cash.super.platform.service.parkingplus.prop=false"})
 @DisplayName("ParkingPlust Status tests")
 public class ParkingPlusTicketStatusProxyServiceTests {
