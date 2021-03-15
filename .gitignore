@@ -13,3 +13,4 @@ out/
 
 zipkin/elasticsearch/
 zipkin/filebeat/
+.DS_Store
