@@ -14,21 +14,17 @@
 #    "valor": 14200
 #  }
 #}'
-POST http://localhost:8080/v1/parking_lots/1/users/thiago-123/tickets/030265292584/pay
+POST http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/029466836971/pay
 accept: application/json
-X-Supercash-Uid: thiago-123
+X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040
 Content-Type: application/json
 
 {
-  "request": {
-    "numeroTicket": "030265292584",
-    "enderecoIp": "10.0.0.1",
-    "cartaoDeCredito": 4111111111111111,
-    "codigoDeSeguranca": "111",
-    "validade": "1221",
-    "portador": "Leandro de Sales",
-    "valor": 700
+  "authorizedRequest": {
+    "idTransacao": "supercash-payment-3",
+    "numeroTicket": "029466836971",
+    "valor": 100
   }
 }
 

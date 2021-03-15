@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +71,10 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param response is the response object.
    * @throws IOException while sending the error back to the client.
    */
-  @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})
+  @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class, JsonProcessingException.class})
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.trace("Error handling the request: ", error);
+    LOG.error("Error handling the request: ", error);
+    LOG.error("Error cause: ", error.getCause());
     if (error instanceof IllegalArgumentException) {
       return makeErrorResponse(error, error.getMessage(), HttpStatus.BAD_REQUEST);
     }

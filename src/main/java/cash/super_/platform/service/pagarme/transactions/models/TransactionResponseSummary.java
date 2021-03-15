@@ -43,44 +43,33 @@ public class TransactionResponseSummary {
     @JsonProperty(value = "gateway_transaction_id")
     private Integer gatewayTransactionId;
 
+    /**
+     * Objeto com dados adicionais do cliente/produto/serviço vendido
+     */
+    private Map<String, String> metadata = new HashMap<>();
+
     public Long getTransactionId() {
         return transactionId;
-    }
-
-    public void setTransactionId(Long transactionId) {
-        this.transactionId = transactionId;
     }
 
     public Integer getPaidAmount() {
         return paidAmount;
     }
 
-    public void setPaidAmount(Integer paidAmount) {
-        this.paidAmount = paidAmount;
-    }
-
     public String getUuid() {
         return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public Transaction.Status getStatus() {
         return status;
     }
 
-    public void setStatus(Transaction.Status status) {
-        this.status = status;
-    }
-
     public Integer getGatewayTransactionId() {
         return gatewayTransactionId;
     }
 
-    public void setGatewayTransactionId(Integer gatewayTransactionId) {
-        this.gatewayTransactionId = gatewayTransactionId;
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
     @Override

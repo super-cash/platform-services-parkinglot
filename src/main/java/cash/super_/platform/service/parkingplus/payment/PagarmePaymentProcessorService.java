@@ -3,6 +3,7 @@ package cash.super_.platform.service.parkingplus.payment;
 import brave.Tracer;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.util.IsNumber;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -38,16 +39,40 @@ public class PagarmePaymentProcessorService {
 
   public TransactionResponseSummary processPayment(String userId, TransactionRequest payRequest) {
 
-    String ticketNumber = payRequest.getItems().get(0).getId();
     Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticketNumber),
+
+    Item item = payRequest.getItems().get(0);
+    Preconditions.checkArgument(item != null && !Strings.isNullOrEmpty(item.getId()),
             "Ticket ID must be provided");
+
     Preconditions.checkArgument(payRequest.getAmount() > 0,
             "The value of the ticket must be greater than 0");
     Map<String, String> metadata = payRequest.getMetadata();
     Preconditions.checkArgument(metadata.get("device_id") != null, "The device_id metadata field must be provided");
     Preconditions.checkArgument(metadata.get("ip") != null, "The ip metadata field must be provided");
-    Preconditions.checkArgument(metadata.get("lapsed_time") != null, "The lapsed_time must be provided");
+
+    String fieldName;
+
+    fieldName = "sale_id";
+    String fieldValue = metadata.get(fieldName);
+    if (fieldValue != null) {
+      IsNumber.stringIsLongWithException(fieldValue, fieldName);
+    }
+
+    fieldName = "CPF or CNPJ";
+    IsNumber.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+
+    fieldName = "CEP";
+    IsNumber.stringIsLongWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+
+    fieldName = "Card Number";
+    IsNumber.stringIsLongWithException(payRequest.getCardNumber(), fieldName);
+
+    fieldName = "Card CVV";
+    IsNumber.stringIsLongWithException(payRequest.getCardCvv(), fieldName);
+
+    fieldName = "Card Expiration Date";
+    IsNumber.stringIsLongWithException(payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
@@ -79,14 +104,13 @@ public class PagarmePaymentProcessorService {
     splitRules.add(ourClient);
     splitRules.add(us);
 
-    Item item = payRequest.getItems().get(0);
     item.setQuantity(1);
     item.setTangible(false);
     item.setTitle(parkingPlusProperties.getTicketItemTitle());
     item.setUnitPrice(payRequest.getAmount());
 
     Item tsItem = new Item();
-    tsItem.setId("TS-1");
+    tsItem.setId("1");
     tsItem.setQuantity(1);
     tsItem.setTangible(false);
     tsItem.setTitle(parkingPlusProperties.getServiceFeeItemTitle());

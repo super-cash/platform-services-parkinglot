@@ -13,24 +13,13 @@
 #    "portador": "Thiago Bruno Melo de Sales",
 #    "valor": 14200
 #  }
-#}’
-POST http://localhost:8080/v1/parking_lots/1/users/thiago-123/tickets/030265292584/pay
-accept: application/json
-X-Supercash-Uid: thiago-123
+#}'
+GET http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/029466840313
+Accept: application/json
+X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040
 Content-Type: application/json
-
-{
-  "request": {
-    "numeroTicket": "030265292584",
-    "enderecoIp": "193.244.21.53",
-    "cartaoDeCredito": 3344676588761234,
-    "codigoDeSeguranca": "987",
-    "validade": "122023",
-    "portador": "Thiago Bruno Melo de Sales",
-    "valor": 14200
-  }
-}
+Accept-Encoding: application/json
 
 ###
 

@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
 
-import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.service.pagarme.transactions.models.Transaction;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
 import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +83,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @throws InterruptedException
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/payWithWPS", method = RequestMethod.POST,
+  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
       consumes = {"application/json"}, produces = {"application/json"})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
       @RequestHeader("X-Supercash-Tid") String transactionId,
@@ -112,43 +110,25 @@ public class ParkingPlusTicketsController extends AbstractController {
 
       paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getRequest());
 
+    } else if (paymentRequest.getPayTicketRequest() != null) {
+      try {
+        if (!ticketId.equals(paymentRequest.getPayTicketRequest().getItems().get(0).getId())) {
+          throw new IllegalArgumentException("The ticket number in the body must is different than URL 'numeroTicket'");
+        }
+      } catch (NullPointerException npe) {
+        throw new IllegalArgumentException("At least an Item have to be specified with id equals to The ticket number.");
+      }
+
+      TransactionResponseSummary transactionResponse = pagarmePaymentProcessorService.processPayment(userId,
+              paymentRequest.getPayTicketRequest());
+
+      if (transactionResponse.getStatus() == Transaction.Status.PAID) {
+        paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getPayTicketRequest(),
+                transactionResponse);
+      }
+
     } else {
-      throw new IllegalArgumentException("You must provide either the request or authorizedRequest");
-    }
-
-    return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
-  }
-
-  /**
-   * Pays a ticket for a given user using Supercash
-   * @param transactionId
-   * @param userId
-   * @param ticketId
-   * @param paymentAuthorization
-   * @return
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
-          consumes = {"application/json"}, produces = {"application/json"})
-  public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
-          @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String headerUserId,
-          @PathVariable("supercash_uid") String userId,
-          @PathVariable("ticket_id") String ticketId,
-          @RequestBody TransactionRequest paymentRequest)
-          throws IOException, InterruptedException {
-
-    isRequestValid(headerUserId, userId);
-
-    TransactionResponseSummary transactionResponse = pagarmePaymentProcessorService.processPayment(userId,
-            paymentRequest);
-
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
-    if (transactionResponse.getStatus() == Transaction.Status.PAID) {
-//      paymentStatus = paymentAuthService.authorizePaymentWithSupercash(userId, paymentRequest, transactionResponse);
-      System.out.println("Ticket " + ticketId + " paid successfully.");
+      throw new IllegalArgumentException("You must provide a request, an authorizedRequest or a transactionRequest");
     }
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
