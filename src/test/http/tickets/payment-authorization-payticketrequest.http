@@ -1,6 +1,6 @@
 # metadata.sale_id is optional.
 
-POST http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/030255720142/pay
+POST http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/030835712084/pay
 accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040
@@ -40,7 +40,7 @@ Content-Type: application/json
     },
     "items": [
       {
-        "id": "030255720142",
+        "id": "030835712084",
         "unit_price": 612000
       }
     ],

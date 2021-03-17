@@ -36,7 +36,7 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private TimeUnit salesCacheTimeUnit;
 
   @NotNull
-  private Long saleId;
+  private Long saleId = Long.valueOf(0);
 
   @NotNull
   private String ticketItemTitle;
