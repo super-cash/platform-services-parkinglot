@@ -17,16 +17,16 @@ public class ParkingTicketStatus {
     
   }
 
-  public ParkingTicketStatus(RetornoConsulta ticketStatus) {
-    this.status = ticketStatus;
+  public ParkingTicketStatus(RetornoConsulta status) {
+    this.status = status;
   }
 
   public RetornoConsulta getStatus() {
     return status;
   }
 
-  public void setStatus(RetornoConsulta ticketStatus) {
-    this.status = ticketStatus;
+  public void setStatus(RetornoConsulta status) {
+    this.status = status;
   }
 
   @Override

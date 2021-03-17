@@ -2,6 +2,10 @@ package cash.super_.platform.service.parkingplus.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -49,6 +53,26 @@ public enum JsonUtil {
 
     } catch (IOException errorDeserializing) {
       LOG.error("While deserializing json String " + jsonObject, errorDeserializing);
+      return null;
+    }
+  }
+
+  /**
+   * Retrieves an object from a given file instance. More details at
+   * http://www.mkyong.com/java/how-to-convert-java-object-to-from-json-jackson/
+   *
+   * @param <T> is the type of the class to be deserialized.
+   * @param jsonObject the object in Json format.
+   * @param clazz the class to convert.
+   * @return The instance of the given class.
+   */
+  public static <T> T toObject(Optional<ByteBuffer> buffer, Class<T> clazz) {
+    try {
+      String jsonObject = StandardCharsets.UTF_8.decode(buffer.get()).toString();
+      return MAPPER.readValue(jsonObject, clazz);
+
+    } catch (IOException errorDeserializing) {
+      LOG.error("While deserializing json String {}", errorDeserializing);
       return null;
     }
   }

@@ -2,11 +2,19 @@ package cash.super_.platform.service.parkingplus.ticket;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
-import cash.super_.platform.service.pagarme.transactions.models.Transaction;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
+import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
+import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.service.pagarme.transactions.models.Item;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
+import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +35,8 @@ import io.swagger.annotations.ApiOperation;
 @Controller
 @RequestMapping("/${cash.super.platform.service.parkingplus.apiVersion}")
 public class ParkingPlusTicketsController extends AbstractController {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusTicketsController.class);
 
   /**
    * The endpoint for the tickets status
@@ -95,37 +105,34 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
+    // Basic parameters validation
+    Preconditions.checkArgument(paymentRequest != null, "The payment request must be provided");
+
     ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
-    if (paymentRequest.getAuthorizedRequest() != null) {
-      if (!ticketId.equals(paymentRequest.getAuthorizedRequest().getNumeroTicket())) {
-        throw new IllegalArgumentException("The authorized ticket number in body is different than URL 'numeroTicket'");
-      }
+    String ticketNumber = "";
+    if (paymentRequest.getPayTicketRequest() != null) {
+      TransactionRequest request = paymentRequest.getPayTicketRequest();
+      List<Item> items = request.getItems();
+      Preconditions.checkArgument(items != null && items.size() > 0, "At least one item must " +
+              "be provided");
+      Integer amount = items.get(0).getUnitPrice();
+      isTicketAndAmountValid(userId, ticketId, items.get(0).getId(), amount);
+
+      paymentStatus = pagarmePaymentProcessorService.processPayment(userId, paymentRequest.getPayTicketRequest());
+
+    } else if (paymentRequest.getAuthorizedRequest() != null) {
+      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
+      Integer amount = request.getValor();
+      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), amount);
 
       paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getAuthorizedRequest());
 
     } else if (paymentRequest.getRequest() != null) {
-      if (!ticketId.equals(paymentRequest.getRequest().getNumeroTicket())) {
-        throw new IllegalArgumentException("The ticket number in the body must is different than URL 'numeroTicket'");
-      }
+      PagamentoRequest request = paymentRequest.getRequest();
+      Integer amount = request.getValor();
+      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), amount);
 
-      paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getRequest());
-
-    } else if (paymentRequest.getPayTicketRequest() != null) {
-      try {
-        if (!ticketId.equals(paymentRequest.getPayTicketRequest().getItems().get(0).getId())) {
-          throw new IllegalArgumentException("The ticket number in the body must is different than URL 'numeroTicket'");
-        }
-      } catch (NullPointerException npe) {
-        throw new IllegalArgumentException("At least an Item have to be specified with id equals to The ticket number.");
-      }
-
-      TransactionResponseSummary transactionResponse = pagarmePaymentProcessorService.processPayment(userId,
-              paymentRequest.getPayTicketRequest());
-
-      if (transactionResponse.getStatus() == Transaction.Status.PAID) {
-        paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getPayTicketRequest(),
-                transactionResponse);
-      }
+      paymentStatus = paymentAuthService.authorizePayment(userId, request);
 
     } else {
       throw new IllegalArgumentException("You must provide a request, an authorizedRequest or a transactionRequest");
@@ -139,7 +146,6 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param transactionId
    * @param userId
    * @param ticketId
-   * @param parkingTicket
    * @return
    * @throws IOException
    * @throws InterruptedException
@@ -157,7 +163,10 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
+            Optional.of(Long.valueOf(properties.getSaleId().longValue())));
+
+    LOG.debug("Promoção valor desconto: " + parkingTicketStatus.getStatus().getValorDesconto());
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }

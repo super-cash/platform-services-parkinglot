@@ -36,6 +36,9 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private TimeUnit salesCacheTimeUnit;
 
   @NotNull
+  private Long saleId;
+
+  @NotNull
   private String ticketItemTitle;
 
   @NotNull
@@ -49,11 +52,11 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
 
   @Min(0)
   @Max(100)
-  private Integer clientPercentage;
+  private Double clientPercentage = Double.valueOf(0.0);
 
   @Min(0)
   @Max(100)
-  private Integer ourPercentage;
+  private Double ourPercentage;
 
   @NotNull
   private Integer ourFee;
@@ -114,6 +117,10 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.salesCacheTimeUnit = salesCacheTimeUnit;
   }
 
+  public Long getSaleId() { return saleId; }
+
+  public void setSaleId(Long saleId) { this.saleId = saleId; }
+
   public String getTicketItemTitle() {
     return ticketItemTitle;
   }
@@ -146,19 +153,19 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.ourRecipientId = ourRecipientId;
   }
 
-  public Integer getClientPercentage() {
+  public Double getClientPercentage() {
     return clientPercentage;
   }
 
-  public void setClientPercentage(Integer clientPercentage) {
+  public void setClientPercentage(Double clientPercentage) {
     this.clientPercentage = clientPercentage;
   }
 
-  public Integer getOurPercentage() {
+  public Double getOurPercentage() {
     return ourPercentage;
   }
 
-  public void setOurPercentage(Integer ourPercentage) {
+  public void setOurPercentage(Double ourPercentage) {
     this.ourPercentage = ourPercentage;
   }
 

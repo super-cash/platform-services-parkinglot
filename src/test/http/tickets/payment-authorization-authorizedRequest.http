@@ -14,6 +14,8 @@
 #    "valor": 14200
 #  }
 #}'
+#
+
 POST http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/029466836971/pay
 accept: application/json
 X-Supercash-Uid: marcello-123

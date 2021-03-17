@@ -1,12 +1,21 @@
 package cash.super_.platform.service.parkingplus;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.error.SupercashException;
+import cash.super_.platform.error.SupercashInvalidValueException;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
+import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketStatusProxyService;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +48,12 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @Autowired
   protected ParkingPlusProperties properties;
 
+  @Autowired
+  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
+
+  @Autowired
+  private ParkingPlusTicketStatusProxyService statusService;
+
   /**
    * @return The default headers for all Controller Calls
    */
@@ -68,13 +83,18 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * </ul>
    *
    * @param error is the exception that was thrown
-   * @param response is the response object.
+   * @param request is the response object.
    * @throws IOException while sending the error back to the client.
    */
-  @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class, JsonProcessingException.class})
+  @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.error("Error handling the request: ", error);
-    LOG.error("Error cause: ", error.getCause());
+    LOG.error("Error handling the request: {}", request);
+    LOG.error("Error cause: {}", error.getCause());
+
+    if (error instanceof SupercashException) {
+      return makeErrorResponse((SupercashException)error);
+    }
+
     if (error instanceof IllegalArgumentException) {
       return makeErrorResponse(error, error.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -125,11 +145,14 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   }
 
   private ResponseEntity<Object> makeErrorResponse(Exception errorCause, String message, HttpStatus returnStatusCode) {
-    LOG.trace("Error handling the request: ", errorCause);
     Map<String, Object> errorDetails = new HashMap<>();
-    errorDetails.put("error", returnStatusCode.value());
+    errorDetails.put("error_code", returnStatusCode.value());
     errorDetails.put("description", message);
     return new ResponseEntity<>(errorDetails, returnStatusCode);
+  }
+
+  private ResponseEntity<Object> makeErrorResponse(SupercashException errorCause) {
+    return new ResponseEntity<>(errorCause.getHttpResponse(), errorCause.getAdditionalErrorCodeAsHttpStatus());
   }
 
   /**
@@ -140,8 +163,52 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param userId
    */
   protected void isRequestValid(String headerUserId, String userId) {
-    if (!headerUserId.equals(userId)) {
-      throw new IllegalArgumentException("Supercash Error: UserID must be provided in both header and path");
+    Preconditions.checkArgument(headerUserId.equals(userId),
+            "Supercash Error: UserID must be provided in both header and path");
+  }
+
+  protected void isTicketAndAmountValid(String userId, String ticketId, String ticketNumber, int amount) {
+
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(userId), "userId must be provided");
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticketNumber), "Ticket ID must be provided");
+    Preconditions.checkArgument(ticketId.equals(ticketNumber),
+            "The ticket number in the items[0].id must be equals to the URL 'numeroTicket' parameter");
+
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, Optional.empty());
+    RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
+
+    LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
+
+    Long saleIdObj = ticketStatus.getIdPromocao();
+    int ticketFee = ticketStatus.getTarifa().intValue();
+    int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
+    String message = "";
+    String saleValidationMessage = "Sale " + saleIdObj + " is valid.";
+    if (!parkingSalesService.isSaleValid(saleIdObj)) {
+      ticketFee = ticketStatus.getTarifaSemDesconto();
+      saleValidationMessage = "Sale " + saleIdObj + " is not valid.";
+    }
+
+    if (ticketFee == 0) {
+      LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ticketStatus.getDataPermitidaSaida()),
+              TimeZone.getDefault().toZoneId());
+      message = "The ticket fee is 0. You can go out until " +
+              ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
+    }
+
+    if (amount != ticketFee) {
+      message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
+              ticketFee + ". " + saleValidationMessage;
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
+    }
+
+    if (ticketFee == ticketFeePaid) {
+      message = "The ticket is already paid.";
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
     }
   }
 }
