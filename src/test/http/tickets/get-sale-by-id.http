@@ -17,6 +17,7 @@
 
 # 030255713239, 030255745055, 030255720142,
 
+# You can pass ?validate=false as request parameter to force receiving the sales response without validation
 GET http://localhost:8080/v1/parking_lots/1/users/marcello-123/sales/15
 Accept: application/json
 X-Supercash-Uid: marcello-123

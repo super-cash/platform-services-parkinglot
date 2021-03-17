@@ -174,20 +174,16 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
     Preconditions.checkArgument(ticketId.equals(ticketNumber),
             "The ticket number in the items[0].id must be equals to the URL 'numeroTicket' parameter");
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, Optional.empty());
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
+            Optional.of(Long.valueOf(properties.getSaleId().longValue())));
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
 
     LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
 
-    Long saleIdObj = ticketStatus.getIdPromocao();
+    
     int ticketFee = ticketStatus.getTarifa().intValue();
     int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
     String message = "";
-    String saleValidationMessage = "Sale " + saleIdObj + " is valid.";
-    if (!parkingSalesService.isSaleValid(saleIdObj)) {
-      ticketFee = ticketStatus.getTarifaSemDesconto();
-      saleValidationMessage = "Sale " + saleIdObj + " is not valid.";
-    }
 
     if (ticketFee == 0) {
       LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ticketStatus.getDataPermitidaSaida()),
@@ -200,7 +196,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
 
     if (amount != ticketFee) {
       message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-              ticketFee + ". " + saleValidationMessage;
+              ticketFee;
       LOG.debug(message);
       throw new SupercashInvalidValueException(message);
     }

@@ -1,16 +1,8 @@
-package cash.super_.platform.service.parkingplus.sales;
+package cash.super_.platform.service.parkingplus.payment;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.HashMap;
-
-import cash.super_.platform.client.parkingplus.model.Promocao;
-import cash.super_.platform.error.ParkingPlusInvalidSalesException;
-import cash.super_.platform.error.ParkingPlusSalesNotFoundException;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
+import cash.super_.platform.service.parkingplus.AbstractController;
+import cash.super_.platform.service.parkingplus.model.ParkingPlusPaymentServiceFee;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,54 +13,35 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import cash.super_.platform.service.parkingplus.AbstractController;
-import cash.super_.platform.service.parkingplus.model.ParkingGarageSales;
-import io.swagger.annotations.ApiOperation;
 
-import javax.xml.crypto.Data;
+import java.io.IOException;
+import java.util.HashMap;
 
 @Controller
 @RequestMapping("/${cash.super.platform.service.parkingplus.apiVersion}")
-public class ParkingPlusSalesController extends AbstractController {
+public class ParkingPlusPaymentController extends AbstractController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusSalesController.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusPaymentController.class);
 
   /**
    * The endpoint for the authorization
    */
-  private static final String TICKETS_SALES_ENDPOINT = BASE_ENDPOINT + "/sales";
+  private static final String PAYMENT_ENDPOINT = BASE_ENDPOINT + "/payment";
 
-  @Autowired
-  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
-
-  @ApiOperation(value = "", nickname = TICKETS_SALES_ENDPOINT)
-  @RequestMapping(value = TICKETS_SALES_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
-  public ResponseEntity<ParkingGarageSales> retrieveParkingSales(
+  @ApiOperation(value = "", nickname = PAYMENT_ENDPOINT + "/servicefee")
+  @RequestMapping(value = PAYMENT_ENDPOINT + "/servicefee", method = RequestMethod.GET,
+          produces = {"application/json"})
+  public ResponseEntity<ParkingPlusPaymentServiceFee> getPaymentServiceFee(
       @RequestHeader("X-Supercash-Tid") String transactionId,
       @RequestHeader("X-Supercash-Uid") String headerUserId,
       @PathVariable("supercash_uid") String userId) throws IOException, InterruptedException {
 
     isRequestValid(headerUserId, userId);
 
-    ParkingGarageSales currentParkingGarageSales = parkingSalesService.fetchCurrentGarageSales();
+    ParkingPlusPaymentServiceFee pppsf = new ParkingPlusPaymentServiceFee(properties.getOurFee());
 
-    return new ResponseEntity<>(currentParkingGarageSales, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+    return new ResponseEntity<>(pppsf,
+            makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 
-  @ApiOperation(value = "", nickname = TICKETS_SALES_ENDPOINT)
-  @RequestMapping(value = TICKETS_SALES_ENDPOINT + "/{sale_id}", method = RequestMethod.GET, produces = {"application/json"})
-  public ResponseEntity<Promocao> retrieveParkingSale(
-          @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String headerUserId,
-          @PathVariable("supercash_uid") String userId,
-          @PathVariable("sale_id") Long saleId) throws IOException, InterruptedException {
-
-    isRequestValid(headerUserId, userId);
-
-    Promocao sale = parkingSalesService.getSale(saleId);
-
-    parkingSalesService.isSaleValid(sale, true);
-
-    return new ResponseEntity<>(sale, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
-  }
 }

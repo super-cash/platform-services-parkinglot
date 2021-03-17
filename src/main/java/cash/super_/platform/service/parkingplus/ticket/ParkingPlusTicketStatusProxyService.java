@@ -76,8 +76,12 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     request.setNumeroTicket(ticketId);
     request.setUdid(userId);
 
-    // Paid tickets will resolve an an error
     if (saleId.isPresent()) {
+      Long sid = saleId.get();
+      if (sid < 0) {
+        saleId = Optional.of(Long.valueOf(properties.getSaleId().longValue()));
+      }
+      // Paid tickets will resolve an an error
       request.setIdPromocao(saleId.get());
     }
 

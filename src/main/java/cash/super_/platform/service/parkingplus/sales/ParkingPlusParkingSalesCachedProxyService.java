@@ -112,11 +112,12 @@ public class ParkingPlusParkingSalesCachedProxyService
               "END PROMOC: {}\n", todayDate, todayTime, sale.getValidade(), sale.getHorarioInicio().toLocalTime(),
             sale.getHorarioFim().toLocalTime());
 
-    if (i == saleDaysSize ||
-            todayDate.isAfter(sale.getValidade()) ||
-            todayTime.isBefore(sale.getHorarioInicio().toLocalTime()) ||
-            todayTime.isAfter(sale.getHorarioFim().toLocalTime()) ) {
-      message = "Sale with ID " + sale.getSystemId() + " is not available today and/or at this time or has expired";
+    if (i == saleDaysSize
+//            todayDate.isAfter(sale.getValidade()) ||
+//            todayTime.isBefore(sale.getHorarioInicio().toLocalTime()) ||
+//            todayTime.isAfter(sale.getHorarioFim().toLocalTime())
+            ) {
+      message = "Sale with ID " + sale.getSystemId() + " is not available for today and/or at this time or has expired";
       LOG.error(message);
       if (throwException) {
         throw new ParkingPlusInvalidSalesException(message);

@@ -150,9 +150,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @throws IOException
    * @throws InterruptedException
    */
-  // The name in swagger metadata is coming as "operationId":"distancematrixUsingPOST"
-  // https://stackoverflow.com/questions/38821763/how-to-customize-the-value-of-operationid-generated-in-api-spec-with-swagger/59044919#59044919
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
+  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_id}")
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}", method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
       @RequestHeader("X-Supercash-Tid") String transactionId,
@@ -163,8 +161,7 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
-            Optional.of(Long.valueOf(properties.getSaleId().longValue())));
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
 
     LOG.debug("Promoção valor desconto: " + parkingTicketStatus.getStatus().getValorDesconto());
 

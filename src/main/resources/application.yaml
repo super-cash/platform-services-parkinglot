@@ -119,8 +119,8 @@ cash:
           # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
           salesCacheTimeUnit: DAYS
 
-          # Sale ID to apply. Please, se 0 in caso of no sale have to be applied.
-          saleId: 15
+          # Sale ID to apply. Please, use 0 in casa of no sale have to be applied.
+          saleId: 0
 
           # The ticket title of the item in the transaction
           ticketItemTitle: "Estacionamento Maceió Shopping"
