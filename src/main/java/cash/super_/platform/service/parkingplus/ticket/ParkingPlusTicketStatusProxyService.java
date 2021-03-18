@@ -1,10 +1,12 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
 import java.util.Optional;
+
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Preconditions;
 import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
@@ -12,8 +14,8 @@ import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
-import cash.super_.platform.service.parkingplus.util.JsonUtil;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.JsonUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -30,54 +32,33 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
+  @Autowired
+  private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+
   public ParkingTicketStatus getStatus(String userId, String ticketId, Optional<Long> saleId) {
     LOG.debug("Looking for the status of ticket: {}", ticketId);
 
-    RetornoConsulta ticketStatus;
-
-    // TODO: This is to keep testing while the server is down
-    if (userId.contains("x-testing-x")) {
-      ticketStatus = new RetornoConsulta();
-      ticketStatus.setCnpjGaragem("14.207.662/0001-41");
-      ticketStatus.setDataDeEntrada(1604080498000L);
-      ticketStatus.setDataPermitidaSaida(1606964040000L);
-      ticketStatus.setGaragem("GARAGEM A");
-      ticketStatus.setIdGaragem(1L);
-      ticketStatus.setMensagem("Saldo atual is under testing...");
-      if (saleId.isPresent()) {
-        ticketStatus.setIdPromocao(saleId.get());
-      }
-      ticketStatus.setNumeroTicket(ticketId);
-      ticketStatus.setPromocaoAtingida(false);
-      ticketStatus.setPromocoesDisponiveis(true);
-      ticketStatus.setSetor("ESTACIONAMENTO");
-      ticketStatus.setTicketValido(true);
-
-      int total = 52500;
-      int discount = 0;
-      if (saleId.isPresent()) {
-        discount = parkingSalesService.getSale(saleId.get()).getValorDesconto();
-      }
-
-      ticketStatus.setTarifa(total - discount);
-      ticketStatus.setTarifaPaga(0);
-      ticketStatus.setTarifaSemDesconto(total);
-      ticketStatus.setValorDesconto(discount);
-
-      // return the testing service
-      return new ParkingTicketStatus(ticketStatus);
+    if (Strings.isNullOrEmpty(userId)) {
+      throw new SupercashInvalidValueException("User ID must be provided");
     }
 
-    // Verify the input of addresses
-    Preconditions.checkArgument(ticketId != null, "The ticket must be provided");
+    if (Strings.isNullOrEmpty(ticketId)) {
+      throw new SupercashInvalidValueException("Ticket ID must be provided");
+    }
+
+    RetornoConsulta ticketStatus;
 
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(1L);
     request.setNumeroTicket(ticketId);
     request.setUdid(userId);
 
-    // Paid tickets will resolve an an error
     if (saleId.isPresent()) {
+      Long sid = saleId.get();
+      if (sid < 0) {
+        saleId = Optional.of(Long.valueOf(properties.getSaleId().longValue()));
+      }
+      // Paid tickets will resolve an an error
       request.setIdPromocao(saleId.get());
     }
 

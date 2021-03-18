@@ -1,10 +1,20 @@
 package cash.super_.platform.service.parkingplus;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.error.supercash.SupercashException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
+import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
+import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketStatusProxyService;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +47,9 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @Autowired
   protected ParkingPlusProperties properties;
 
+  @Autowired
+  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
+
   /**
    * @return The default headers for all Controller Calls
    */
@@ -66,12 +79,18 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * </ul>
    *
    * @param error is the exception that was thrown
-   * @param response is the response object.
+   * @param request is the response object.
    * @throws IOException while sending the error back to the client.
    */
   @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.trace("Error handling the request: ", error);
+    LOG.error("Error handling the request: {}", request);
+    LOG.error("Error cause: {}", error.getCause());
+
+    if (error instanceof SupercashException) {
+      return makeErrorResponse((SupercashException)error);
+    }
+
     if (error instanceof IllegalArgumentException) {
       return makeErrorResponse(error, error.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -122,11 +141,15 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   }
 
   private ResponseEntity<Object> makeErrorResponse(Exception errorCause, String message, HttpStatus returnStatusCode) {
-    LOG.trace("Error handling the request: ", errorCause);
     Map<String, Object> errorDetails = new HashMap<>();
-    errorDetails.put("error", returnStatusCode.value());
+    errorDetails.put("error_code", returnStatusCode.value());
     errorDetails.put("description", message);
     return new ResponseEntity<>(errorDetails, returnStatusCode);
+  }
+
+  private ResponseEntity<Object> makeErrorResponse(SupercashException errorCause) {
+    return new ResponseEntity<>(errorCause,
+            errorCause.SupercashExceptionModel.getAdditionalErrorCodeAsHttpStatus());
   }
 
   /**
@@ -138,7 +161,8 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   protected void isRequestValid(String headerUserId, String userId) {
     if (!headerUserId.equals(userId)) {
-      throw new IllegalArgumentException("Supercash Error: UserID must be provided in both header and path");
+      throw new SupercashInvalidValueException("Supercash Error: UserID must be provided in both header and path");
     }
   }
+
 }

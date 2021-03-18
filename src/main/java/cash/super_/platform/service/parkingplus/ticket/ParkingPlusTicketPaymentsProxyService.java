@@ -10,7 +10,7 @@ import cash.super_.platform.client.parkingplus.model.PagamentoEfetuado;
 import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketPaymentsMadeQuery;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketPaymentsMadeStatus;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.

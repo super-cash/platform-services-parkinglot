@@ -1,13 +1,21 @@
 package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
+import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
+import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
+import cash.super_.platform.utils.IsNumber;
+import cash.super_.platform.utils.JsonUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,18 +44,45 @@ public class PagarmePaymentProcessorService {
   @Autowired
   private ParkingPlusProperties parkingPlusProperties;
 
-  public TransactionResponseSummary processPayment(String userId, TransactionRequest payRequest) {
+  @Autowired
+  private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-    String ticketNumber = payRequest.getItems().get(0).getId();
-    Preconditions.checkArgument(payRequest != null, "The payment request must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticketNumber),
-            "Ticket ID must be provided");
-    Preconditions.checkArgument(payRequest.getAmount() > 0,
-            "The value of the ticket must be greater than 0");
+  public ParkingTicketAuthorizedPaymentStatus processPayment(String userId, TransactionRequest payRequest) {
+
+    Item item = payRequest.getItems().get(0);
+
     Map<String, String> metadata = payRequest.getMetadata();
-    Preconditions.checkArgument(metadata.get("device_id") != null, "The device_id metadata field must be provided");
-    Preconditions.checkArgument(metadata.get("ip") != null, "The ip metadata field must be provided");
-    Preconditions.checkArgument(metadata.get("lapsed_time") != null, "The lapsed_time must be provided");
+
+    if (metadata.get("device_id") == null) {
+      throw new SupercashInvalidValueException("The key/value device_id field must be provifed in the metadata");
+    }
+
+    if (metadata.get("ip") == null) {
+      throw new SupercashInvalidValueException("The key/value ip field must be provifed in the metadata");
+    }
+
+    String fieldName;
+
+    fieldName = "Sale ID";
+    String fieldValue = metadata.get("sale_id");
+    if (fieldValue != null) {
+      IsNumber.stringIsLongWithException(fieldValue, fieldName);
+    }
+
+    fieldName = "CPF or CNPJ";
+    IsNumber.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+
+    fieldName = "CEP";
+    IsNumber.stringIsLongWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+
+    fieldName = "Card Number";
+    IsNumber.stringIsLongWithException(payRequest.getCardNumber(), fieldName);
+
+    fieldName = "Card CVV";
+    IsNumber.stringIsLongWithException(payRequest.getCardCvv(), fieldName);
+
+    fieldName = "Card Expiration Date";
+    IsNumber.stringIsLongWithException(payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
@@ -64,8 +99,8 @@ public class PagarmePaymentProcessorService {
     Integer total = payRequest.getAmount();
 
     /* Calculate our client amount to receive, based on percentage negociated. */
-    Double ourClientAmount = total * (parkingPlusProperties.getClientPercentage().doubleValue() / 100);
-    ourClient.setAmount(ourClientAmount.intValue());
+    double ourClientAmount = total * parkingPlusProperties.getClientPercentage() / 100;
+    ourClient.setAmount(Double.valueOf(ourClientAmount).intValue());
 
     /*
      * Calculate our amount to receive, based on percentage negociated and on the additional service fee.
@@ -74,19 +109,17 @@ public class PagarmePaymentProcessorService {
 //    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
 //    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
 //    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
-    us.setAmount(total - ourClientAmount.intValue() + parkingPlusProperties.getOurFee());
+    us.setAmount(total - ourClient.getAmount() + parkingPlusProperties.getOurFee());
 
     splitRules.add(ourClient);
     splitRules.add(us);
 
-    Item item = payRequest.getItems().get(0);
     item.setQuantity(1);
     item.setTangible(false);
     item.setTitle(parkingPlusProperties.getTicketItemTitle());
-    item.setUnitPrice(payRequest.getAmount());
 
     Item tsItem = new Item();
-    tsItem.setId("TS-1");
+    tsItem.setId("1");
     tsItem.setQuantity(1);
     tsItem.setTangible(false);
     tsItem.setTitle(parkingPlusProperties.getServiceFeeItemTitle());
@@ -96,11 +129,29 @@ public class PagarmePaymentProcessorService {
     payRequest.setAmount(payRequest.getAmount() + parkingPlusProperties.getOurFee());
     payRequest.setSplitRules(splitRules);
     payRequest.addMetadata("ticket_number", item.getId());
+    payRequest.addMetadata("service_free", tsItem.getUnitPrice().toString());
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
     payRequest.setCapture(true);
     payRequest.setAsync(false);
 
-    return pagarmeClientService.requestPayment(payRequest);
+    TransactionResponseSummary transactionResponse = null;
+    try {
+      transactionResponse = pagarmeClientService.requestPayment(payRequest);
+    } catch (FeignException.BadRequest badRequestException) {
+      SupercashTransactionStatusNotExpectedException exception = JsonUtil.toObject(badRequestException.responseBody(),
+              SupercashTransactionStatusNotExpectedException.class);
+      LOG.error(exception.getMessage());
+      throw exception;
+    }
+
+    if (transactionResponse.getStatus() == Transaction.Status.PAID) {
+      return paymentAuthService.authorizePayment(userId, payRequest, transactionResponse);
+    } else {
+      ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
+              "Transaction status is " + transactionResponse.getStatus());
+      LOG.error(exception.getMessage());
+      throw exception;
+    }
   }
 
 }

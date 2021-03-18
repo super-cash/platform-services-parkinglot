@@ -1,0 +1,11 @@
+# 029466843584 (paid), 030255713239 (paid), 030255745055, 030255720142,
+# ?saleId=15
+GET http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/030255745055
+Accept: application/json
+X-Supercash-Uid: marcello-123
+X-Supercash-Tid: new-transaction20303040
+Content-Type: application/json
+Accept-Encoding: application/json
+
+###
+

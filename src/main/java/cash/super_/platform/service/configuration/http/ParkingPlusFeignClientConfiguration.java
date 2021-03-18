@@ -1,5 +1,6 @@
 package cash.super_.platform.service.configuration.http;
 
+import cash.super_.platform.error.supercash.SupercashErrorDecoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ public class ParkingPlusFeignClientConfiguration {
     ApiClient client = new ApiClient();
     // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
     client.getFeignBuilder().logLevel(properties.getClientLogLevel());
+    client.getFeignBuilder().errorDecoder(new SupercashErrorDecoder());
     client.setBasePath(properties.getHost());
 
     // ADd the tracing client to call other microservices
