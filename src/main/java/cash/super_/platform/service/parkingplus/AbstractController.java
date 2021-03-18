@@ -50,9 +50,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
-  @Autowired
-  private ParkingPlusTicketStatusProxyService statusService;
-
   /**
    * @return The default headers for all Controller Calls
    */
@@ -163,49 +160,9 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param userId
    */
   protected void isRequestValid(String headerUserId, String userId) {
-    Preconditions.checkArgument(headerUserId.equals(userId),
-            "Supercash Error: UserID must be provided in both header and path");
-  }
-
-  protected void isTicketAndAmountValid(String userId, String ticketId, String ticketNumber, int amount) {
-
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(userId), "userId must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(ticketNumber), "Ticket ID must be provided");
-    Preconditions.checkArgument(ticketId.equals(ticketNumber),
-            "The ticket number in the items[0].id must be equals to the URL 'numeroTicket' parameter");
-
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
-            Optional.of(Long.valueOf(properties.getSaleId().longValue())));
-    RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
-
-    LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
-
-    // TODO: validate the amount based on the saleId (if defined)
-    Long saleIdObj = ticketStatus.getIdPromocao();
-    int ticketFee = ticketStatus.getTarifa().intValue();
-    int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
-    String message = "";
-
-    if (ticketFee == 0) {
-      LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ticketStatus.getDataPermitidaSaida()),
-              TimeZone.getDefault().toZoneId());
-      message = "The ticket fee is 0. You can go out until " +
-              ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-      LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
-    }
-
-    if (amount != ticketFee) {
-      message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-              ticketFee;
-      LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
-    }
-
-    if (ticketFee == ticketFeePaid) {
-      message = "The ticket is already paid.";
-      LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
+    if (!headerUserId.equals(userId)) {
+      throw new SupercashInvalidValueException("Supercash Error: UserID must be provided in both header and path");
     }
   }
+
 }

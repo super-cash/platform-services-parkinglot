@@ -1,10 +1,12 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
 import java.util.Optional;
+
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Preconditions;
 import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
@@ -30,13 +32,21 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
+  @Autowired
+  private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+
   public ParkingTicketStatus getStatus(String userId, String ticketId, Optional<Long> saleId) {
     LOG.debug("Looking for the status of ticket: {}", ticketId);
 
-    RetornoConsulta ticketStatus;
+    if (Strings.isNullOrEmpty(userId)) {
+      throw new SupercashInvalidValueException("User ID must be provided");
+    }
 
-    // Verify the input of addresses
-    Preconditions.checkArgument(ticketId != null, "The ticket must be provided");
+    if (Strings.isNullOrEmpty(ticketId)) {
+      throw new SupercashInvalidValueException("Ticket ID must be provided");
+    }
+
+    RetornoConsulta ticketStatus;
 
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(1L);

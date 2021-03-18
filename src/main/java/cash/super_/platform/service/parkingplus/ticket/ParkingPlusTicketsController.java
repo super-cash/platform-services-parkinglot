@@ -2,15 +2,8 @@ package cash.super_.platform.service.parkingplus.ticket;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
-import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
-import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
-import cash.super_.platform.service.pagarme.transactions.models.Item;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
-import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +42,6 @@ public class ParkingPlusTicketsController extends AbstractController {
 
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
-
-  @Autowired
-  PagarmePaymentProcessorService pagarmePaymentProcessorService;
 
   /**
    * Gets the current list of tickets for a given user
@@ -103,38 +93,7 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
-    // Basic parameters validation
-    Preconditions.checkArgument(paymentRequest != null, "The payment request must be provided");
-
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
-    String ticketNumber = "";
-    if (paymentRequest.getPayTicketRequest() != null) {
-      TransactionRequest request = paymentRequest.getPayTicketRequest();
-      List<Item> items = request.getItems();
-      Preconditions.checkArgument(items != null && items.size() > 0, "At least one item must " +
-              "be provided");
-      Integer amount = items.get(0).getUnitPrice();
-      isTicketAndAmountValid(userId, ticketId, items.get(0).getId(), amount);
-
-      paymentStatus = pagarmePaymentProcessorService.processPayment(userId, paymentRequest.getPayTicketRequest());
-
-    } else if (paymentRequest.getAuthorizedRequest() != null) {
-      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
-      Integer amount = request.getValor();
-      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), amount);
-
-      paymentStatus = paymentAuthService.authorizePayment(userId, paymentRequest.getAuthorizedRequest());
-
-    } else if (paymentRequest.getRequest() != null) {
-      PagamentoRequest request = paymentRequest.getRequest();
-      Integer amount = request.getValor();
-      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), amount);
-
-      paymentStatus = paymentAuthService.authorizePayment(userId, request);
-
-    } else {
-      throw new IllegalArgumentException("You must provide a request, an authorizedRequest or a transactionRequest");
-    }
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketId);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }

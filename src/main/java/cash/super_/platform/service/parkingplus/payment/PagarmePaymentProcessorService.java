@@ -2,6 +2,7 @@ package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
@@ -51,10 +52,14 @@ public class PagarmePaymentProcessorService {
     Item item = payRequest.getItems().get(0);
 
     Map<String, String> metadata = payRequest.getMetadata();
-    Preconditions.checkArgument(metadata.get("device_id") != null,
-            "The key/value device_id field must be provifed in the metadata");
-    Preconditions.checkArgument(metadata.get("ip") != null,
-            "The key/value ip field must be provifed in the metadata");
+
+    if (metadata.get("device_id") == null) {
+      throw new SupercashInvalidValueException("The key/value device_id field must be provifed in the metadata");
+    }
+
+    if (metadata.get("ip") == null) {
+      throw new SupercashInvalidValueException("The key/value ip field must be provifed in the metadata");
+    }
 
     String fieldName;
 
@@ -124,6 +129,7 @@ public class PagarmePaymentProcessorService {
     payRequest.setAmount(payRequest.getAmount() + parkingPlusProperties.getOurFee());
     payRequest.setSplitRules(splitRules);
     payRequest.addMetadata("ticket_number", item.getId());
+    payRequest.addMetadata("service_free", tsItem.getUnitPrice().toString());
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
     payRequest.setCapture(true);
     payRequest.setAsync(false);

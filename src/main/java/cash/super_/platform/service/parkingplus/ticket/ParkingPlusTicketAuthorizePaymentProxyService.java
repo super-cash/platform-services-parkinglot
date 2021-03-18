@@ -1,10 +1,17 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.service.pagarme.transactions.models.Item;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketPayment;
+import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
+import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import com.google.common.base.Strings;
 import brave.Span;
 import brave.Tracer.SpanInScope;
@@ -14,6 +21,13 @@ import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.utils.SecretsUtil;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -27,6 +41,12 @@ import cash.super_.platform.utils.SecretsUtil;
 public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParkingLotProxyService {
 
   private static final String BANDEIRA = "supercash";
+
+  @Autowired
+  PagarmePaymentProcessorService pagarmePaymentProcessorService;
+
+  @Autowired
+  private ParkingPlusTicketStatusProxyService statusService;
 
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, TransactionRequest
           payRequest, TransactionResponseSummary payResponse) {
@@ -87,11 +107,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     return new ParkingTicketAuthorizedPaymentStatus(authorizedPayment);
   }
 
-  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, PagamentoAutorizadoRequest payRequest)
-          throws JsonProcessingException {
+  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, PagamentoAutorizadoRequest payRequest) {
     LOG.debug("Payment auth request: {}", payRequest);
 
-    RetornoPagamento authorizedPayment;
     payRequest.setBandeira(ParkingPlusTicketAuthorizePaymentProxyService.BANDEIRA);
     payRequest.setFaturado(true);
     payRequest.setIdGaragem(properties.getParkingLotId());
@@ -107,18 +125,26 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, PagamentoRequest payRequest) {
     LOG.debug("Payment auth request: {}", payRequest);
 
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getEnderecoIp()),
-        "The client's device ip address must be provided");
+    if (Strings.isNullOrEmpty(payRequest.getEnderecoIp())) {
+      throw new SupercashInvalidValueException("The client's device ip address must be provided");
+    }
 
     // Credit card info
-    Preconditions.checkArgument(payRequest.getCartaoDeCredito() != null && payRequest.getCartaoDeCredito() > 0,
-        "The credit card number must be greater than 0");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getCodigoDeSeguranca()),
-        "The credit card security code must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getValidade()),
-        "The credit card expiration MMYYYY must be provided");
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(payRequest.getPortador()),
-        "The credit card full name must be provided");
+    if (payRequest.getCartaoDeCredito() == null || payRequest.getCartaoDeCredito() <= 0) {
+      throw new SupercashInvalidValueException("The credit card number must be greater than 0");
+    }
+
+    if (Strings.isNullOrEmpty(payRequest.getCodigoDeSeguranca())) {
+      throw new SupercashInvalidValueException("The credit card security code must be provided");
+    }
+
+    if (Strings.isNullOrEmpty(payRequest.getValidade())) {
+      throw new SupercashInvalidValueException("The credit card expiration MMYYYY must be provided");
+    }
+
+    if (Strings.isNullOrEmpty(payRequest.getPortador())) {
+      throw new SupercashInvalidValueException("The credit card full name must be provided");
+    }
 
     RetornoPagamento authorizedPayment;
     payRequest.setBandeira(ParkingPlusTicketAuthorizePaymentProxyService.BANDEIRA);
@@ -159,6 +185,94 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     LOG.debug("Payment made: {}", authorizedPayment);
     return new ParkingTicketAuthorizedPaymentStatus(authorizedPayment);
+  }
+
+  public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String userId,
+                                                      String ticketId) {
+
+    if (paymentRequest == null) {
+      throw new SupercashInvalidValueException("The payment request must be provided");
+    }
+
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
+    String ticketNumber = "";
+    if (paymentRequest.getPayTicketRequest() != null) {
+      TransactionRequest request = paymentRequest.getPayTicketRequest();
+      List<Item> items = request.getItems();
+
+      if (items == null || items.size() == 0) {
+        throw new SupercashInvalidValueException("At least one item must be provided");
+      }
+      isTicketAndAmountValid(userId, ticketId, items.get(0).getId(), items.get(0).getUnitPrice());
+
+      paymentStatus = pagarmePaymentProcessorService.processPayment(userId, paymentRequest.getPayTicketRequest());
+
+    } else if (paymentRequest.getAuthorizedRequest() != null) {
+      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
+      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), request.getValor());
+      paymentStatus = authorizePayment(userId, request);
+
+    } else if (paymentRequest.getRequest() != null) {
+      PagamentoRequest request = paymentRequest.getRequest();
+      isTicketAndAmountValid(userId, ticketId, request.getNumeroTicket(), request.getValor());
+      paymentStatus = authorizePayment(userId, request);
+
+    } else {
+      throw new SupercashInvalidValueException("You must provide a request, an authorizedRequest or a " +
+              "transactionRequest");
+    }
+
+    return paymentStatus;
+  }
+
+  protected void isTicketAndAmountValid(String userId, String ticketId, String ticketNumber, int amount) {
+
+    if (Strings.isNullOrEmpty(userId)) {
+      throw new SupercashInvalidValueException("User ID must be provided");
+    }
+
+    if (Strings.isNullOrEmpty(ticketNumber)) {
+      throw new SupercashInvalidValueException("Ticket ID must be provided");
+    }
+
+    if (!ticketId.equals(ticketNumber)) {
+      throw new SupercashInvalidValueException("The ticket number in the items[0].id must be equals to the URL" +
+              " 'numeroTicket' parameter");
+    }
+
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
+            Optional.of(Long.valueOf(properties.getSaleId().longValue())));
+    RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
+
+    LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
+
+    // TODO: validate the amount based on the saleId (if defined)
+    Long saleIdObj = ticketStatus.getIdPromocao();
+    int ticketFee = ticketStatus.getTarifa().intValue();
+    int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
+    String message = "";
+
+    if (ticketFee == 0) {
+      LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ticketStatus.getDataPermitidaSaida()),
+              TimeZone.getDefault().toZoneId());
+      message = "The ticket fee is 0. You can go out until " +
+              ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
+    }
+
+    if (ticketFee == ticketFeePaid) {
+      message = "The ticket is already paid.";
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
+    }
+
+    if (amount != ticketFee) {
+      message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
+              ticketFee;
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
+    }
   }
 
 }

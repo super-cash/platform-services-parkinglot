@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import cash.super_.platform.error.ParkingPlusInvalidSalesException;
 import cash.super_.platform.error.ParkingPlusSalesNotFoundException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import brave.Span;
 import brave.Tracer;
@@ -143,8 +143,9 @@ public class ParkingPlusParkingSalesCachedProxyService
   public ParkingGarageSales fetchCurrentGarageSales() {
     LOG.debug("Got garage sales list for garage ID={}", this.properties.getParkingLotId());
 
-    // Verify the input of addresses
-    Preconditions.checkArgument(this.properties.getParkingLotId() > 0, "The Parking garage must be a valid number");
+    if (this.properties.getParkingLotId() <= 0) {
+      throw new SupercashInvalidValueException("The Parking garage must be a valid number");
+    }
 
     ParkingGarageSales distanceResult = cache.getUnchecked(this.properties.getParkingLotId());
     return distanceResult;

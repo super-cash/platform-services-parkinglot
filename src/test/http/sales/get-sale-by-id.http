@@ -1,22 +1,3 @@
-# curl --location --request POST 'http://localhost:8080/v1/parking_lots/1/users/thiago-123/tickets/030265292584/pay'
-#--header 'accept: application/json'
-#--header 'X-Supercash-Uid: thiago-123'
-#--header 'X-Supercash-Tid: new-transaction20303040'
-#--header 'Content-Type: application/json'
-#--data-raw '{
-#  "request": {
-#    "numeroTicket": "030265292584",
-#    "enderecoIp": "193.244.21.53",
-#    "cartaoDeCredito": 3344676588761234,
-#    "codigoDeSeguranca": "987",
-#    "validade": "122023",
-#    "portador": "Thiago Bruno Melo de Sales",
-#    "valor": 14200
-#  }
-#}'
-
-# 030255713239, 030255745055, 030255720142,
-
 # You can pass ?validate=false as request parameter to force receiving the sales response without validation
 GET http://localhost:8080/v1/parking_lots/1/users/leandro-123/sales/15
 Accept: application/json
