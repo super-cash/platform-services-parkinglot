@@ -1,3 +1,7 @@
+### 
+### Must run with "DOCKER_BUILDKIT=0 docker-compose build"
+###
+
 version: "3.6"
 
 services:
