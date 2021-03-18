@@ -17,6 +17,9 @@ public class CustomObjectMapper extends ObjectMapper {
         configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
         configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, true);
+        configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, true);
         addMixIn(Exception.class, ExceptionMixIn.class);
         addMixIn(Throwable.class, ThrowableMixIn.class);
         registerModule(new JavaTimeModule());
