@@ -1,5 +1,4 @@
 ### Builder Arguments
-### With basic stuff
 ARG CI_JOB_URL=${CI_JOB_URL:---no-CI_JOB_URL-provided--}
 ARG UNMAZEDBOOT_BUILDER_GIT_SHA=${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
 ARG UNMAZEDBOOT_BUILDER_GIT_BRANCH=${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-master}
@@ -26,7 +25,8 @@ FROM marcellodesales/unmazedboot-builder-gradle:${UNMAZEDBOOT_BUILDER_GRADLE_VER
 # #####################################################################
 # Build stage for making a jlink specific for the app
 # #####################################################################
-FROM intuit/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
+#FROM intuit/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
+FROM marcellodesales/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
 
 # #####################################################################
 # Build stage for running the runtime image (MUST MATCH LINKER TYPE)

@@ -16,7 +16,7 @@ services:
         # https://hub.docker.com/r/intuit/unmazedboot-builder-gradle/tags/
         - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=6.7.1-jdk15-hotspot-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-linker/tags/
-        - UNMAZEDBOOT_LINKER_VERSION=jdk11-alpine-0.5.0
+        - UNMAZEDBOOT_LINKER_VERSION=jdk15-alpine-0.5.0
         # https://hub.docker.com/r/intuit/unmazedboot-runner/tags/
         - UNMAZEDBOOT_RUNNER_VERSION=custom-jdk-alpine3.8-0.5.0
         # Variables from https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
