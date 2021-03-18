@@ -18,7 +18,7 @@ Microservice to calculate distance and time.
 > **ATTENTION**: Make sure to adjust the port number that the host will listen to. Current is `8082` in docker-compose.yaml.
 
 ```console
-$ docker-compose up --build
+$ DOCKER_BUILDKIT=0 docker-compose up --build
 Building distance_matrix_service
 Step 1/15 : ARG UNMAZEDBOOT_BUILDER_GIT_SHA=${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
 Step 2/15 : ARG UNMAZEDBOOT_BUILDER_GIT_BRANCH=${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-master}
