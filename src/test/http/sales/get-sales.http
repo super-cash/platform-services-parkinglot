@@ -17,9 +17,9 @@
 
 # 030255713239, 030255745055, 030255720142,
 
-GET http://localhost:8080/v1/parking_lots/1/users/marcello-123/sales
+GET http://localhost:8080/v1/parking_lots/1/users/leandro-123/sales
 Accept: application/json
-X-Supercash-Uid: marcello-123
+X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040
 Content-Type: application/json
 Accept-Encoding: application/json

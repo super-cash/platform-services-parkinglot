@@ -1,7 +1,6 @@
 package cash.super_.platform.service.parkingplus;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,8 +8,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.error.SupercashException;
-import cash.super_.platform.error.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketStatusProxyService;
@@ -152,7 +151,8 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   }
 
   private ResponseEntity<Object> makeErrorResponse(SupercashException errorCause) {
-    return new ResponseEntity<>(errorCause.getHttpResponse(), errorCause.getAdditionalErrorCodeAsHttpStatus());
+    return new ResponseEntity<>(errorCause,
+            errorCause.SupercashExceptionModel.getAdditionalErrorCodeAsHttpStatus());
   }
 
   /**
@@ -180,7 +180,8 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
 
     LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
 
-    
+    // TODO: validate the amount based on the saleId (if defined)
+    Long saleIdObj = ticketStatus.getIdPromocao();
     int ticketFee = ticketStatus.getTarifa().intValue();
     int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
     String message = "";

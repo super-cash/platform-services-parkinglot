@@ -7,11 +7,9 @@ import java.util.Optional;
 
 import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
-import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.service.pagarme.transactions.models.Item;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
-import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,8 +160,6 @@ public class ParkingPlusTicketsController extends AbstractController {
     isRequestValid(headerUserId, userId);
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
-
-    LOG.debug("Promoção valor desconto: " + parkingTicketStatus.getStatus().getValorDesconto());
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }

@@ -55,11 +55,7 @@ public class ParkingPlusSalesController extends AbstractController {
 
     isRequestValid(headerUserId, userId);
 
-    Promocao sale = parkingSalesService.getSale(saleId);
-
-    if (validate.isEmpty() || validate.get()) {
-      parkingSalesService.isSaleValid(sale, true);
-    }
+    Promocao sale = parkingSalesService.getSale(saleId, true, validate);
 
     return new ResponseEntity<>(sale, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }

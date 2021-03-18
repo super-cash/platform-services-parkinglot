@@ -2,15 +2,14 @@ package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
-import cash.super_.platform.error.SupercashTransactionStatusNotExpectedException;
+import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
-import cash.super_.platform.service.parkingplus.util.IsNumber;
-import cash.super_.platform.service.parkingplus.util.JsonUtil;
+import cash.super_.platform.utils.IsNumber;
+import cash.super_.platform.utils.JsonUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

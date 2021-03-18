@@ -2,7 +2,6 @@ package cash.super_.platform.service.parkingplus.ticket;
 
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
-import cash.super_.platform.service.parkingplus.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
@@ -14,7 +13,7 @@ import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.

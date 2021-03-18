@@ -1,5 +1,7 @@
 package cash.super_.platform.error;
 
+import cash.super_.platform.error.supercash.SupercashErrorCode;
+import cash.super_.platform.error.supercash.SupercashException;
 import org.springframework.http.HttpStatus;
 
 public class ParkingPlusPaymentNotApprovedException extends SupercashException {

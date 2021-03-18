@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.

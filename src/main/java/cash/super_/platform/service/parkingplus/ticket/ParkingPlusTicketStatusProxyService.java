@@ -12,8 +12,8 @@ import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.service.parkingplus.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
-import cash.super_.platform.service.parkingplus.util.JsonUtil;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.JsonUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -34,39 +34,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     LOG.debug("Looking for the status of ticket: {}", ticketId);
 
     RetornoConsulta ticketStatus;
-
-    // TODO: This is to keep testing while the server is down
-    if (userId.contains("x-testing-x")) {
-      ticketStatus = new RetornoConsulta();
-      ticketStatus.setCnpjGaragem("14.207.662/0001-41");
-      ticketStatus.setDataDeEntrada(1604080498000L);
-      ticketStatus.setDataPermitidaSaida(1606964040000L);
-      ticketStatus.setGaragem("GARAGEM A");
-      ticketStatus.setIdGaragem(1L);
-      ticketStatus.setMensagem("Saldo atual is under testing...");
-      if (saleId.isPresent()) {
-        ticketStatus.setIdPromocao(saleId.get());
-      }
-      ticketStatus.setNumeroTicket(ticketId);
-      ticketStatus.setPromocaoAtingida(false);
-      ticketStatus.setPromocoesDisponiveis(true);
-      ticketStatus.setSetor("ESTACIONAMENTO");
-      ticketStatus.setTicketValido(true);
-
-      int total = 52500;
-      int discount = 0;
-      if (saleId.isPresent()) {
-        discount = parkingSalesService.getSale(saleId.get()).getValorDesconto();
-      }
-
-      ticketStatus.setTarifa(total - discount);
-      ticketStatus.setTarifaPaga(0);
-      ticketStatus.setTarifaSemDesconto(total);
-      ticketStatus.setValorDesconto(discount);
-
-      // return the testing service
-      return new ParkingTicketStatus(ticketStatus);
-    }
 
     // Verify the input of addresses
     Preconditions.checkArgument(ticketId != null, "The ticket must be provided");

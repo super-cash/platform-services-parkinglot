@@ -1,14 +1,15 @@
 # metadata.sale_id is optional.
+# 030255720142, 029466843584,
 
-POST http://localhost:8080/v1/parking_lots/1/users/marcello-123/tickets/030835712084/pay
+POST http://localhost:8080/v1/parking_lots/1/users/leandro-123/tickets/030255720142/pay
 accept: application/json
-X-Supercash-Uid: marcello-123
+X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040
 Content-Type: application/json
 
 {
   "payTicketRequest": {
-    "amount": 612000,
+    "amount": 629400,
     "card_number": "4111111111111111",
     "card_cvv": "111",
     "card_expiration_date": "1221",
@@ -40,8 +41,8 @@ Content-Type: application/json
     },
     "items": [
       {
-        "id": "030835712084",
-        "unit_price": 612000
+        "id": "030255720142",
+        "unit_price": 629400
       }
     ],
     "metadata": {

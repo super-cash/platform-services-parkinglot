@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus.util;
+package cash.super_.platform.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import cash.super_.platform.service.configuration.json.CustomObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -27,7 +28,7 @@ public enum JsonUtil {
   /**
    * For JSON parsing
    */
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final ObjectMapper MAPPER = new CustomObjectMapper();
 
   /**
    * @param o An object instance from a POJO implementation.
@@ -68,11 +69,14 @@ public enum JsonUtil {
    */
   public static <T> T toObject(Optional<ByteBuffer> buffer, Class<T> clazz) {
     try {
-      String jsonObject = StandardCharsets.UTF_8.decode(buffer.get()).toString();
-      return MAPPER.readValue(jsonObject, clazz);
+      if (buffer.isPresent()) {
+        String jsonObject = StandardCharsets.UTF_8.decode(buffer.get()).toString();
+        return MAPPER.readValue(jsonObject, clazz);
+      }
+      return null;
 
     } catch (IOException errorDeserializing) {
-      LOG.error("While deserializing json String {}", errorDeserializing);
+      LOG.error("Error while deserializing json String {}", errorDeserializing);
       return null;
     }
   }

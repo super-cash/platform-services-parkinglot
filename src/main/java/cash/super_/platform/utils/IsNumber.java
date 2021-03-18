@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkingplus.util;
+package cash.super_.platform.utils;
 
 public class IsNumber {
 

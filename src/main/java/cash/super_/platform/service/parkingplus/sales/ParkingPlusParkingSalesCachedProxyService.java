@@ -3,6 +3,7 @@ package cash.super_.platform.service.parkingplus.sales;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
@@ -13,7 +14,6 @@ import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
@@ -24,8 +24,8 @@ import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.Promocao;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.model.ParkingGarageSales;
-import cash.super_.platform.service.parkingplus.util.JsonUtil;
-import cash.super_.platform.service.parkingplus.util.SecretsUtil;
+import cash.super_.platform.utils.JsonUtil;
+import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * The Service is also a cache loader, as a separate class would not be different. Too little to be
@@ -70,11 +70,6 @@ public class ParkingPlusParkingSalesCachedProxyService
     LOG.info("Initialized the Results Cache");
   }
 
-  public boolean isSaleValid(Long idPromocao) {
-    Promocao sale = this.getSale(idPromocao);
-    return isSaleValid(sale, false);
-  }
-
   public boolean isSaleValid(Promocao sale, boolean throwException) {
     String message = "";
     if (sale == null) {
@@ -86,13 +81,13 @@ public class ParkingPlusParkingSalesCachedProxyService
 
     String[] weekDayNames = new String[] {
             "",
-            "DOMINGO",
             "SEGUNDA",
             "TERCA",
             "QUARTA",
             "QUINTA",
             "SEXTA",
-            "SABADO"
+            "SABADO",
+            "DOMINGO"
     };
 
     int weekDayIndex = LocalDateTime.now().getDayOfWeek().getValue();
@@ -104,20 +99,13 @@ public class ParkingPlusParkingSalesCachedProxyService
 
     DateTime todayDate = DateTime.now();
     LocalTime todayTime = LocalTime.now();
+    LocalTime saleStartTime = sale.getHorarioInicio().toLocalTime();
+    LocalTime saleEndTime = sale.getHorarioFim().toLocalTime();
 
-    LOG.debug("TODAY DATE: {}\n" +
-              "TODAY TIME: {}\n" +
-              "VALI PROMO: {}\n" +
-              "START PROM: {}\n" +
-              "END PROMOC: {}\n", todayDate, todayTime, sale.getValidade(), sale.getHorarioInicio().toLocalTime(),
-            sale.getHorarioFim().toLocalTime());
-
-    if (i == saleDaysSize
-//            todayDate.isAfter(sale.getValidade()) ||
-//            todayTime.isBefore(sale.getHorarioInicio().toLocalTime()) ||
-//            todayTime.isAfter(sale.getHorarioFim().toLocalTime())
-            ) {
-      message = "Sale with ID " + sale.getSystemId() + " is not available for today and/or at this time or has expired";
+    if (i == saleDaysSize || todayDate.isAfter(sale.getValidade()) || (saleStartTime.isBefore(saleEndTime) &&
+            (todayTime.isBefore(saleStartTime) || todayTime.isAfter(saleEndTime)))) {
+      message = "Sale with ID " + sale.getSystemId() + " is not available for today and/or at this time, or even it " +
+              "has expired";
       LOG.error(message);
       if (throwException) {
         throw new ParkingPlusInvalidSalesException(message);
@@ -130,12 +118,24 @@ public class ParkingPlusParkingSalesCachedProxyService
   /**
    * @return A sale of a given id.
    */
-  public Promocao getSale(Long saleId) {
+  public Promocao getSale(Long saleId, boolean throwException, Optional<Boolean> validate) {
     if (saleId == null) return null;
-    for (Promocao sale : cache.getUnchecked(properties.getParkingLotId()).getCurrent()) {
+
+    Promocao sale = null;
+    boolean found = false;
+    for (Promocao _sale : cache.getUnchecked(properties.getParkingLotId()).getCurrent()) {
       if (sale.getSystemId() == saleId) {
-        return sale;
+        sale = _sale;
+        found = true;
+        break;
       }
+    }
+
+    if (found) {
+      if (validate.isEmpty() || validate.get()) {
+        isSaleValid(sale, throwException);
+      }
+      return sale;
     }
     return null;
   }
@@ -160,8 +160,6 @@ public class ParkingPlusParkingSalesCachedProxyService
     // The calculation from Google
     List<Promocao> supercashParkingSales = new ArrayList<>();
 
-    // Trace the google geo API Call
-    // https://www.baeldung.com/spring-cloud-sleuth-single-application
     Span newSpan = tracer.nextSpan().name("REST https://parkingplus.com.br/2/promocoes").start();
     try (SpanInScope ws = tracer.withSpanInScope(newSpan.start())) {
 
@@ -188,14 +186,14 @@ public class ParkingPlusParkingSalesCachedProxyService
         }
 
       } catch (Exception e) {
-        LOG.error("Couldn't fetch supercash sales. Contact the WSP Representatives!");
+        LOG.error("Couldn't fetch supercash sales. Please, contact the WSP Representatives!");
       }
 
-
-      if (supercashParkingSales.size() == 0) {
-        LOG.error("Couldn't fetch the supercash sales. Contact the WSP Representative about it!");
-        throw new IllegalStateException("Can't get the Supercash Sales for the Parking Garage!");
-      }
+//      if (supercashParkingSales.size() == 0) {
+//        String message = "Can't fetch the supercash sales. Please, contact the WSP Representative!";
+//        LOG.error(message);
+//        throw new IllegalStateException(message);
+//      }
 
       // Just the names of the promos for tracing
       String salesNames = supercashParkingSales.stream()

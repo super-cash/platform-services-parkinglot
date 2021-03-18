@@ -44,6 +44,7 @@ feign:
   client:
     config:
       default:
+        errorDecoder: cash.super_.platform.error.supercash.SupercashErrorDecoder
         loggerLevel: FULL
 
 # here we say that we want to enable accesslog
