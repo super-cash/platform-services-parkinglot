@@ -1,5 +1,5 @@
 # https://docs.gitlab.com/ee/ci/yaml/includes.html#single-string-or-array-of-multiple-values
-# Reusing the pipeline
+# Reusing the pipeline for testing
 
 include:
   remote: 'https://gitlab.com/marcellodesales/dockerized-cicd-pipeline/raw/develop/.gitlab-cicd-dockerized-pipeline.yaml'
