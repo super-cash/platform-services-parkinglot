@@ -124,7 +124,7 @@ public class ParkingPlusParkingSalesCachedProxyService
     Promocao sale = null;
     boolean found = false;
     for (Promocao _sale : cache.getUnchecked(properties.getParkingLotId()).getCurrent()) {
-      if (sale.getSystemId() == saleId) {
+      if (_sale.getSystemId() == saleId) {
         sale = _sale;
         found = true;
         break;
