@@ -25,7 +25,6 @@ FROM marcellodesales/unmazedboot-builder-gradle:${UNMAZEDBOOT_BUILDER_GRADLE_VER
 # #####################################################################
 # Build stage for making a jlink specific for the app
 # #####################################################################
-#FROM intuit/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
 FROM marcellodesales/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
 
 # #####################################################################
