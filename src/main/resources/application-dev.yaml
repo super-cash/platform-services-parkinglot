@@ -1,0 +1,6 @@
+cash:
+  super:
+    platform:
+      service:
+        pagarme:
+          url: http://pagarme-service:8120/v1
