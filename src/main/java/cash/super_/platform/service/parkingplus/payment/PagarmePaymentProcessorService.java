@@ -54,11 +54,15 @@ public class PagarmePaymentProcessorService {
     Map<String, String> metadata = payRequest.getMetadata();
 
     if (metadata.get("device_id") == null) {
-      throw new SupercashInvalidValueException("The key/value device_id field must be provifed in the metadata");
+      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata");
     }
 
-    if (metadata.get("ip") == null) {
-      throw new SupercashInvalidValueException("The key/value ip field must be provifed in the metadata");
+    if (metadata.get("public_ip") == null) {
+      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata");
+    }
+
+    if (metadata.get("private_ip") == null) {
+      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata");
     }
 
     String fieldName;
