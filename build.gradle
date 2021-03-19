@@ -52,7 +52,7 @@ java {
 
 
 group = "cash.super_.platform.service"
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0-RELEASE'
 
 bootJar {
     archiveBaseName = rootProject.name
