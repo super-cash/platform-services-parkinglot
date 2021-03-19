@@ -49,7 +49,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     RetornoConsulta ticketStatus;
 
     TicketRequest request = new TicketRequest();
-    request.setIdGaragem(1L);
+    request.setIdGaragem(properties.getParkingLotId());
     request.setNumeroTicket(ticketId);
     request.setUdid(userId);
 
@@ -69,8 +69,17 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
       LOG.info("Requesting parking plus ticket status: {}", ticketId);
+      try {
+        LOG.debug("Request is: {}", JsonUtil.toJson(request));
+      } catch (JsonProcessingException jsonProcessingException) {
+        jsonProcessingException.printStackTrace();
+      }
 
       String apiKey = SecretsUtil.makeApiKey(userId, properties.getUserKey());
+
+      LOG.debug("Request User ApiKey is: {}", properties.getUserKey());
+      LOG.debug("Request ApiKey is: {}", apiKey);
+
       ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId());
 
       // For the tracer
