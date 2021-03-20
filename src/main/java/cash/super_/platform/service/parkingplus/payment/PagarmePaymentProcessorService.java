@@ -67,11 +67,15 @@ public class PagarmePaymentProcessorService {
 
     String fieldName;
 
-    fieldName = "Sale ID";
-    String fieldValue = metadata.get("sale_id");
-    if (fieldValue != null) {
-      IsNumber.stringIsLongWithException(fieldValue, fieldName);
-    }
+// This logic is great, but is could be allow a client to set another sale_id
+//    fieldName = "Sale ID";
+//    String fieldValue = metadata.get("sale_id");
+//    if (fieldValue != null) {
+//      IsNumber.stringIsLongWithException(fieldValue, fieldName);
+//    } else {
+//      payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
+//    }
+    payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
 
     fieldName = "CPF or CNPJ";
     IsNumber.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);

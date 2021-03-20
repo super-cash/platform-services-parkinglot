@@ -43,5 +43,4 @@ public class ParkingPlusPaymentController extends AbstractController {
     return new ResponseEntity<>(pppsf,
             makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
-
 }

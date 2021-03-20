@@ -53,14 +53,18 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     request.setNumeroTicket(ticketId);
     request.setUdid(userId);
 
-    if (saleId.isPresent()) {
-      Long sid = saleId.get();
-      if (sid < 0) {
-        saleId = Optional.of(Long.valueOf(properties.getSaleId().longValue()));
-      }
-      // Paid tickets will resolve an an error
-      request.setIdPromocao(saleId.get());
-    }
+// This logic is great, but is could be allow a client to set another sale_id
+//    if (saleId.isPresent()) {
+//      Long sid = saleId.get();
+//      if (sid < 0) {
+//        saleId = Optional.of(Long.valueOf(properties.getSaleId().longValue()));
+//      }
+//      // Paid tickets will resolve an an error
+//      request.setIdPromocao(saleId.get());
+//    } else {
+//      request.setIdPromocao(Long.valueOf(properties.getSaleId().longValue()));
+//    }
+    request.setIdPromocao(properties.getSaleId());
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application

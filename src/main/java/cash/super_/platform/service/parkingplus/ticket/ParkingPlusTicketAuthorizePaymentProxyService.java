@@ -55,10 +55,11 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
 
-    String saleIdStr = payResponse.getMetadata().get("sale_id");
-    if (saleIdStr != null) {
-      wpsAuthorizedPaymentRequest.setIdPromocao(Long.parseLong(saleIdStr));
-    }
+//    String saleIdStr = payResponse.getMetadata().get("sale_id");
+//    if (saleIdStr != null) {
+//      wpsAuthorizedPaymentRequest.setIdPromocao(Long.parseLong(saleIdStr));
+//    }
+    wpsAuthorizedPaymentRequest.setIdPromocao(properties.getSaleId());
 
     wpsAuthorizedPaymentRequest.setBandeira(ParkingPlusTicketAuthorizePaymentProxyService.BANDEIRA);
     wpsAuthorizedPaymentRequest.setNumeroTicket(payRequest.getItems().get(0).getId());
@@ -219,7 +220,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     } else {
       throw new SupercashInvalidValueException("You must provide a request, an authorizedRequest or a " +
-              "transactionRequest");
+              "payTicketRequest");
     }
 
     return paymentStatus;
@@ -246,8 +247,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
 
-    // TODO: validate the amount based on the saleId (if defined)
-    Long saleIdObj = ticketStatus.getIdPromocao();
     int ticketFee = ticketStatus.getTarifa().intValue();
     int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
     String message = "";
@@ -259,20 +258,20 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
               ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
       LOG.debug(message);
       throw new SupercashInvalidValueException(message);
-    }
 
-    if (ticketFee == ticketFeePaid) {
-      message = "The ticket is already paid.";
-      LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
-    }
+    } else {
+      if (ticketFee == ticketFeePaid) {
+        message = "The ticket is already paid.";
+        LOG.debug(message);
+        throw new SupercashInvalidValueException(message);
+      }
 
-    if (amount != ticketFee) {
-      message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-              ticketFee;
-      LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
+      if (amount != (ticketFee - ticketFeePaid)) {
+        message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
+                ticketFee;
+        LOG.debug(message);
+        throw new SupercashInvalidValueException(message);
+      }
     }
   }
-
 }
