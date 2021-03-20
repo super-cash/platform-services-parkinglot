@@ -14,15 +14,19 @@ public class SupercashTransactionStatusNotExpectedException extends SupercashExc
     }
 
     public SupercashTransactionStatusNotExpectedException(Transaction.Status expectedStatus,
-                                                          Transaction.Status foundStatus) {
+                                                          Transaction.Status returnedStatus) {
         super(SupercashErrorCode.STATUS_NOT_EXPECTED, HttpStatus.BAD_REQUEST,
-                String.format(MESSAGE_FORMAT, expectedStatus, foundStatus));
+                String.format(MESSAGE_FORMAT, expectedStatus, returnedStatus));
+        super.SupercashExceptionModel.addField("expected_status", expectedStatus);
+        super.SupercashExceptionModel.addField("returned_status", returnedStatus);
     }
 
     public SupercashTransactionStatusNotExpectedException(Transaction.Status expectedStatus,
-                                                          Transaction.Status foundStatus,
+                                                          Transaction.Status returnedStatus,
                                                           HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.STATUS_NOT_EXPECTED, additionalErrorCode, String.format(MESSAGE_FORMAT,
-                expectedStatus, foundStatus));
+                expectedStatus, returnedStatus));
+        super.SupercashExceptionModel.addField("expected_status", expectedStatus);
+        super.SupercashExceptionModel.addField("returned_status", returnedStatus);
     }
 }

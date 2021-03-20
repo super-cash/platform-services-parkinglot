@@ -61,6 +61,11 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   @NotNull
   private Integer ourFee;
 
+  private String saleNameStartWith = "SUPERCASH";
+
+  @NotNull
+  private long gracePeriod;
+
   public String getUserKey() {
     return userKey;
   }
@@ -177,6 +182,22 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.ourFee = ourFee;
   }
 
+  public String getSaleNameStartWith() {
+    return saleNameStartWith;
+  }
+
+  public void setSaleNameStartWith(String saleNameStartWith) {
+    this.saleNameStartWith = saleNameStartWith;
+  }
+
+  public long getGracePeriod() {
+    return gracePeriod;
+  }
+
+  public void setGracePeriod(long gracePeriod) {
+    this.gracePeriod = gracePeriod;
+  }
+
   @Override
   public String toString() {
     return "ParkingPlusProperties{" +
@@ -193,6 +214,8 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
             ", clientPercentage=" + clientPercentage +
             ", ourPercentage=" + ourPercentage +
             ", ourFee=" + ourFee +
+            ", saleNameStartWith=" + saleNameStartWith +
+            ", gracePeriod=" + gracePeriod +
             '}';
   }
 }

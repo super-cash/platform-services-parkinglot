@@ -120,6 +120,8 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
 
+    LOG.debug("Data permitida saida ultimo pag {}", parkingTicketStatus.getStatus().getDataPermitidaSaidaUltimoPagamento());
+
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 }

@@ -181,7 +181,7 @@ public class ParkingPlusParkingSalesCachedProxyService
             guidGaragem, tiposPromocao, numeroTicket, token)) {
 
           // Just add the ones for Supercash
-          if (sale.getNome().startsWith("SUPERCASH")) {
+          if (sale.getNome().startsWith(properties.getSaleNameStartWith())) {
             supercashParkingSales.add(sale);
           }
         }

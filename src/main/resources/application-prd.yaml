@@ -17,8 +17,11 @@ cash:
           ourFee: 80
           clientPercentage: 95
           ourPercentage: 5
+          saleId: -1
           clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
           ourRecipientId: re_cklqszzdc03ra0p9tf9vgkcgl
           apiKeyId: 1
           parkingLotId: 1
           userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
+          saleNameStartWith: SUPERCASH
+          gracePeriod: 1200

@@ -121,7 +121,7 @@ cash:
           salesCacheTimeUnit: DAYS
 
           # Sale ID to apply. Please, use 0 in casa of no sale have to be applied.
-          saleId: 0
+          saleId: -1
 
           # The ticket title of the item in the transaction
           ticketItemTitle: "Estacionamento Maceió Shopping"
@@ -143,6 +143,12 @@ cash:
 
           # Our additional service fee (in Real cents)
           ourFee: 80
+
+          # The string used to filter the sales when load it from WPS
+          saleNameStartWith: SUPERCASH
+
+          # Time, in seconds, the user can go out without paying the ticket
+          gracePeriod: 1200
 
           # kubernetes readiness probe, reusing the cache and updating it
           # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example

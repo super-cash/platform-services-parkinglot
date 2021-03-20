@@ -1,5 +1,17 @@
 # 029466843584 (paid), 030255713239 (paid), 030255745055, 030255720142,
-GET {{host}}:{{port}}/v1/parking_lots/1/users/marcello-123/tickets/030835710600
+# Produção em 20/03/2021 (gratuitos):
+#   272469547724
+#   272469545440
+#   299313087695
+#   272469549608
+#   326156621678
+#   326156623452
+#   326156625936
+#   299313086008
+#   326156626823
+#   299313084224
+#
+GET {{host}}:{{port}}/v1/parking_lots/1/users/marcello-123/tickets/272469545440
 Accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040

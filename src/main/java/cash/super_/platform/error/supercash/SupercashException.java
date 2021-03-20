@@ -46,6 +46,11 @@ public class SupercashException extends RuntimeException {
         SupercashExceptionModel.setAdditionalDescription(additionalDescription);
     }
 
+    public SupercashException addField(String key, Object value) {
+        this.SupercashExceptionModel.addField(key, value);
+        return this;
+    }
+
     @Override
     public String toString() {
         return "SupercashException{" +

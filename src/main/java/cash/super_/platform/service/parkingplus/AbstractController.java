@@ -161,7 +161,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   protected void isRequestValid(String headerUserId, String userId) {
     if (!headerUserId.equals(userId)) {
-      throw new SupercashInvalidValueException("Supercash Error: UserID must be provided in both header and path");
+      throw new SupercashInvalidValueException("UserID must be provided in both header and path.");
     }
   }
 

@@ -1,15 +1,15 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.error.supercash.SupercashAmountIsZeroException;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashTransactionAlreadyPaidException;
 import cash.super_.platform.service.pagarme.transactions.models.Item;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketPayment;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkingplus.payment.PagarmePaymentProcessorService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.common.base.Strings;
@@ -59,7 +59,10 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 //    if (saleIdStr != null) {
 //      wpsAuthorizedPaymentRequest.setIdPromocao(Long.parseLong(saleIdStr));
 //    }
-    wpsAuthorizedPaymentRequest.setIdPromocao(properties.getSaleId());
+    long saleIdProperty = properties.getSaleId();
+    if (saleIdProperty >= 0) {
+      wpsAuthorizedPaymentRequest.setIdPromocao(saleIdProperty);
+    }
 
     wpsAuthorizedPaymentRequest.setBandeira(ParkingPlusTicketAuthorizePaymentProxyService.BANDEIRA);
     wpsAuthorizedPaymentRequest.setNumeroTicket(payRequest.getItems().get(0).getId());
@@ -252,18 +255,31 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     String message = "";
 
     if (ticketFee == 0) {
-      LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(ticketStatus.getDataPermitidaSaida()),
-              TimeZone.getDefault().toZoneId());
-      message = "The ticket fee is 0. You can go out until " +
-              ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+      long entryDate = ticketStatus.getDataDeEntrada();
+      Long exitAllowedDate = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
+      if (exitAllowedDate == null) {
+        exitAllowedDate = ticketStatus.getDataPermitidaSaida();
+      }
+      if (exitAllowedDate.longValue() - entryDate < 0) {
+        message += "Today is free.";
+      } else {
+        if (org.joda.time.Instant.now().getMillis() - entryDate <= properties.getGracePeriod()*1000) {
+          LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(exitAllowedDate.longValue()),
+                  TimeZone.getDefault().toZoneId());
+          message += "You can go out until " + ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        }
+      }
       LOG.debug(message);
-      throw new SupercashInvalidValueException(message);
+      SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
+      exception.addField("entry_date", entryDate);
+      exception.addField("exit_allowed_date", exitAllowedDate);
+      throw exception;
 
     } else {
       if (ticketFee == ticketFeePaid) {
         message = "The ticket is already paid.";
         LOG.debug(message);
-        throw new SupercashInvalidValueException(message);
+        throw new SupercashTransactionAlreadyPaidException(message);
       }
 
       if (amount != (ticketFee - ticketFeePaid)) {

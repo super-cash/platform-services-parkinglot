@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum SupercashErrorCode {
     NO_ERROR(0, "Success"),
-    STATUS_NOT_EXPECTED(1001, "Transaction status not expected"),
-    SALE_NOT_FOUND(2001, "Sale not found"),
-    INVALID_SALE(2002, "Sale not valid"),
-    PAYMENT_NOT_APPROVED(3001, "Payment not approved"),
-    GENERAL_ERROR(9001, "General error"),
-    THIRD_PARTY_EXCEPTION(9998, "Third-party system exception"),
-    INVALID_VALUE(9999, "Invalid value");
+    STATUS_NOT_EXPECTED(1001, "Transaction status not expected."),
+    SALE_NOT_FOUND(2001, "Sale not found."),
+    INVALID_SALE(2002, "Sale not valid."),
+    PAYMENT_NOT_APPROVED(3001, "Payment not approved."),
+    AMOUNT_IS_ZERO(3002, "The ticket fee is 0."),
+    ALREADY_PAID(3003, "This payment is already processed."),
+    GENERAL_ERROR(9001, "General error."),
+    THIRD_PARTY_EXCEPTION(9998, "Third-party system exception."),
+    INVALID_VALUE(9999, "Invalid value.");
 
     private final int value;
 

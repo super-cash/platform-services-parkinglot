@@ -1,5 +1,5 @@
 # 029466843584 (paid), 030255713239 (paid), 030255745055, 030255720142,
-POST {{host}}:{{port}}/v1/parking_lots/1/users/leandro-123/tickets/030835710600/pay
+POST {{host}}:{{port}}/v1/parking_lots/1/users/leandro-123/tickets/272469547724/pay
 accept: application/json
 X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040
@@ -39,7 +39,7 @@ Content-Type: application/json
     },
     "items": [
       {
-        "id": "030835710600",
+        "id": "272469547724",
         "unit_price": 36000
       }
     ],

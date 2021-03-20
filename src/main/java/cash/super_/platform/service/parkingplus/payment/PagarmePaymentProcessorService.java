@@ -75,7 +75,10 @@ public class PagarmePaymentProcessorService {
 //    } else {
 //      payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
 //    }
-    payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
+    long saleIdProperty = parkingPlusProperties.getSaleId();
+    if (saleIdProperty >= 0) {
+      payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
+    }
 
     fieldName = "CPF or CNPJ";
     IsNumber.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);

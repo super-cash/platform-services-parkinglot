@@ -64,7 +64,10 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 //    } else {
 //      request.setIdPromocao(Long.valueOf(properties.getSaleId().longValue()));
 //    }
-    request.setIdPromocao(properties.getSaleId());
+    long saleIdProperty = properties.getSaleId();
+    if (saleIdProperty >= 0) {
+      request.setIdPromocao(saleIdProperty);
+    }
 
     // Trace the google geo API Call
     // https://www.baeldung.com/spring-cloud-sleuth-single-application

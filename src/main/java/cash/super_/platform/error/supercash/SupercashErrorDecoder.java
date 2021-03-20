@@ -20,6 +20,12 @@ public class SupercashErrorDecoder implements ErrorDecoder {
 
   @Override
   public Exception decode(String methodKey, Response response) {
+
+    switch(response.status()) {
+      case 502:
+
+    }
+
     Reader reader = null;
     Body body = response.body();
     if (body != null) {
@@ -52,10 +58,6 @@ public class SupercashErrorDecoder implements ErrorDecoder {
       SupercashException supercashException = new SupercashException();
       supercashException.SupercashExceptionModel = supercashExceptionModel;
       return supercashException;
-      // An alternative is to swith the response.status()
-      // switch(response.status()) {
-      //   case 300:
-      //      create specific exception
     }
 
     return new Default().decode(methodKey, response);
