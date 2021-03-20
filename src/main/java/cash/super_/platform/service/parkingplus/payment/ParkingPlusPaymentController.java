@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkingplus.payment;
 
 import cash.super_.platform.service.parkingplus.AbstractController;
+import cash.super_.platform.service.parkingplus.model.ParkingPlusPaymentGracePeriod;
 import cash.super_.platform.service.parkingplus.model.ParkingPlusPaymentServiceFee;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -41,6 +42,22 @@ public class ParkingPlusPaymentController extends AbstractController {
     ParkingPlusPaymentServiceFee pppsf = new ParkingPlusPaymentServiceFee(properties.getOurFee());
 
     return new ResponseEntity<>(pppsf,
+            makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "", nickname = PAYMENT_ENDPOINT + "/graceperiod")
+  @RequestMapping(value = PAYMENT_ENDPOINT + "/graceperiod", method = RequestMethod.GET,
+          produces = {"application/json"})
+  public ResponseEntity<ParkingPlusPaymentGracePeriod> getPaymentGracePeriod(
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Uid") String headerUserId,
+          @PathVariable("supercash_uid") String userId) throws IOException, InterruptedException {
+
+    isRequestValid(headerUserId, userId);
+
+    ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(properties.getGracePeriod());
+
+    return new ResponseEntity<>(pppgp,
             makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 }

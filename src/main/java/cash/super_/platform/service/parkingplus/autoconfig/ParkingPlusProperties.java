@@ -64,7 +64,7 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private String saleNameStartWith = "SUPERCASH";
 
   @NotNull
-  private long gracePeriod;
+  private Integer gracePeriod;
 
   public String getUserKey() {
     return userKey;
@@ -190,11 +190,11 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.saleNameStartWith = saleNameStartWith;
   }
 
-  public long getGracePeriod() {
+  public Integer getGracePeriod() {
     return gracePeriod;
   }
 
-  public void setGracePeriod(long gracePeriod) {
+  public void setGracePeriod(Integer gracePeriod) {
     this.gracePeriod = gracePeriod;
   }
 
