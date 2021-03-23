@@ -161,10 +161,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param userId
    */
   protected void isRequestValid(String headerUserId, String userId) {
-
-    // TODO: Only for testing propose... have to be removed.
-    pagarmeClientService.requestTestBadGateway();
-
     if (!headerUserId.equals(userId)) {
       throw new SupercashInvalidValueSimpleException("UserID must be provided in both header and path.");
     }
