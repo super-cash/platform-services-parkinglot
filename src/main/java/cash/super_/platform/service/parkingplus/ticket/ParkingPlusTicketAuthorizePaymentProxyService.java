@@ -1,9 +1,9 @@
 package cash.super_.platform.service.parkingplus.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.error.supercash.SupercashAmountIsZeroException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashTransactionAlreadyPaidException;
+import cash.super_.platform.error.supercash.SupercashAmountIsZeroSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
+import cash.super_.platform.error.supercash.SupercashTransactionAlreadyPaidSimpleException;
 import cash.super_.platform.service.pagarme.transactions.models.Item;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
@@ -130,24 +130,24 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     LOG.debug("Payment auth request: {}", payRequest);
 
     if (Strings.isNullOrEmpty(payRequest.getEnderecoIp())) {
-      throw new SupercashInvalidValueException("The client's device ip address must be provided");
+      throw new SupercashInvalidValueSimpleException("The client's device ip address must be provided");
     }
 
     // Credit card info
     if (payRequest.getCartaoDeCredito() == null || payRequest.getCartaoDeCredito() <= 0) {
-      throw new SupercashInvalidValueException("The credit card number must be greater than 0");
+      throw new SupercashInvalidValueSimpleException("The credit card number must be greater than 0");
     }
 
     if (Strings.isNullOrEmpty(payRequest.getCodigoDeSeguranca())) {
-      throw new SupercashInvalidValueException("The credit card security code must be provided");
+      throw new SupercashInvalidValueSimpleException("The credit card security code must be provided");
     }
 
     if (Strings.isNullOrEmpty(payRequest.getValidade())) {
-      throw new SupercashInvalidValueException("The credit card expiration MMYYYY must be provided");
+      throw new SupercashInvalidValueSimpleException("The credit card expiration MMYYYY must be provided");
     }
 
     if (Strings.isNullOrEmpty(payRequest.getPortador())) {
-      throw new SupercashInvalidValueException("The credit card full name must be provided");
+      throw new SupercashInvalidValueSimpleException("The credit card full name must be provided");
     }
 
     RetornoPagamento authorizedPayment;
@@ -195,7 +195,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
                                                       String ticketId) {
 
     if (paymentRequest == null) {
-      throw new SupercashInvalidValueException("The payment request must be provided");
+      throw new SupercashInvalidValueSimpleException("The payment request must be provided");
     }
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus = null;
@@ -205,7 +205,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       List<Item> items = request.getItems();
 
       if (items == null || items.size() == 0) {
-        throw new SupercashInvalidValueException("At least one item must be provided");
+        throw new SupercashInvalidValueSimpleException("At least one item must be provided");
       }
       isTicketAndAmountValid(userId, ticketId, items.get(0).getId(), items.get(0).getUnitPrice());
 
@@ -222,7 +222,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       paymentStatus = authorizePayment(userId, request);
 
     } else {
-      throw new SupercashInvalidValueException("You must provide a request, an authorizedRequest or a " +
+      throw new SupercashInvalidValueSimpleException("You must provide a request, an authorizedRequest or a " +
               "payTicketRequest");
     }
 
@@ -232,15 +232,15 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   protected void isTicketAndAmountValid(String userId, String ticketId, String ticketNumber, int amount) {
 
     if (Strings.isNullOrEmpty(userId)) {
-      throw new SupercashInvalidValueException("User ID must be provided");
+      throw new SupercashInvalidValueSimpleException("User ID must be provided");
     }
 
     if (Strings.isNullOrEmpty(ticketNumber)) {
-      throw new SupercashInvalidValueException("Ticket ID must be provided");
+      throw new SupercashInvalidValueSimpleException("Ticket ID must be provided");
     }
 
     if (!ticketId.equals(ticketNumber)) {
-      throw new SupercashInvalidValueException("The ticket number in the items[0].id must be equals to the URL" +
+      throw new SupercashInvalidValueSimpleException("The ticket number in the items[0].id must be equals to the URL" +
               " 'numeroTicket' parameter");
     }
 
@@ -270,7 +270,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
         }
       }
       LOG.debug(message);
-      SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
+      SupercashAmountIsZeroSimpleException exception = new SupercashAmountIsZeroSimpleException(message);
       exception.addField("entry_date", entryDate);
       exception.addField("exit_allowed_date", exitAllowedDate);
       throw exception;
@@ -279,14 +279,14 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       if (ticketFee == ticketFeePaid) {
         message = "The ticket is already paid.";
         LOG.debug(message);
-        throw new SupercashTransactionAlreadyPaidException(message);
+        throw new SupercashTransactionAlreadyPaidSimpleException(message);
       }
 
-      if (amount != (ticketFee - ticketFeePaid)) {
+      if (amount != ticketFee) {
         message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
                 ticketFee;
         LOG.debug(message);
-        throw new SupercashInvalidValueException(message);
+        throw new SupercashInvalidValueSimpleException(message);
       }
     }
   }

@@ -1,12 +1,15 @@
 package cash.super_.platform.service.configuration.http;
 
-import cash.super_.platform.error.supercash.SupercashErrorDecoder;
+import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
+import feign.Retryer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.client.parkingplus.invoker.ApiClient;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Bootstraps the feign clients as described in the client documentation. Haven't found any documentation
@@ -29,10 +32,13 @@ public class ParkingPlusFeignClientConfiguration {
   @Bean
   public ServicoPagamentoTicket2Api ticketApi() {
     ApiClient client = new ApiClient();
+    client.setBasePath(properties.getUrl());
     // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
-    client.getFeignBuilder().logLevel(properties.getClientLogLevel());
-    client.getFeignBuilder().errorDecoder(new SupercashErrorDecoder());
-    client.setBasePath(properties.getHost());
+    client.getFeignBuilder()
+            .logLevel(properties.getClientLogLevel())
+            .errorDecoder(new SupercashErrorDecoder(properties.getRetryableDestinationHosts()))
+            .retryer(new Retryer.Default(TimeUnit.SECONDS.toMillis(properties.getRetryInterval()),
+                    TimeUnit.SECONDS.toMillis(properties.getRetryMaxPeriod()), properties.getRetryMaxAttempt()));
 
     // ADd the tracing client to call other microservices
     // https://github.com/yandok/DistributedTracing-Example/blob/master/DistributedTracing-AppB/src/main/java/yan/dok/OpenTracingAppB/GreetingController.java#L27

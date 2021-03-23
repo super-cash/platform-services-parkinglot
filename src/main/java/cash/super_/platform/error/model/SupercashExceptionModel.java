@@ -15,7 +15,7 @@ public class SupercashExceptionModel {
     private SupercashErrorCode errorCode = SupercashErrorCode.NO_ERROR;
 
     @JsonProperty(value = "additional_error_code")
-    private HttpStatus additionalErrorCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    private HttpStatus additionalErrorCode = HttpStatus.OK;
 
     @JsonProperty(value = "additional_description")
     private String additionalDescription = "";
@@ -84,4 +84,13 @@ public class SupercashExceptionModel {
         additionalFields.put(key, value);
     }
 
+    @Override
+    public String toString() {
+        return "SupercashException{" +
+                "errorCode=" + errorCode +
+                ", additionalErrorCode=" + additionalErrorCode +
+                ", additionalDescription='" + additionalDescription + '\'' +
+                ", additionalFields=" + additionalFields +
+                '}';
+    }
 }

@@ -31,10 +31,12 @@ public class AddBuildInfoToAllHttpResponsesFilter implements Filter {
     ParkingPlusProperties parkingPlusProperties;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+            ServletException {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 //        httpServletResponse.setHeader("X-Supercash-Build-Time", buildProperties.getTime().toString().replaceAll("[TZ]", " "));
-        String buildVersion = String.join("-", new String[]{ buildProperties.get("git.commit"), buildProperties.get("git.branch")});
+        String buildVersion = String.join("-", new String[]{ buildProperties.get("git.commit"),
+                buildProperties.get("git.branch")});
         httpServletResponse.setHeader("X-Supercash-Build-Version", buildVersion);
         httpServletResponse.setHeader("X-Supercash-Api-Version", parkingPlusProperties.getApiVersion());
         chain.doFilter(request, response);

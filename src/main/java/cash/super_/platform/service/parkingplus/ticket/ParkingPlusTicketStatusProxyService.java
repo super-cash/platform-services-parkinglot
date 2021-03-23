@@ -2,7 +2,7 @@ package cash.super_.platform.service.parkingplus.ticket;
 
 import java.util.Optional;
 
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,11 +39,11 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     LOG.debug("Looking for the status of ticket: {}", ticketId);
 
     if (Strings.isNullOrEmpty(userId)) {
-      throw new SupercashInvalidValueException("User ID must be provided");
+      throw new SupercashInvalidValueSimpleException("User ID must be provided");
     }
 
     if (Strings.isNullOrEmpty(ticketId)) {
-      throw new SupercashInvalidValueException("Ticket ID must be provided");
+      throw new SupercashInvalidValueSimpleException("Ticket ID must be provided");
     }
 
     RetornoConsulta ticketStatus;

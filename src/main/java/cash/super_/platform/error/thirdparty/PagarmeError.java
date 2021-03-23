@@ -1,13 +1,15 @@
 package cash.super_.platform.error.thirdparty;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PagarmeError {
 
     public String type;
 
     @JsonProperty("parameter_name")
-    public Object parameterName;
+    public String parameterName = "";
 
     public String message;
 
@@ -20,10 +22,10 @@ public class PagarmeError {
     }
 
     public String getParameterName() {
-        return parameterName.toString();
+        return parameterName;
     }
 
-    public void setParameterName(Object parameterName) {
+    public void setParameterName(String parameterName) {
         this.parameterName = parameterName;
     }
 

@@ -52,8 +52,8 @@ public enum JsonUtil {
     try {
       return MAPPER.readValue(jsonObject, clazz);
 
-    } catch (IOException errorDeserializing) {
-      LOG.error("While deserializing json String " + jsonObject, errorDeserializing);
+    } catch (JsonProcessingException errorDeserializing) {
+      LOG.error("While deserializing json String {} {}", jsonObject, errorDeserializing);
       return null;
     }
   }
@@ -68,15 +68,16 @@ public enum JsonUtil {
    * @return The instance of the given class.
    */
   public static <T> T toObject(Optional<ByteBuffer> buffer, Class<T> clazz) {
+    String jsonObject = null;
     try {
       if (buffer.isPresent()) {
-        String jsonObject = StandardCharsets.UTF_8.decode(buffer.get()).toString();
+        jsonObject = StandardCharsets.UTF_8.decode(buffer.get()).toString();
         return MAPPER.readValue(jsonObject, clazz);
       }
       return null;
 
-    } catch (IOException errorDeserializing) {
-      LOG.error("Error while deserializing json String {}", errorDeserializing);
+    } catch (JsonProcessingException errorDeserializing) {
+      LOG.error("While deserializing json String {} {}", jsonObject, errorDeserializing);
       return null;
     }
   }

@@ -1,24 +1,24 @@
 package cash.super_.platform.error;
 
 import cash.super_.platform.error.supercash.SupercashErrorCode;
-import cash.super_.platform.error.supercash.SupercashException;
+import cash.super_.platform.error.supercash.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
-public class ParkingPlusInvalidSalesException extends SupercashException {
+public class ParkingPlusInvalidSalesSimpleException extends SupercashSimpleException {
 
-    public ParkingPlusInvalidSalesException() {
+    public ParkingPlusInvalidSalesSimpleException() {
         super(SupercashErrorCode.INVALID_SALE, HttpStatus.UNAUTHORIZED);
     }
 
-    public ParkingPlusInvalidSalesException(HttpStatus additionalErrorCode) {
+    public ParkingPlusInvalidSalesSimpleException(HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.INVALID_SALE, additionalErrorCode);
     }
 
-    public ParkingPlusInvalidSalesException(String additionalMessage) {
+    public ParkingPlusInvalidSalesSimpleException(String additionalMessage) {
         super(SupercashErrorCode.INVALID_SALE, HttpStatus.UNAUTHORIZED, additionalMessage);
     }
 
-    public ParkingPlusInvalidSalesException(HttpStatus additionalErrorCode, String additionalMessage) {
+    public ParkingPlusInvalidSalesSimpleException(HttpStatus additionalErrorCode, String additionalMessage) {
         super(SupercashErrorCode.INVALID_SALE, additionalErrorCode, additionalMessage);
     }
 }

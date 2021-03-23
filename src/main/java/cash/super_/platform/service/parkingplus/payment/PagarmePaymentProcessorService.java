@@ -1,16 +1,15 @@
 package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
-import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
+import cash.super_.platform.error.ParkingPlusPaymentNotApprovedSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
+import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedSimpleException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.JsonUtil;
-import com.google.common.base.Preconditions;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,15 +53,15 @@ public class PagarmePaymentProcessorService {
     Map<String, String> metadata = payRequest.getMetadata();
 
     if (metadata.get("device_id") == null) {
-      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata");
+      throw new SupercashInvalidValueSimpleException("The key/value device_id field must be provided in the metadata");
     }
 
     if (metadata.get("public_ip") == null) {
-      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata");
+      throw new SupercashInvalidValueSimpleException("The key/value public_ip field must be provided in the metadata");
     }
 
     if (metadata.get("private_ip") == null) {
-      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata");
+      throw new SupercashInvalidValueSimpleException("The key/value private_ip field must be provided in the metadata");
     }
 
     String fieldName;
@@ -149,8 +148,8 @@ public class PagarmePaymentProcessorService {
     try {
       transactionResponse = pagarmeClientService.requestPayment(payRequest);
     } catch (FeignException.BadRequest badRequestException) {
-      SupercashTransactionStatusNotExpectedException exception = JsonUtil.toObject(badRequestException.responseBody(),
-              SupercashTransactionStatusNotExpectedException.class);
+      SupercashTransactionStatusNotExpectedSimpleException exception = JsonUtil.toObject(badRequestException.responseBody(),
+              SupercashTransactionStatusNotExpectedSimpleException.class);
       LOG.error(exception.getMessage());
       throw exception;
     }
@@ -158,7 +157,7 @@ public class PagarmePaymentProcessorService {
     if (transactionResponse.getStatus() == Transaction.Status.PAID) {
       return paymentAuthService.authorizePayment(userId, payRequest, transactionResponse);
     } else {
-      ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
+      ParkingPlusPaymentNotApprovedSimpleException exception = new ParkingPlusPaymentNotApprovedSimpleException(HttpStatus.FORBIDDEN,
               "Transaction status is " + transactionResponse.getStatus());
       LOG.error(exception.getMessage());
       throw exception;

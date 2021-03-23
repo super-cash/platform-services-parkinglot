@@ -2,21 +2,21 @@ package cash.super_.platform.error.supercash;
 
 import org.springframework.http.HttpStatus;
 
-public class SupercashInvalidValueException extends SupercashException {
+public class SupercashInvalidValueSimpleException extends SupercashSimpleException {
 
-    public SupercashInvalidValueException() {
+    public SupercashInvalidValueSimpleException() {
         super(SupercashErrorCode.INVALID_VALUE, HttpStatus.BAD_REQUEST);
     }
 
-    public SupercashInvalidValueException(HttpStatus additionalErrorCode) {
+    public SupercashInvalidValueSimpleException(HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.INVALID_VALUE, additionalErrorCode);
     }
 
-    public SupercashInvalidValueException(String additionalMessage) {
+    public SupercashInvalidValueSimpleException(String additionalMessage) {
         super(SupercashErrorCode.INVALID_VALUE, HttpStatus.BAD_REQUEST, additionalMessage);
     }
 
-    public SupercashInvalidValueException(HttpStatus additionalErrorCode, String additionalMessage) {
+    public SupercashInvalidValueSimpleException(HttpStatus additionalErrorCode, String additionalMessage) {
         super(SupercashErrorCode.INVALID_VALUE, additionalErrorCode, additionalMessage);
     }
 }

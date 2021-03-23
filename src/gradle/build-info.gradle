@@ -3,7 +3,7 @@ ext {
   commit = System.env.UNMAZEDBOOT_BUILDER_GIT_SHA ?: "--env-var-UNMAZEDBOOT_BUILDER_GIT_SHA-not-provided--"
   branch = System.env.UNMAZEDBOOT_BUILDER_GIT_BRANCH ?: "--env-var-UNMAZEDBOOT_BUILDER_GIT_BRANCH-not-provided--"
   // https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
-  pipelineUrl = System.env.CI_JOB_URL ?: "--env-var-CI_JOB_URL-not-provided--"
+  pipelineUrl = System.env.UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL ?: "--env-var-UNMAZEDBOOT_BUILDER_PIPELINE_URL-not-provided--"
 }
 
 // https://www.vojtechruzicka.com/spring-boot-version/

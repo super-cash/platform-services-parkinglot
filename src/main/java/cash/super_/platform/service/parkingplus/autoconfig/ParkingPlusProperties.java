@@ -1,5 +1,7 @@
 package cash.super_.platform.service.parkingplus.autoconfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -25,7 +27,7 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private String userKey;
 
   @NotBlank
-  private String host;
+  private String url;
 
   private Level clientLogLevel = Level.BASIC;
 
@@ -66,6 +68,17 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   @NotNull
   private Integer gracePeriod;
 
+  private List<String> retryableDestinationHosts = new ArrayList<String>();
+
+  @NotNull
+  private int retryMaxAttempt;
+
+  @NotNull
+  private long retryInterval;
+
+  @NotNull
+  private long retryMaxPeriod;
+
   public String getUserKey() {
     return userKey;
   }
@@ -90,12 +103,12 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.parkingLotId = parkingLotId;
   }
 
-  public String getHost() {
-    return host;
+  public String getUrl() {
+    return url;
   }
 
-  public void setHost(String host) {
-    this.host = host;
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   public Level getClientLogLevel() {
@@ -198,13 +211,49 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.gracePeriod = gracePeriod;
   }
 
+  public List<String> getRetryableDestinationHosts() {
+    return retryableDestinationHosts;
+  }
+
+  public void setRetryableDestinationHosts(List<String> retryableDestinationHosts) {
+    this.retryableDestinationHosts = retryableDestinationHosts;
+  }
+
+  public void addRetryableDestinationHosts(String retryableDestinationHost) {
+    this.retryableDestinationHosts.add(retryableDestinationHost);
+  }
+
+  public int getRetryMaxAttempt() {
+    return retryMaxAttempt;
+  }
+
+  public void setRetryMaxAttempt(int retryMaxAttempt) {
+    this.retryMaxAttempt = retryMaxAttempt;
+  }
+
+  public long getRetryInterval() {
+    return retryInterval;
+  }
+
+  public void setRetryInterval(long retryInterval) {
+    this.retryInterval = retryInterval;
+  }
+
+  public long getRetryMaxPeriod() {
+    return retryMaxPeriod;
+  }
+
+  public void setRetryMaxPeriod(long retryMaxPeriod) {
+    this.retryMaxPeriod = retryMaxPeriod;
+  }
+
   @Override
   public String toString() {
     return "ParkingPlusProperties{" +
             "apiKeyId=" + apiKeyId +
             ", parkingLotId=" + parkingLotId +
             ", userKey='" + userKey + '\'' +
-            ", host='" + host + '\'' +
+            ", url='" + url + '\'' +
             ", clientLogLevel=" + clientLogLevel +
             ", salesCacheDuration=" + salesCacheDuration +
             ", salesCacheTimeUnit=" + salesCacheTimeUnit +
@@ -216,6 +265,10 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
             ", ourFee=" + ourFee +
             ", saleNameStartWith=" + saleNameStartWith +
             ", gracePeriod=" + gracePeriod +
+            ", retryableDestinationHosts=" + retryableDestinationHosts +
+            ", retryMaxAttempt=" + retryMaxAttempt +
+            ", retryInterval=" + retryInterval +
+            ", retryMaxPeriod=" + retryMaxPeriod +
             '}';
   }
 }

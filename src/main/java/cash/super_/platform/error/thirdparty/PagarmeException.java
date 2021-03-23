@@ -2,7 +2,7 @@ package cash.super_.platform.error.thirdparty;
 
 import java.util.List;
 
-public class PagarmeErrorResult {
+public class PagarmeException {
 
     public List<PagarmeError> errors;
 

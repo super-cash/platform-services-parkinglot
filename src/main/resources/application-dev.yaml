@@ -1,6 +1,16 @@
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL
+
 cash:
   super:
     platform:
       service:
         pagarme:
           url: http://pagarme-service:8120/v1
+        parkinglot:
+          retryableDestinationHosts:
+            - demonstracao.parkingplus.com.br
+            - orchestrator

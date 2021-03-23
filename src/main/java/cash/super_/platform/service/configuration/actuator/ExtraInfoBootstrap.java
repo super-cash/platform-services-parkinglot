@@ -23,7 +23,7 @@ public class ExtraInfoBootstrap implements InfoContributor {
     @Override
     public void contribute(Info.Builder builder) {
         Map<String, String> userDetails = new HashMap<>();
-        userDetails.put("host", parkingPlusProperties.getHost());
+        userDetails.put("host", parkingPlusProperties.getUrl());
         userDetails.put("apiKey", String.valueOf(parkingPlusProperties.getApiKeyId()));
         builder.withDetail("parkingPlus", userDetails);
     }

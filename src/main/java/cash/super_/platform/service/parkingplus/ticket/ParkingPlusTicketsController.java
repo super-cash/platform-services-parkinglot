@@ -73,9 +73,10 @@ public class ParkingPlusTicketsController extends AbstractController {
   /**
    * Pays a ticket for a given user using WPS infra
    * @param transactionId
+   * @param headerUserId
    * @param userId
    * @param ticketId
-   * @param paymentAuthorization
+   * @param paymentRequest
    * @return
    * @throws IOException
    * @throws InterruptedException

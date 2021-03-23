@@ -24,6 +24,10 @@ spring:
     mapper:
       accept_case_insensitive_enums: true
 
+  devtools:
+    livereload:
+      port: 35730
+
 # https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
 # https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
@@ -44,7 +48,6 @@ feign:
   client:
     config:
       default:
-        errorDecoder: cash.super_.platform.error.supercash.SupercashErrorDecoder
         loggerLevel: FULL
 
 # here we say that we want to enable accesslog
@@ -100,7 +103,7 @@ cash:
           apiVersion: v1
 
           # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
-          host: https://demonstracao.parkingplus.com.br/servicos
+          url: https://demonstracao.parkingplus.com.br/servicos
 
           # Value provided by parking plus
           apiKeyId: 1
@@ -149,6 +152,22 @@ cash:
 
           # Time, in seconds, the user can go out without paying the ticket
           gracePeriod: 1200
+
+          # Hosts or port to retry (e.g localhost, 8080, localhost:8080)
+          retryableDestinationHosts:
+            - demonstracao.parkingplus.com.br
+            - localhost
+
+          # When we have http outgoing connections that returns HTTP Status 5xx, we will retry 'retryMaxAttempt'
+          # before stop. If 0 value is defined, we will retry indefinitely.
+          retryMaxAttempt: 5
+
+          # Time, in seconds, we wait until retry an http request sent to any host in 'retryableDestinationHosts',
+          # in case we have HTTP Response Status 5xx.
+          retryInterval: 3
+
+          # Max time, in seconds, we accept to wait as  the retry interval increases due to exponential backoff
+          retryMaxPeriod: 20
 
           # kubernetes readiness probe, reusing the cache and updating it
           # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example

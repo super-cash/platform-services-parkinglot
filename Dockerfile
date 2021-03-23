@@ -21,6 +21,9 @@ ARG UNMAZEDBOOT_RUNNER_VERSION=${UNMAZEDBOOT_RUNNER_VERSION:-latest}
 # Build stage for building the target directory before running tests
 # #####################################################################
 FROM marcellodesales/unmazedboot-builder-gradle:${UNMAZEDBOOT_BUILDER_GRADLE_VERSION} as unmazedboot-builder-artifacts
+ENV UNMAZEDBOOT_BUILDER_GIT_SHA ${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
+ENV UNMAZEDBOOT_BUILDER_GIT_BRANCH ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
+ENV UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
 
 # #####################################################################
 # Build stage for making a jlink specific for the app
@@ -32,8 +35,6 @@ FROM marcellodesales/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazed
 # #####################################################################
 FROM intuit/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
 
-ENV BUILD_COMMIT ${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
-ENV BUILD_BRANCH ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
 # Alpine needs the SSL certificates from the JVM
 # javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed
 # https://stackoverflow.com/questions/53246399/jdk8-jdk10-pkix-path-building-failed-suncertpathbuilderexception-unable-to/53246850#53246850

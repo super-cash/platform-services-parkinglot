@@ -1,24 +1,24 @@
 package cash.super_.platform.error;
 
 import cash.super_.platform.error.supercash.SupercashErrorCode;
-import cash.super_.platform.error.supercash.SupercashException;
+import cash.super_.platform.error.supercash.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
-public class ParkingPlusPaymentNotApprovedException extends SupercashException {
+public class ParkingPlusPaymentNotApprovedSimpleException extends SupercashSimpleException {
 
-    public ParkingPlusPaymentNotApprovedException() {
+    public ParkingPlusPaymentNotApprovedSimpleException() {
         super(SupercashErrorCode.PAYMENT_NOT_APPROVED, HttpStatus.FORBIDDEN);
     }
 
-    public ParkingPlusPaymentNotApprovedException(HttpStatus additionalErrorCode) {
+    public ParkingPlusPaymentNotApprovedSimpleException(HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.PAYMENT_NOT_APPROVED, additionalErrorCode);
     }
 
-    public ParkingPlusPaymentNotApprovedException(String additionalMessage) {
+    public ParkingPlusPaymentNotApprovedSimpleException(String additionalMessage) {
         super(SupercashErrorCode.PAYMENT_NOT_APPROVED, HttpStatus.FORBIDDEN, additionalMessage);
     }
 
-    public ParkingPlusPaymentNotApprovedException(HttpStatus additionalErrorCode, String additionalMessage) {
+    public ParkingPlusPaymentNotApprovedSimpleException(HttpStatus additionalErrorCode, String additionalMessage) {
         super(SupercashErrorCode.PAYMENT_NOT_APPROVED, additionalErrorCode, additionalMessage);
     }
 }

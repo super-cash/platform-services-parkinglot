@@ -7,9 +7,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.error.ParkingPlusInvalidSalesException;
-import cash.super_.platform.error.ParkingPlusSalesNotFoundException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.ParkingPlusInvalidSalesSimpleException;
+import cash.super_.platform.error.ParkingPlusSalesNotFoundSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -74,7 +74,7 @@ public class ParkingPlusParkingSalesCachedProxyService
     String message = "";
     if (sale == null) {
       if (throwException) {
-        throw new ParkingPlusSalesNotFoundException(message);
+        throw new ParkingPlusSalesNotFoundSimpleException(message);
       }
       return false;
     }
@@ -108,7 +108,7 @@ public class ParkingPlusParkingSalesCachedProxyService
               "has expired";
       LOG.error(message);
       if (throwException) {
-        throw new ParkingPlusInvalidSalesException(message);
+        throw new ParkingPlusInvalidSalesSimpleException(message);
       }
       return false;
     }
@@ -144,7 +144,7 @@ public class ParkingPlusParkingSalesCachedProxyService
     LOG.debug("Got garage sales list for garage ID={}", this.properties.getParkingLotId());
 
     if (this.properties.getParkingLotId() <= 0) {
-      throw new SupercashInvalidValueException("The Parking garage must be a valid number");
+      throw new SupercashInvalidValueSimpleException("The Parking garage must be a valid number");
     }
 
     ParkingGarageSales distanceResult = cache.getUnchecked(this.properties.getParkingLotId());
