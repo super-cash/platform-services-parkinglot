@@ -60,8 +60,8 @@ bootJar {
     archiveBaseName = rootProject.name
     archiveVersion =  rootProject.version
     manifest {
-        attributes('Implementation-Title': 'Orchestrator Service',
-                'Implementation-Version': archiveVersion)
+        attributes('Implementation-Title': 'Parking Lot Service',
+                   'Implementation-Version': commit + '-' + branch)
     }
 }
 

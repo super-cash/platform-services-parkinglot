@@ -1,5 +1,5 @@
 # You can pass ?validate=false as request parameter to force receiving the sales response without validation
-GET {{host}}:{{port}}/v1/parking_lots/1/users/leandro-123/sales/15
+GET {{host}}:{{port}}/v1/parking_lot/1/users/leandro-123/sales/15
 Accept: application/json
 X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040
