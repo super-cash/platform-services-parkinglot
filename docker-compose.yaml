@@ -2,14 +2,18 @@
 ### Must run with "DOCKER_BUILDKIT=0 docker-compose build"
 ###
 
-version: "3.6"
+version: "3.8"
+
+networks:
+  supercash-data-network:
+    external:
+      name: supercash-data-network
 
 services:
 
   # The service for parking lots
   parking-lot-service:    
     image: supercash/parking-lot-service
-    
     build:
       context: .
       args:
@@ -26,7 +30,6 @@ services:
     environment:
       - DEBUG_ENV=true
     ports:
-      - 8082:8080
-    # volumes:
-    #    - "./samples/gradle-java-jdk8-x-jre11-custom/hooks/sources:/runtime/sources/"
-    #    - "./samples/gradle-java-jdk8-x-jre11-custom/hooks/java-opts:/runtime/java-opts"
+      - 8082:8082
+    networks:
+      - supercash-data-network

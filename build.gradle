@@ -1,4 +1,7 @@
 buildscript {
+    ext {
+        springBootVersion = '2.3.0.RELEASE'
+    }
     repositories {
         mavenCentral()
 
@@ -8,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.8.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 
         // For src/gradle/tests
         classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
@@ -42,6 +45,9 @@ apply from: 'src/gradle/jacoco.gradle'
 // CODE COVERAGE: JaCoCo enabled
 //apply from: 'src/gradle/swagger-client-stubs.gradle'
 
+group = "cash.super_.platform.service"
+version = '1.0.0-RELEASE'
+
 // https://github.com/gradle/gradle/issues/14500
 // TODO: Upgrade to 15 when Jacoco supports https://github.com/emeraldpay/polkaj/commit/9f4baeb09baa95cbe25a223817378240aa4909b2
 java {
@@ -50,13 +56,13 @@ java {
     }
 }
 
-
-group = "cash.super_.platform.service"
-version = '1.0.0-RELEASE'
-
 bootJar {
     archiveBaseName = rootProject.name
     archiveVersion =  rootProject.version
+    manifest {
+        attributes('Implementation-Title': 'Orchestrator Service',
+                'Implementation-Version': archiveVersion)
+    }
 }
 
 // For SNAPSHOT dependencies, pull them right away

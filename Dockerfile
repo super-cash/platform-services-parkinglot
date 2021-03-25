@@ -14,7 +14,7 @@ ARG UNMAZEDBOOT_LINKER_VERSION=${UNMAZEDBOOT_LINKER_VERSION:-latest}
 ARG UNMAZEDBOOT_LINKER_JDK_MODULES=java.base,java.logging,java.xml,jdk.unsupported,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,jdk.crypto.cryptoki
 
 ### Runner ArgumentsBUILD_TAG
-ARG UNMAZEDBOOT_RUNNER_PORT="8080"
+ARG UNMAZEDBOOT_RUNNER_PORT="8082"
 ARG UNMAZEDBOOT_RUNNER_VERSION=${UNMAZEDBOOT_RUNNER_VERSION:-latest}
 
 # #####################################################################

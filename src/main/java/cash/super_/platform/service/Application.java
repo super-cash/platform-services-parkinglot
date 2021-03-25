@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients()
-public class ParkingPlusApplication {
+public class Application {
 
   public static void main(String args[]) {
-    SpringApplication.run(ParkingPlusApplication.class, args);
+    SpringApplication.run(Application.class, args);
     // TODO: When in Preprod or Prod, just turn the banner off app.setBannerMode(Banner.Mode.OFF)
   }
 }

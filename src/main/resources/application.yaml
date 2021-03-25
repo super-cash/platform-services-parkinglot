@@ -54,7 +54,7 @@ feign:
 # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
 # https://stackoverflow.com/questions/36780680/how-do-you-tell-spring-boot-to-send-the-embedded-tomcats-access-logs-to-stdout/54566643#54566643
 server:
-  #port: 8080 default
+  port: 8082
   tomcat:
     accesslog:
       enabled: true
