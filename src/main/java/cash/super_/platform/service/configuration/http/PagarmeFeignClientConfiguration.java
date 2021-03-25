@@ -1,8 +1,5 @@
 package cash.super_.platform.service.configuration.http;
 
-import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
-import cash.super_.platform.client.parkingplus.invoker.ApiClient;
-import cash.super_.platform.client.parkingplus.invoker.RFC3339DateFormat;
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
@@ -12,15 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import feign.Feign;
-import feign.Retryer;
+import feign.*;
 import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * https://arnoldgalovics.com/generating-feign-clients-with-swagger-codegen-and-gradle/
  * 
  * @author marcellodesales
+ * @author leandromsales
  *
  */
 @Configuration

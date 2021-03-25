@@ -5,8 +5,9 @@
   ____) | |_| | |_) |  __/ |  | |___| (_| \__ \ | | |
  |_____/ \__,_| .__/ \___|_|   \_____\__,_|___/_| |_|
               | |              💰💰💰💰💰💰💰💰💰💰💰
-              |_| :: SpringBoot :: ${spring-boot.formatted-version} ::
+              |_| :: SpringBoot: ${spring-boot.formatted-version}
                   :: Application Name: ${application.title}
                   :: Version: ${application.version}
                   :: Server Port: ${server.port}
-                  :: API Version :: ${cash.super.platform.service.parkingplus.apiVersion}
+                  :: API Version: ${cash.super.platform.service.parkingplus.apiVersion}
+
