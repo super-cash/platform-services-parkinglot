@@ -2,7 +2,7 @@ package cash.super_.platform.service.parkingplus.payment;
 
 import brave.Tracer;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedSimpleException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedSimpleException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
@@ -10,10 +10,12 @@ import cash.super_.platform.service.parkingplus.model.ParkingTicketAuthorizedPay
 import cash.super_.platform.service.parkingplus.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.JsonUtil;
+import com.google.common.base.Strings;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +46,9 @@ public class PagarmePaymentProcessorService {
   private ParkingPlusProperties parkingPlusProperties;
 
   @Autowired
+  private BuildProperties buildProperties;
+
+  @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
   public ParkingTicketAuthorizedPaymentStatus processPayment(String userId, TransactionRequest payRequest) {
@@ -52,16 +57,16 @@ public class PagarmePaymentProcessorService {
 
     Map<String, String> metadata = payRequest.getMetadata();
 
-    if (metadata.get("device_id") == null) {
-      throw new SupercashInvalidValueSimpleException("The key/value device_id field must be provided in the metadata");
+    if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
+      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata");
     }
 
-    if (metadata.get("public_ip") == null) {
-      throw new SupercashInvalidValueSimpleException("The key/value public_ip field must be provided in the metadata");
+    if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
+      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata");
     }
 
-    if (metadata.get("private_ip") == null) {
-      throw new SupercashInvalidValueSimpleException("The key/value private_ip field must be provided in the metadata");
+    if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
+      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata");
     }
 
     String fieldName;
@@ -140,6 +145,7 @@ public class PagarmePaymentProcessorService {
     payRequest.setSplitRules(splitRules);
     payRequest.addMetadata("ticket_number", item.getId());
     payRequest.addMetadata("service_free", tsItem.getUnitPrice().toString());
+    payRequest.addMetadata("requester_service", buildProperties.get("name"));
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
     payRequest.setCapture(true);
     payRequest.setAsync(false);

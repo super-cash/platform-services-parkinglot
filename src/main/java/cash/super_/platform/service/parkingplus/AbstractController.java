@@ -5,14 +5,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.feign.SupercashRetryableException;
 import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
 import cash.super_.platform.service.parkingplus.sales.ParkingPlusParkingSalesCachedProxyService;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -161,8 +161,12 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param userId
    */
   protected void isRequestValid(String headerUserId, String userId) {
+    if (Strings.isNullOrEmpty(headerUserId) || Strings.isNullOrEmpty(userId)) {
+      throw new SupercashInvalidValueException("User ID and Header User ID must be provided.");
+    }
+
     if (!headerUserId.equals(userId)) {
-      throw new SupercashInvalidValueSimpleException("UserID must be provided in both header and path.");
+      throw new SupercashInvalidValueException("UserID must be provided in both header and path.");
     }
   }
 

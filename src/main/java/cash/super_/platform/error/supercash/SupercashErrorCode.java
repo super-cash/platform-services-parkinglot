@@ -11,6 +11,7 @@ public enum SupercashErrorCode {
     AMOUNT_IS_ZERO(3002, "The ticket fee is 0."),
     ALREADY_PAID(3003, "This payment is already processed."),
     GENERAL_ERROR(9001, "General error."),
+    MISSING_ARGUMENT(9997, "Missing argument."),
     THIRD_PARTY_EXCEPTION(9998, "Third-party system exception."),
     INVALID_VALUE(9999, "Invalid value.");
 

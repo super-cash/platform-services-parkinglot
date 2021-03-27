@@ -11,6 +11,8 @@ cash:
         pagarme:
           url: http://pagarme-service:8120/v1
         parkinglot:
+          url: https://maceio.parkingplus.com.br/servicos
           retryableDestinationHosts:
+            - maceio.parkingplus.com.br
             - demonstracao.parkingplus.com.br
-            - orchestrator
+            - localhost

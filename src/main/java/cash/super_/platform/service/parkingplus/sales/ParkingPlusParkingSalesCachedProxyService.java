@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct;
 
 import cash.super_.platform.error.ParkingPlusInvalidSalesSimpleException;
 import cash.super_.platform.error.ParkingPlusSalesNotFoundSimpleException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueSimpleException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -144,7 +144,7 @@ public class ParkingPlusParkingSalesCachedProxyService
     LOG.debug("Got garage sales list for garage ID={}", this.properties.getParkingLotId());
 
     if (this.properties.getParkingLotId() <= 0) {
-      throw new SupercashInvalidValueSimpleException("The Parking garage must be a valid number");
+      throw new SupercashInvalidValueException("The Parking garage must be a valid number");
     }
 
     ParkingGarageSales distanceResult = cache.getUnchecked(this.properties.getParkingLotId());
