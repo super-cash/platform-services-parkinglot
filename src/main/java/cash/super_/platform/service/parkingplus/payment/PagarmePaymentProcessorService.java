@@ -51,7 +51,8 @@ public class PagarmePaymentProcessorService {
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  public ParkingTicketAuthorizedPaymentStatus processPayment(String userId, TransactionRequest payRequest) {
+  public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, String userId,
+                                                             String marketplaceId, String storeId) {
 
     Item item = payRequest.getItems().get(0);
 
@@ -145,6 +146,8 @@ public class PagarmePaymentProcessorService {
     payRequest.setSplitRules(splitRules);
     payRequest.addMetadata("ticket_number", item.getId());
     payRequest.addMetadata("service_free", tsItem.getUnitPrice().toString());
+    payRequest.addMetadata("marketplace_id", marketplaceId);
+    payRequest.addMetadata("store_id", storeId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
     payRequest.setCapture(true);

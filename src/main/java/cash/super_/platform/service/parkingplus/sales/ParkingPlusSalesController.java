@@ -35,9 +35,11 @@ public class ParkingPlusSalesController extends AbstractController {
   public ResponseEntity<ParkingGarageSales> retrieveParkingSales(
       @RequestHeader("X-Supercash-Tid") String transactionId,
       @RequestHeader("X-Supercash-Uid") String headerUserId,
-      @PathVariable("supercash_uid") String userId) throws IOException, InterruptedException {
+      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+      @RequestHeader("X-Supercash-StoreId") String storeId,
+      @PathVariable("supercash_uid") String userId) {
 
-    isRequestValid(headerUserId, userId);
+    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     ParkingGarageSales currentParkingGarageSales = parkingSalesService.fetchCurrentGarageSales();
 
@@ -49,11 +51,13 @@ public class ParkingPlusSalesController extends AbstractController {
   public ResponseEntity<Promocao> retrieveParkingSale(
           @RequestHeader("X-Supercash-Tid") String transactionId,
           @RequestHeader("X-Supercash-Uid") String headerUserId,
+          @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+          @RequestHeader("X-Supercash-StoreId") String storeId,
           @PathVariable("supercash_uid") String userId,
           @PathVariable("sale_id") Long saleId,
           @RequestParam("validate") Optional<Boolean> validate) throws IOException, InterruptedException {
 
-    isRequestValid(headerUserId, userId);
+    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     Promocao sale = parkingSalesService.getSale(saleId, true, validate);
 

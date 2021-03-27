@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.feign.SupercashRetryableException;
@@ -160,13 +161,21 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * @param headerUserId
    * @param userId
    */
-  protected void isRequestValid(String headerUserId, String userId) {
+  protected void isRequestValid(String headerUserId, String userId, String marketplaceId, String storeId) {
     if (Strings.isNullOrEmpty(headerUserId) || Strings.isNullOrEmpty(userId)) {
-      throw new SupercashInvalidValueException("User ID and Header User ID must be provided.");
+      throw new SupercashMissingArgumentException("User ID and Header User ID must be provided.");
     }
 
     if (!headerUserId.equals(userId)) {
-      throw new SupercashInvalidValueException("UserID must be provided in both header and path.");
+      throw new SupercashMissingArgumentException("UserID must be provided in both header and path.");
+    }
+
+    if (!headerUserId.equals(marketplaceId)) {
+      throw new SupercashMissingArgumentException("Missing marketplaceId in the header.");
+    }
+
+    if (!headerUserId.equals(storeId)) {
+      throw new SupercashMissingArgumentException("Missing storeId in the header.");
     }
   }
 

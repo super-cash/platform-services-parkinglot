@@ -2,5 +2,7 @@ GET {{host}}:{{port}}/v1/parking_lot/1/users/marcello-123/tickets
 Accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040
+X-Supercash-MarketplaceId: 123
+X-Supercash-StoreId: 456
 Content-Type: application/json
 Accept-Encoding: application/json

@@ -35,6 +35,7 @@ import java.util.TimeZone;
  * https://demonstracao.parkingplus.com.br/servicos/swagger-ui.html#!/servico-pagamento-ticket-2/pagarTicketAutorizadoUsingPOST
  *
  * @author marcellodesales
+ * @author leandromsales
  *
  */
 @Service
@@ -192,7 +193,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   }
 
   public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String userId,
-                                                      String ticketId) {
+                                                      String ticketId, String marketplaceId, String storeId) {
 
     if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided");
@@ -209,7 +210,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       }
       isTicketAndAmountValid(userId, ticketId, items.get(0).getId(), items.get(0).getUnitPrice());
 
-      paymentStatus = pagarmePaymentProcessorService.processPayment(userId, paymentRequest.getPayTicketRequest());
+      paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), userId,
+              marketplaceId, storeId);
 
     } else if (paymentRequest.getAuthorizedRequest() != null) {
       PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();

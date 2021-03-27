@@ -58,11 +58,13 @@ public class ParkingPlusTicketsController extends AbstractController {
   public ResponseEntity<ParkingTicketPaymentsMadeStatus> getParkingTicketPaymentsStatus(
       @RequestHeader("X-Supercash-Tid") String transactionId, 
       @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+      @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId,
       @RequestParam("page_start") Optional<Integer> paginationStart,
       @RequestParam("page_limit") Optional<Integer> paginationLimit) throws IOException, InterruptedException {
 
-    isRequestValid(headerUserId, userId);
+    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     ParkingTicketPaymentsMadeStatus parkingTicketStatus =
         paymentsService.getPaymentsMade(userId, paginationStart, paginationLimit);
@@ -87,14 +89,16 @@ public class ParkingPlusTicketsController extends AbstractController {
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
       @RequestHeader("X-Supercash-Tid") String transactionId,
       @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+      @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
-      @RequestBody ParkingTicketPayment paymentRequest)
-      throws IOException, InterruptedException {
+      @RequestBody ParkingTicketPayment paymentRequest) {
 
-    isRequestValid(headerUserId, userId);
+    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketId);
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketId,
+            marketplaceId, storeId);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
@@ -113,11 +117,13 @@ public class ParkingPlusTicketsController extends AbstractController {
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
       @RequestHeader("X-Supercash-Tid") String transactionId,
       @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+      @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
       @RequestParam("saleId") Optional<Long> saleId) throws IOException, InterruptedException {
 
-    isRequestValid(headerUserId, userId);
+    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
 
