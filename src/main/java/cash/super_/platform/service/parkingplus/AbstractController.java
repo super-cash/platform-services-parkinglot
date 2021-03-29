@@ -170,11 +170,11 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
       throw new SupercashMissingArgumentException("UserID must be provided in both header and path.");
     }
 
-    if (!headerUserId.equals(marketplaceId)) {
+    if (Strings.isNullOrEmpty(marketplaceId)) {
       throw new SupercashMissingArgumentException("Missing marketplaceId in the header.");
     }
 
-    if (!headerUserId.equals(storeId)) {
+    if (Strings.isNullOrEmpty(storeId)) {
       throw new SupercashMissingArgumentException("Missing storeId in the header.");
     }
   }
