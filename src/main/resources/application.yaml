@@ -97,10 +97,10 @@ cash:
     platform:
       service:
         pagarme:
-          url: http://localhost:8120/v1
+          url: http://localhost:8120/v2
         parkingplus:
           # Our API Version
-          apiVersion: v1
+          apiVersion: v2
 
           # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
           url: https://demonstracao.parkingplus.com.br/servicos
