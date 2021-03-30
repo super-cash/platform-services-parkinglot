@@ -53,7 +53,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   protected HttpHeaders makeDefaultHttpHeaders(Map<String, String> additionalHeaders) {
     HttpHeaders headers = new HttpHeaders();
-    headers.add("api-version", properties.getApiVersion());
 
     // Merge additional headers to the response
     for (String key : additionalHeaders.keySet()) {
