@@ -1,6 +1,6 @@
 package cash.super_.platform.service.configuration.actuator;
 
-import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;

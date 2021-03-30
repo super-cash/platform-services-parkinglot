@@ -1,10 +1,8 @@
 package cash.super_.platform.service.configuration.filter;
 
-import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;

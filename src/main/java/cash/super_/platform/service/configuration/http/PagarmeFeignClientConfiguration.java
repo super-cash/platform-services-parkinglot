@@ -1,8 +1,8 @@
 package cash.super_.platform.service.configuration.http;
 
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
-import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
-import cash.super_.platform.service.parkingplus.payment.PagarmeClientService;
+import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkinglot.payment.PagarmeClientService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

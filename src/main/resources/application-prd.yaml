@@ -10,7 +10,7 @@ cash:
       service:
         pagarme:
           url: http://pagarme-service:8120/v1
-        parkingplus:
+        parkinglot:
           # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
           url: https://maceio.parkingplus.com.br/servicos
           # Review this for production
@@ -23,7 +23,7 @@ cash:
           apiKeyId: 1
           parkingLotId: 1
           userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
-          saleNameStartWith: SUPERCASH
+          saleNameStartWith: MACEIOSHOPPING
           gracePeriod: 1200
           retryableDestinationHosts:
             - maceio.parkingplus.com.br

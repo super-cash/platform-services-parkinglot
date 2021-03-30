@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.client.parkingplus.invoker.ApiClient;
-import cash.super_.platform.service.parkingplus.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
 
 import java.util.concurrent.TimeUnit;
 

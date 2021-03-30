@@ -1,0 +1,24 @@
+package cash.super_.platform.service.parkinglot.payment;
+
+import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
+import feign.Headers;
+import feign.RequestLine;
+
+public interface PagarmeClientService {
+
+    @RequestLine("POST /transactions/credit")
+    @Headers({
+            "Content-Type: application/json",
+            "Accept: application/json",
+    })
+    public TransactionResponseSummary requestPayment(TransactionRequest transaction);
+
+    @RequestLine("GET /transactions/testBadGateway")
+    @Headers({
+            "Content-Type: application/json",
+            "Accept: application/json",
+    })
+    public void requestTestBadGateway();
+
+}

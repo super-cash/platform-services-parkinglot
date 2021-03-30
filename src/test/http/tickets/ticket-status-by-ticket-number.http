@@ -11,7 +11,7 @@
 #   326156626823
 #   299313084224
 #
-GET {{host}}:{{port}}/v2/parking_lot/1/users/marcello-123/tickets/272513842611
+GET {{host}}:{{port}}/v2/parking_lot/1/users/marcello-123/tickets/326236325665
 Accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040
