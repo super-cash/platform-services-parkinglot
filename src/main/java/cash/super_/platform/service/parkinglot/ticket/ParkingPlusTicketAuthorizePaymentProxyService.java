@@ -1,9 +1,7 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.error.supercash.SupercashAmountIsZeroSimpleException;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashTransactionAlreadyPaidSimpleException;
 import cash.super_.platform.service.pagarme.transactions.models.Item;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
@@ -242,50 +240,10 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
               " 'numeroTicket' parameter");
     }
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId,
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, amount, true, true,
             Optional.of(Long.valueOf(properties.getSaleId().longValue())));
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
 
     LOG.debug("Ticket status for {}: {}", ticketId, ticketStatus);
-
-    int ticketFee = ticketStatus.getTarifa().intValue();
-    int ticketFeePaid = ticketStatus.getTarifaPaga().intValue();
-    String message = "";
-
-    if (ticketFee == 0) {
-      long entryDate = ticketStatus.getDataDeEntrada();
-      Long exitAllowedDate = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-      if (exitAllowedDate == null) {
-        exitAllowedDate = ticketStatus.getDataPermitidaSaida();
-      }
-      if (exitAllowedDate.longValue() - entryDate < 0) {
-        message += "Today is free.";
-      } else {
-        if (org.joda.time.Instant.now().getMillis() - entryDate <= properties.getGracePeriod()*1000) {
-          LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(exitAllowedDate.longValue()),
-                  TimeZone.getDefault().toZoneId());
-          message += "You can go out until " + ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-        }
-      }
-      LOG.debug(message);
-      SupercashAmountIsZeroSimpleException exception = new SupercashAmountIsZeroSimpleException(message);
-      exception.addField("entry_date", entryDate);
-      exception.addField("exit_allowed_date", exitAllowedDate);
-      throw exception;
-
-    } else {
-      if (ticketFee == ticketFeePaid) {
-        message = "The ticket is already paid.";
-        LOG.debug(message);
-        throw new SupercashTransactionAlreadyPaidSimpleException(message);
-      }
-
-      if (amount != ticketFee) {
-        message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-                ticketFee;
-        LOG.debug(message);
-        throw new SupercashInvalidValueException(message);
-      }
-    }
   }
 }

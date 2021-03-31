@@ -1,4 +1,4 @@
-GET {{host}}:{{port}}/v1/parking_lot/1/users/leandro-123/sales
+GET {{host}}:{{port}}/v2/parking_lot/1/users/leandro-123/sales
 Accept: application/json
 X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040

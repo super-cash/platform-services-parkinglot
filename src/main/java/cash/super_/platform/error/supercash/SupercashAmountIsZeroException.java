@@ -2,21 +2,21 @@ package cash.super_.platform.error.supercash;
 
 import org.springframework.http.HttpStatus;
 
-public class SupercashAmountIsZeroSimpleException extends SupercashSimpleException {
+public class SupercashAmountIsZeroException extends SupercashSimpleException {
 
-    public SupercashAmountIsZeroSimpleException() {
+    public SupercashAmountIsZeroException() {
         super(SupercashErrorCode.AMOUNT_IS_ZERO, HttpStatus.UNAUTHORIZED);
     }
 
-    public SupercashAmountIsZeroSimpleException(HttpStatus additionalErrorCode) {
+    public SupercashAmountIsZeroException(HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.AMOUNT_IS_ZERO, additionalErrorCode);
     }
 
-    public SupercashAmountIsZeroSimpleException(String additionalMessage) {
+    public SupercashAmountIsZeroException(String additionalMessage) {
         super(SupercashErrorCode.AMOUNT_IS_ZERO, HttpStatus.UNAUTHORIZED, additionalMessage);
     }
 
-    public SupercashAmountIsZeroSimpleException(HttpStatus additionalErrorCode, String additionalMessage) {
+    public SupercashAmountIsZeroException(HttpStatus additionalErrorCode, String additionalMessage) {
         super(SupercashErrorCode.AMOUNT_IS_ZERO, additionalErrorCode, additionalMessage);
     }
 }

@@ -7,8 +7,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.error.ParkingPlusInvalidSalesSimpleException;
-import cash.super_.platform.error.ParkingPlusSalesNotFoundSimpleException;
+import cash.super_.platform.error.ParkingPlusInvalidSalesException;
+import cash.super_.platform.error.ParkingPlusSalesNotFoundException;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
@@ -74,7 +74,7 @@ public class ParkingPlusParkingSalesCachedProxyService
     String message = "";
     if (sale == null) {
       if (throwException) {
-        throw new ParkingPlusSalesNotFoundSimpleException(message);
+        throw new ParkingPlusSalesNotFoundException(message);
       }
       return false;
     }
@@ -108,7 +108,7 @@ public class ParkingPlusParkingSalesCachedProxyService
               "has expired";
       LOG.error(message);
       if (throwException) {
-        throw new ParkingPlusInvalidSalesSimpleException(message);
+        throw new ParkingPlusInvalidSalesException(message);
       }
       return false;
     }

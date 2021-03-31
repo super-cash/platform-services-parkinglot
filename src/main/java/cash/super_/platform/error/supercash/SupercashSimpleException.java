@@ -20,8 +20,8 @@ public class SupercashSimpleException extends RuntimeException {
     }
 
     public SupercashSimpleException(String additionalDescription) {
-        super(SupercashErrorCode.GENERAL_ERROR.description());
-        SupercashExceptionModel.setErrorCodeAsSupercashErrorCode(SupercashErrorCode.GENERAL_ERROR);
+        super(SupercashErrorCode.GENERIC_ERROR.description());
+        SupercashExceptionModel.setErrorCodeAsSupercashErrorCode(SupercashErrorCode.GENERIC_ERROR);
         SupercashExceptionModel.setAdditionalDescription(additionalDescription);
     }
 

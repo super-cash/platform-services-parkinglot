@@ -81,7 +81,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    */
   @ExceptionHandler(value = {Exception.class, MissingRequestHeaderException.class})
   public final ResponseEntity<Object> handleAllExceptions(Exception error, WebRequest request) {
-    LOG.error("Error handling the request: {}", request);
+    LOG.error("Error handling the request.", error);
 
     if (error instanceof SupercashRetryableException) {
       return makeErrorResponse((SupercashSimpleException) error.getCause());

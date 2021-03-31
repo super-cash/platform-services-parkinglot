@@ -2,7 +2,8 @@ package cash.super_.platform.error.supercash.feign;
 
 import cash.super_.platform.error.model.SupercashExceptionModel;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.error.supercash.SupercashThirdPartySystemSimpleException;
+import cash.super_.platform.error.supercash.SupercashThirdPartySystemException;
+import cash.super_.platform.error.supercash.SupercashUnknownHostException;
 import cash.super_.platform.error.thirdparty.PagarmeException;
 import cash.super_.platform.error.thirdparty.WPSException;
 import cash.super_.platform.utils.JsonUtil;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,7 +41,11 @@ public class SupercashErrorDecoder implements ErrorDecoder {
   @Override
   public Exception decode(String methodKey, Response response) {
     Exception exception = defaultErrorDecoder.decode(methodKey, response);
+
     if (exception instanceof RetryableException) {
+      if (exception.getCause() instanceof UnknownHostException) {
+        return new SupercashUnknownHostException("Host " + exception.getCause().getMessage() + " unknown.");
+      }
       return exception;
     }
 
@@ -62,12 +68,12 @@ public class SupercashErrorDecoder implements ErrorDecoder {
       SupercashExceptionModel supercashExceptionModel = null;
       if (responseBody.contains("mensagem") && responseBody.contains("errorCode")) {
         WPSException wpsException = JsonUtil.toObject(responseBody, WPSException.class);
-        supercashSimpleException = new SupercashThirdPartySystemSimpleException();
+        supercashSimpleException = new SupercashThirdPartySystemException();
         supercashSimpleException.SupercashExceptionModel.addField("third_party_message", wpsException.getMessage());
         supercashSimpleException.SupercashExceptionModel.addField("third_party_error_code", wpsException.getErrorCode());
       } else if (responseBody.contains("errors") && responseBody.contains("parameter_name")) {
         PagarmeException pagarmeException = JsonUtil.toObject(responseBody, PagarmeException.class);
-        supercashSimpleException = new SupercashThirdPartySystemSimpleException();
+        supercashSimpleException = new SupercashThirdPartySystemException();
         supercashSimpleException.SupercashExceptionModel.addField("third_party_errors", pagarmeException.getErrors());
         supercashSimpleException.SupercashExceptionModel.addField("third_party_url", pagarmeException.getUrl());
         supercashSimpleException.SupercashExceptionModel.addField("third_party_method", pagarmeException.getMethod());

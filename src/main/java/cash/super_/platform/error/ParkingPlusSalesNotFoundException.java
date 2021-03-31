@@ -4,21 +4,21 @@ import cash.super_.platform.error.supercash.SupercashErrorCode;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
-public class ParkingPlusSalesNotFoundSimpleException extends SupercashSimpleException {
+public class ParkingPlusSalesNotFoundException extends SupercashSimpleException {
 
-    public ParkingPlusSalesNotFoundSimpleException() {
+    public ParkingPlusSalesNotFoundException() {
         super(SupercashErrorCode.SALE_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    public ParkingPlusSalesNotFoundSimpleException(HttpStatus additionalErrorCode) {
+    public ParkingPlusSalesNotFoundException(HttpStatus additionalErrorCode) {
         super(SupercashErrorCode.SALE_NOT_FOUND, additionalErrorCode);
     }
 
-    public ParkingPlusSalesNotFoundSimpleException(String additionalMessage) {
+    public ParkingPlusSalesNotFoundException(String additionalMessage) {
         super(SupercashErrorCode.SALE_NOT_FOUND, HttpStatus.NOT_FOUND, additionalMessage);
     }
 
-    public ParkingPlusSalesNotFoundSimpleException(HttpStatus additionalErrorCode, String additionalMessage) {
+    public ParkingPlusSalesNotFoundException(HttpStatus additionalErrorCode, String additionalMessage) {
         super(SupercashErrorCode.SALE_NOT_FOUND, additionalErrorCode, additionalMessage);
     }
 }

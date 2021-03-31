@@ -9,7 +9,7 @@ public class IsNumber {
     public static boolean stringIsLong(String numberStr) {
         if (numberStr != null) {
             try {
-                double d = Long.parseLong(numberStr);
+                Long.parseLong(numberStr);
                 return true;
             } catch (NumberFormatException nfe) {
                 return false;

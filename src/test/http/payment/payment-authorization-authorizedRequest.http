@@ -1,4 +1,4 @@
-POST {{host}}:{{port}}/v1/parking_lot/1/users/marcello-123/tickets/029466836971/pay
+POST {{host}}:{{port}}/v2/parking_lot/1/users/marcello-123/tickets/029466836971/pay
 accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040

@@ -49,9 +49,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param userId
    * @param paginationStart
    * @param paginationLimit
-   * @return
-   * @throws IOException
-   * @throws InterruptedException
+   * @return ParkingTicketPaymentsMadeStatus
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
@@ -62,7 +60,7 @@ public class ParkingPlusTicketsController extends AbstractController {
       @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId,
       @RequestParam("page_start") Optional<Integer> paginationStart,
-      @RequestParam("page_limit") Optional<Integer> paginationLimit) throws IOException, InterruptedException {
+      @RequestParam("page_limit") Optional<Integer> paginationLimit) {
 
     isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
@@ -79,9 +77,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param userId
    * @param ticketId
    * @param paymentRequest
-   * @return
-   * @throws IOException
-   * @throws InterruptedException
+   * @return ParkingTicketAuthorizedPaymentStatus
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}/pay", method = RequestMethod.POST,
@@ -108,9 +104,7 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param transactionId
    * @param userId
    * @param ticketId
-   * @return
-   * @throws IOException
-   * @throws InterruptedException
+   * @return ParkingTicketStatus
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_id}")
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}", method = RequestMethod.GET, produces = {"application/json"})
@@ -121,7 +115,7 @@ public class ParkingPlusTicketsController extends AbstractController {
       @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
-      @RequestParam("saleId") Optional<Long> saleId) throws IOException, InterruptedException {
+      @RequestParam("saleId") Optional<Long> saleId) {
 
     isRequestValid(headerUserId, userId, marketplaceId, storeId);
 

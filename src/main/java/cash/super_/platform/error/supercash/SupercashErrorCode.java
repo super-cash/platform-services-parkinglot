@@ -10,8 +10,9 @@ public enum SupercashErrorCode {
     PAYMENT_NOT_APPROVED(3001, "Payment not approved."),
     AMOUNT_IS_ZERO(3002, "The ticket fee is 0."),
     ALREADY_PAID(3003, "This payment is already processed."),
-    GENERAL_ERROR(9001, "General error."),
+    GENERIC_ERROR(9001, "Generic error."),
     MISSING_ARGUMENT(9997, "Missing argument."),
+    UNKNOWN_HOST(9998, "Unknown Host Exception."),
     THIRD_PARTY_EXCEPTION(9998, "Third-party system exception."),
     INVALID_VALUE(9999, "Invalid value.");
 

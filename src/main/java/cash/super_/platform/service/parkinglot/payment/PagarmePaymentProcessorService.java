@@ -1,9 +1,11 @@
 package cash.super_.platform.service.parkinglot.payment;
 
 import brave.Tracer;
-import cash.super_.platform.error.ParkingPlusPaymentNotApprovedSimpleException;
+import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedSimpleException;
+import cash.super_.platform.error.supercash.SupercashThirdPartySystemException;
+import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
+import cash.super_.platform.error.supercash.SupercashUnknownHostException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
@@ -12,6 +14,7 @@ import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.JsonUtil;
 import com.google.common.base.Strings;
 import feign.FeignException;
+import feign.RetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +149,7 @@ public class PagarmePaymentProcessorService {
     payRequest.setAmount(payRequest.getAmount() + parkingPlusProperties.getOurFee());
     payRequest.setSplitRules(splitRules);
     payRequest.addMetadata("ticket_number", item.getId());
-    payRequest.addMetadata("service_free", tsItem.getUnitPrice().toString());
+    payRequest.addMetadata("service_fee", tsItem.getUnitPrice().toString());
     payRequest.addMetadata("marketplace_id", marketplaceId);
     payRequest.addMetadata("store_id", storeId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
@@ -156,17 +160,25 @@ public class PagarmePaymentProcessorService {
     TransactionResponseSummary transactionResponse = null;
     try {
       transactionResponse = pagarmeClientService.requestPayment(payRequest);
+
     } catch (FeignException.BadRequest badRequestException) {
-      SupercashTransactionStatusNotExpectedSimpleException exception = JsonUtil.toObject(badRequestException.responseBody(),
-              SupercashTransactionStatusNotExpectedSimpleException.class);
+      // This exception can occurs because Pagarme Service may return a different status other than PAID, which is
+      // expected.
+      SupercashTransactionStatusNotExpectedException exception = JsonUtil.toObject(badRequestException.responseBody(),
+              SupercashTransactionStatusNotExpectedException.class);
       LOG.error(exception.getMessage());
       throw exception;
+    } catch (feign.RetryableException re) {
+      if (re.getCause() instanceof UnknownHostException) {
+        throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
+      }
+      throw re;
     }
 
     if (transactionResponse.getStatus() == Transaction.Status.PAID) {
       return paymentAuthService.authorizePayment(userId, payRequest, transactionResponse);
     } else {
-      ParkingPlusPaymentNotApprovedSimpleException exception = new ParkingPlusPaymentNotApprovedSimpleException(HttpStatus.FORBIDDEN,
+      ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
               "Transaction status is " + transactionResponse.getStatus());
       LOG.error(exception.getMessage());
       throw exception;
