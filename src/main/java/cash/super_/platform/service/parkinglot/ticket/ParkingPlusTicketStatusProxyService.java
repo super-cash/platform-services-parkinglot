@@ -158,14 +158,14 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       if (throwExceptionWhileValidating) throw exception;
 
     } else {
-      LocalDateTime todayDateTime = LocalDateTime.now();
-      long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
-      if (ticketStatus.getTarifaPaga() > 0) {
-        allowedExitEpoch = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-      }
-      LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
-              ZoneId.systemDefault());
-      if (ticketFee == ticketFeePaid && todayDateTime.isBefore(allowedExitDateTime)) {
+//      LocalDateTime todayDateTime = LocalDateTime.now();
+//      long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
+//      if (ticketStatus.getTarifaPaga() > 0) {
+//        allowedExitEpoch = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
+//      }
+//      LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
+//              ZoneId.systemDefault());
+      if (ticketFee == ticketFeePaid) { // && todayDateTime.isBefore(allowedExitDateTime)) {
         message = "The ticket is already paid.";
         LOG.debug(message);
         supercashTicketStatus = SupercashTicketStatus.PAID;
