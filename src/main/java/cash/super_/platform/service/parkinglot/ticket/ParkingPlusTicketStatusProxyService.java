@@ -125,6 +125,16 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.error("Error deserializing status ticket to json.", jsonError);
     }
 
+    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
+    Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
+    if (allowedExitEpochAfterLastPaymentObj != null) {
+      if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
+        allowedExitEpoch = allowedExitEpochAfterLastPaymentObj;
+      }
+    }
+
+    ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
+
     if (!validate) {
       return new ParkingTicketStatus(ticketStatus);
     }
@@ -134,49 +144,45 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     String message = "";
     SupercashTicketStatus supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
 
+    long queryEpoch = ticketStatus.getDataConsulta();
+    long entryEpoch = ticketStatus.getDataDeEntrada();
+
+    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), ZoneId.systemDefault());
+    LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
+            ZoneId.systemDefault());
+
     if (ticketFee == 0) {
-      long entryDate = ticketStatus.getDataDeEntrada();
-      Long exitAllowedDate = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-      if (exitAllowedDate == null) {
-        exitAllowedDate = ticketStatus.getDataPermitidaSaida();
-      }
-      if (exitAllowedDate.longValue() - entryDate < 0) {
+      if (allowedExitEpoch - entryEpoch < 0) {
         message += "Today is free.";
         supercashTicketStatus = SupercashTicketStatus.FREE;
       } else {
-        if (org.joda.time.Instant.now().getMillis() - entryDate <= properties.getGracePeriod()*1000) {
-          LocalDateTime ldt = LocalDateTime.ofInstant(Instant.ofEpochMilli(exitAllowedDate.longValue()),
-                  TimeZone.getDefault().toZoneId());
-          message += "You can go out until " + ldt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        if (queryEpoch - entryEpoch <= properties.getGracePeriod() * 1000) {
+          message += "You can go out until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
           supercashTicketStatus = SupercashTicketStatus.GRACE_PERIOD;
         }
       }
       LOG.debug(message);
       SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
-      exception.addField("entry_date", entryDate);
-      exception.addField("exit_allowed_date", exitAllowedDate);
+      exception.addField("entry_date", entryEpoch);
+      exception.addField("exit_allowed_date", allowedExitEpoch);
       if (throwExceptionWhileValidating) throw exception;
 
     } else {
-//      LocalDateTime todayDateTime = LocalDateTime.now();
-//      long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
-//      if (ticketStatus.getTarifaPaga() > 0) {
-//        allowedExitEpoch = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-//      }
-//      LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
-//              ZoneId.systemDefault());
-      if (ticketFee == ticketFeePaid) { // && todayDateTime.isBefore(allowedExitDateTime)) {
+      if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
         message = "The ticket is already paid.";
         LOG.debug(message);
         supercashTicketStatus = SupercashTicketStatus.PAID;
         if (throwExceptionWhileValidating) throw new SupercashTransactionAlreadyPaidException(message);
+
       } else {
         if (amount != ticketFee) {
-          message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-                  ticketFee;
-          LOG.debug(message);
           supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
-          if (throwExceptionWhileValidating) throw new SupercashInvalidValueException(message);
+          if (throwExceptionWhileValidating) {
+            message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
+                    ticketFee;
+            LOG.debug(message);
+            throw new SupercashInvalidValueException(message);
+          }
         }
       }
     }

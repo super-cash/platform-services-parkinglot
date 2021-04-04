@@ -1,15 +1,16 @@
 # 029466843584 (paid), 030255713239 (paid), 030255745055, 030255720142,
-POST {{host}}:{{port}}/v2/parking_lot/1/users/leandro-123/tickets/326236318952/pay
+POST {{host}}:{{port}}/v2/parking_lot/tickets/245731153582/pay
 accept: application/json
 X-Supercash-Uid: leandro-123
-X-Supercash-Tid: new-transaction20303040
+X-Supercash-Tid: new-transaction20
 X-Supercash-MarketplaceId: 6115
 X-Supercash-StoreId: 1
 Content-Type: application/json
+Accept-Encoding: application/json
 
 {
   "payTicketRequest": {
-    "amount": 900,
+    "amount": 1700,
     "card_number": "4111111111111111",
     "card_cvv": "111",
     "card_expiration_date": "1221",
@@ -41,15 +42,14 @@ Content-Type: application/json
     },
     "items": [
       {
-        "id": "326236318952",
-        "unit_price": 900
+        "id": "245731153582",
+        "unit_price": 1700
       }
     ],
     "metadata": {
       "device_id": "1",
       "private_ip": "10.0.0.1",
-      "public_ip": "10.0.0.1",
-      "lapsed_time": 3600
+      "public_ip": "10.0.0.1"
     }
   }
 }

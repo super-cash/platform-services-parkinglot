@@ -9,7 +9,6 @@ import java.util.Optional;
 import cash.super_.platform.service.parkinglot.model.ParkingPaidTicketStatus;
 import cash.super_.platform.service.parkinglot.payment.PagarmeClientService;
 import cash.super_.platform.utils.IsNumber;
-import cash.super_.platform.utils.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import brave.Span;
@@ -19,7 +18,6 @@ import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPaymentsMadeQuery;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPaymentsMadeStatus;
 import cash.super_.platform.utils.SecretsUtil;
-import springfox.documentation.spring.web.json.Json;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -68,16 +66,19 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
           paymentMetadata = pagarmeClientService.getTransactionMetadata("ticket_number",
                   pagamentoEfetuado.getTicket());
         } catch (feign.RetryableException re) {
+          // TODO: this will be not necessary when we will store parking lot transaction info in the database.
           if (re.getCause() instanceof UnknownHostException) {
             LOG.error("Couldn't get service_fee for ticket {} due to unknown host exception: '{}'",
                     pagamentoEfetuado.getTicket(), re.getCause().getMessage());
+          } else {
+            throw re;
           }
         }
         LOG.debug("paymentMetadata is: {}", paymentMetadata);
         if (paymentMetadata != null) {
           String serviceFeeKey = "service_fee";
-          if (paymentMetadata.containsKey(serviceFeeKey) && IsNumber.stringIsLong(paymentMetadata.get(serviceFeeKey))) {
-            parkingPaidTicketStatus.setServiceFee(Long.parseLong(paymentMetadata.get(serviceFeeKey)));
+          if (paymentMetadata.containsKey(serviceFeeKey)) {
+            parkingPaidTicketStatus.setServiceFee(IsNumber.stringIsDouble(paymentMetadata.get(serviceFeeKey)).longValue());
           }
         }
         parkingPaidTicketStatuses.add(parkingPaidTicketStatus);

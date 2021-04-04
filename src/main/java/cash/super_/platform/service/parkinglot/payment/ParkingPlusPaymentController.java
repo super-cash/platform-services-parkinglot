@@ -33,12 +33,9 @@ public class ParkingPlusPaymentController extends AbstractController {
           produces = {"application/json"})
   public ResponseEntity<ParkingPlusPaymentServiceFee> getPaymentServiceFee(
       @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-Uid") String userId,
       @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("supercash_uid") String userId) throws IOException, InterruptedException {
-
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
+      @RequestHeader("X-Supercash-StoreId") String storeId) throws IOException, InterruptedException {
 
     ParkingPlusPaymentServiceFee pppsf = new ParkingPlusPaymentServiceFee(properties.getOurFee());
 
@@ -51,12 +48,9 @@ public class ParkingPlusPaymentController extends AbstractController {
           produces = {"application/json"})
   public ResponseEntity<ParkingPlusPaymentGracePeriod> getPaymentGracePeriod(
           @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String headerUserId,
+          @RequestHeader("X-Supercash-Uid") String userId,
           @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-          @RequestHeader("X-Supercash-StoreId") String storeId,
-          @PathVariable("supercash_uid") String userId) {
-
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
+          @RequestHeader("X-Supercash-StoreId") String storeId) {
 
     ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(properties.getGracePeriod());
 

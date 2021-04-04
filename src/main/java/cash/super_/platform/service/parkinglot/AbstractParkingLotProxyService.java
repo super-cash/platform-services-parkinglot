@@ -25,9 +25,6 @@ public abstract class AbstractParkingLotProxyService {
   @Autowired
   protected Tracer tracer;
 
-//  @Autowired 
-//  protected Tracing tracing;
-
   @Autowired
   protected ServicoPagamentoTicket2Api parkingTicketPaymentsApi;
 

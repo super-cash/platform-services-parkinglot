@@ -37,13 +37,10 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   /**
    * Where the call will come through
    */
-  public static final String BASE_ENDPOINT = "/parking_lot/1/users/{supercash_uid}";
+  public static final String BASE_ENDPOINT = "/parking_lot";
 
   @Autowired
   protected ParkingPlusProperties properties;
-
-  @Autowired
-  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
   @Autowired
   PagarmeClientService pagarmeClientService;
@@ -150,31 +147,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   private ResponseEntity<Object> makeErrorResponse(SupercashSimpleException errorCause) {
     return new ResponseEntity<>(errorCause,
             errorCause.SupercashExceptionModel.getAdditionalErrorCodeAsHttpStatus());
-  }
-
-  /**
-   * Verifies if the request is valid based on the inputs
-   * TODO: Make sure we can remove the headerUserId and still map it to the loggers
-   *
-   * @param headerUserId
-   * @param userId
-   */
-  protected void isRequestValid(String headerUserId, String userId, String marketplaceId, String storeId) {
-    if (Strings.isNullOrEmpty(headerUserId) || Strings.isNullOrEmpty(userId)) {
-      throw new SupercashMissingArgumentException("User ID and Header User ID must be provided.");
-    }
-
-    if (!headerUserId.equals(userId)) {
-      throw new SupercashMissingArgumentException("UserID must be provided in both header and path.");
-    }
-
-    if (Strings.isNullOrEmpty(marketplaceId)) {
-      throw new SupercashMissingArgumentException("Missing marketplaceId in the header.");
-    }
-
-    if (Strings.isNullOrEmpty(storeId)) {
-      throw new SupercashMissingArgumentException("Missing storeId in the header.");
-    }
   }
 
 }

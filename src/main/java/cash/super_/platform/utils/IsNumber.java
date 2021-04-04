@@ -1,26 +1,27 @@
 package cash.super_.platform.utils;
 
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
+
 public class IsNumber {
 
 
     /* TODO: this is one of the worst way to check if a string is a number. There are better alternatives.
        https://www.baeldung.com/java-check-string-number
      */
-    public static boolean stringIsLong(String numberStr) {
-        if (numberStr != null) {
-            try {
-                Long.parseLong(numberStr);
-                return true;
-            } catch (NumberFormatException nfe) {
-                return false;
-            }
+    public static Double stringIsDouble(String numberStr) {
+        try {
+            return Double.valueOf(numberStr);
+        } catch (NumberFormatException nfe) {
+            return null;
         }
-        return false;
     }
 
-    public static boolean stringIsLongWithException(String numberStr, String fieldName) throws IllegalArgumentException {
-        if (!IsNumber.stringIsLong(numberStr)) throw new IllegalArgumentException("Field '" + fieldName +
-                "' must be a number.");
-        return true;
+    public static Double stringIsDoubleWithException(String numberStr, String fieldName) {
+        Double number = IsNumber.stringIsDouble(numberStr);
+        if (number == null) {
+            throw new SupercashInvalidValueException("Field '" + fieldName + "' must be provided as a number.");
+        }
+        return number;
     }
 }

@@ -39,8 +39,6 @@ public class ParkingPlusSalesController extends AbstractController {
       @RequestHeader("X-Supercash-StoreId") String storeId,
       @PathVariable("supercash_uid") String userId) {
 
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
-
     ParkingGarageSales currentParkingGarageSales = parkingSalesService.fetchCurrentGarageSales();
 
     return new ResponseEntity<>(currentParkingGarageSales, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
@@ -56,8 +54,6 @@ public class ParkingPlusSalesController extends AbstractController {
           @PathVariable("supercash_uid") String userId,
           @PathVariable("sale_id") Long saleId,
           @RequestParam("validate") Optional<Boolean> validate) throws IOException, InterruptedException {
-
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     Promocao sale = parkingSalesService.getSale(saleId, true, validate);
 

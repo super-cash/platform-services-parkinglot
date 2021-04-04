@@ -1,20 +1,13 @@
 package cash.super_.platform.service.parkinglot.payment;
 
-import brave.Tracer;
+import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashThirdPartySystemException;
-import cash.super_.platform.error.supercash.SupercashTransactionStatusNotExpectedException;
 import cash.super_.platform.error.supercash.SupercashUnknownHostException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
-import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.utils.IsNumber;
-import cash.super_.platform.utils.JsonUtil;
-import com.google.common.base.Strings;
-import feign.FeignException;
-import feign.RetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -36,18 +28,12 @@ import java.util.Map;
  *
  */
 @Service
-public class PagarmePaymentProcessorService {
+public class PagarmePaymentProcessorService extends AbstractParkingLotProxyService {
 
   protected static final Logger LOG = LoggerFactory.getLogger(PagarmePaymentProcessorService.class);
 
   @Autowired
-  protected Tracer tracer;
-
-  @Autowired
   private PagarmeClientService pagarmeClientService;
-
-  @Autowired
-  private ParkingPlusProperties parkingPlusProperties;
 
   @Autowired
   private BuildProperties buildProperties;
@@ -55,24 +41,9 @@ public class PagarmePaymentProcessorService {
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, String userId,
-                                                             String marketplaceId, String storeId) {
-
-    Item item = payRequest.getItems().get(0);
-
-    Map<String, String> metadata = payRequest.getMetadata();
-
-    if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
-      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
-      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
-      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata");
-    }
+  public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus,
+                                                             String userId, String marketplaceId, String storeId,
+                                                             String transactionId) {
 
     String fieldName;
 
@@ -84,34 +55,34 @@ public class PagarmePaymentProcessorService {
 //    } else {
 //      payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
 //    }
-    long saleIdProperty = parkingPlusProperties.getSaleId();
+    long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
-      payRequest.addMetadata("sale_id", parkingPlusProperties.getSaleId().toString());
+      payRequest.addMetadata("sale_id", properties.getSaleId().toString());
     }
 
     fieldName = "CPF or CNPJ";
-    IsNumber.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+    IsNumber.stringIsDoubleWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
 
     fieldName = "CEP";
-    IsNumber.stringIsLongWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+    IsNumber.stringIsDoubleWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
 
     fieldName = "Card Number";
-    IsNumber.stringIsLongWithException(payRequest.getCardNumber(), fieldName);
+    IsNumber.stringIsDoubleWithException(payRequest.getCardNumber(), fieldName);
 
     fieldName = "Card CVV";
-    IsNumber.stringIsLongWithException(payRequest.getCardCvv(), fieldName);
+    IsNumber.stringIsDoubleWithException(payRequest.getCardCvv(), fieldName);
 
     fieldName = "Card Expiration Date";
-    IsNumber.stringIsLongWithException(payRequest.getCardExpirationDate(), fieldName);
+    IsNumber.stringIsDoubleWithException(payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
-    ourClient.setRecipientId(parkingPlusProperties.getClientRecipientId());
+    ourClient.setRecipientId(properties.getClientRecipientId());
     ourClient.setLiable(true);
     ourClient.setChargeRemainderFee(true);
     ourClient.setChargeProcessingFee(false);
     SplitRule us = new SplitRule();
-    us.setRecipientId(parkingPlusProperties.getOurRecipientId());
+    us.setRecipientId(properties.getOurRecipientId());
     us.setLiable(true);
     us.setChargeRemainderFee(true);
     us.setChargeProcessingFee(true);
@@ -119,7 +90,7 @@ public class PagarmePaymentProcessorService {
     Integer total = payRequest.getAmount();
 
     /* Calculate our client amount to receive, based on percentage negociated. */
-    double ourClientAmount = total * parkingPlusProperties.getClientPercentage() / 100;
+    double ourClientAmount = total * properties.getClientPercentage() / 100;
     ourClient.setAmount(Double.valueOf(ourClientAmount).intValue());
 
     /*
@@ -129,45 +100,51 @@ public class PagarmePaymentProcessorService {
 //    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
 //    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
 //    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
-    us.setAmount(total - ourClient.getAmount() + parkingPlusProperties.getOurFee());
+    us.setAmount(total - ourClient.getAmount() + properties.getOurFee());
 
     splitRules.add(ourClient);
     splitRules.add(us);
 
+    Item item = payRequest.getItems().get(0);
     item.setQuantity(1);
     item.setTangible(false);
-    item.setTitle(parkingPlusProperties.getTicketItemTitle());
+    item.setTitle(properties.getTicketItemTitle());
 
     Item tsItem = new Item();
     tsItem.setId("1");
     tsItem.setQuantity(1);
     tsItem.setTangible(false);
-    tsItem.setTitle(parkingPlusProperties.getServiceFeeItemTitle());
-    tsItem.setUnitPrice(parkingPlusProperties.getOurFee());
+    tsItem.setTitle(properties.getServiceFeeItemTitle());
+    tsItem.setUnitPrice(properties.getOurFee());
     payRequest.addItem(tsItem);
 
-    payRequest.setAmount(payRequest.getAmount() + parkingPlusProperties.getOurFee());
+    payRequest.setAmount(payRequest.getAmount() + properties.getOurFee());
+
     payRequest.setSplitRules(splitRules);
+
+    payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
+
     payRequest.addMetadata("ticket_number", item.getId());
     payRequest.addMetadata("service_fee", tsItem.getUnitPrice().toString());
     payRequest.addMetadata("marketplace_id", marketplaceId);
     payRequest.addMetadata("store_id", storeId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
-    payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
+    Long allowedExitDateTime = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
+    if (allowedExitDateTime == null) {
+      allowedExitDateTime = ticketStatus.getDataPermitidaSaida();
+    }
+    payRequest.addMetadata("lapsed_time", String.valueOf(allowedExitDateTime.longValue()
+            - ticketStatus.getDataDeEntrada().longValue()));
+
     payRequest.setCapture(true);
+
     payRequest.setAsync(false);
 
     TransactionResponseSummary transactionResponse = null;
+
     try {
       transactionResponse = pagarmeClientService.requestPayment(payRequest);
 
-    } catch (FeignException.BadRequest badRequestException) {
-      // This exception can occurs because Pagarme Service may return a different status other than PAID, which is
-      // expected.
-      SupercashTransactionStatusNotExpectedException exception = JsonUtil.toObject(badRequestException.responseBody(),
-              SupercashTransactionStatusNotExpectedException.class);
-      LOG.error(exception.getMessage());
-      throw exception;
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
@@ -175,8 +152,12 @@ public class PagarmePaymentProcessorService {
       throw re;
     }
 
+    /*
+     * Since we activate a sync transaction, PAID should be expected, otherwise we need to return that the
+     * transaction was not accepted.
+     */
     if (transactionResponse.getStatus() == Transaction.Status.PAID) {
-      return paymentAuthService.authorizePayment(userId, payRequest, transactionResponse);
+      return paymentAuthService.authorizePayment(userId, transactionId, payRequest, transactionResponse);
     } else {
       ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
               "Transaction status is " + transactionResponse.getStatus());

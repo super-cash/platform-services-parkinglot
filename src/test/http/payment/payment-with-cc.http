@@ -1,10 +1,11 @@
-POST {{host}}:{{port}}/v2/parking_lot/1/users/leandro-123/tickets/030265292584/pay
+POST {{host}}:{{port}}/v2/parking_lot/tickets/030265292584/pay
 accept: application/json
 X-Supercash-Uid: leandro-123
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-MarketplaceId: 123
 X-Supercash-StoreId: 456
 Content-Type: application/json
+Accept-Encoding: application/json
 
 {
   "request": {

@@ -1,4 +1,4 @@
-GET {{host}}:{{port}}/v2/parking_lot/1/users/marcello-123/payment/servicefee
+GET {{host}}:{{port}}/v2/parking_lot/payment/servicefee
 Accept: application/json
 X-Supercash-Uid: marcello-123
 X-Supercash-Tid: new-transaction20303040

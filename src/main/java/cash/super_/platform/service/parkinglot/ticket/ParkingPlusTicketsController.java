@@ -1,6 +1,5 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -55,14 +54,11 @@ public class ParkingPlusTicketsController extends AbstractController {
   @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingTicketPaymentsMadeStatus> getParkingTicketPaymentsStatus(
       @RequestHeader("X-Supercash-Tid") String transactionId, 
-      @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-Uid") String userId,
       @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
       @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("supercash_uid") String userId,
       @RequestParam("page_start") Optional<Integer> paginationStart,
       @RequestParam("page_limit") Optional<Integer> paginationLimit) {
-
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
 
     ParkingTicketPaymentsMadeStatus parkingTicketStatus =
         paymentsService.getPaymentsMade(userId, paginationStart, paginationLimit);
@@ -73,7 +69,6 @@ public class ParkingPlusTicketsController extends AbstractController {
   /**
    * Pays a ticket for a given user using WPS infra
    * @param transactionId
-   * @param headerUserId
    * @param userId
    * @param ticketId
    * @param paymentRequest
@@ -84,17 +79,14 @@ public class ParkingPlusTicketsController extends AbstractController {
       consumes = {"application/json"}, produces = {"application/json"})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
       @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-Uid") String userId,
       @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
       @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
       @RequestBody ParkingTicketPayment paymentRequest) {
 
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
-
     ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketId,
-            marketplaceId, storeId);
+            marketplaceId, storeId, transactionId);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
@@ -110,14 +102,11 @@ public class ParkingPlusTicketsController extends AbstractController {
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_id}", method = RequestMethod.GET, produces = {"application/json"})
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
       @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String headerUserId,
+      @RequestHeader("X-Supercash-Uid") String userId,
       @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
       @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("supercash_uid") String userId,
       @PathVariable("ticket_id") String ticketId,
-      @RequestParam("saleId") Optional<Long> saleId) {
-
-    isRequestValid(headerUserId, userId, marketplaceId, storeId);
+      @RequestParam("sale_id") Optional<Long> saleId) {
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketId, saleId);
 
