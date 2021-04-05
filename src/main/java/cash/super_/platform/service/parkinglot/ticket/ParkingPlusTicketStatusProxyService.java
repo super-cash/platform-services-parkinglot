@@ -121,15 +121,14 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.error("Error deserializing status ticket to json.", jsonError);
     }
 
-      long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
+    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
     Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
     if (allowedExitEpochAfterLastPaymentObj != null) {
       if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
         allowedExitEpoch = allowedExitEpochAfterLastPaymentObj;
+        ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
       }
     }
-
-    ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
 
     if (!validate) {
       return new ParkingTicketStatus(ticketStatus);

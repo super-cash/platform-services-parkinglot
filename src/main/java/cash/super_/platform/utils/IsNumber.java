@@ -32,6 +32,7 @@ public class IsNumber {
         } catch (NumberFormatException nfe) {
             return null;
         }
+        return null;
     }
 
     public static Long stringIsLongWithException(String numberStr, String fieldName) {
