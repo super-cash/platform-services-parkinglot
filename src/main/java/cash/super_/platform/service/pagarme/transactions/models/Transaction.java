@@ -109,7 +109,7 @@ public class Transaction {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "transaction_id", referencedColumnName="transaction_id")
-    private List<Item> items;
+    private List<Item> items = new ArrayList<>();
 
     /**
      * Objeto com dados adicionais do cliente/produto/serviço vendido

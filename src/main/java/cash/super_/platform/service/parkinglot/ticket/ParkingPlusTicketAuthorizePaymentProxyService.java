@@ -195,9 +195,10 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
 
-    if (paymentRequest.getPayTicketRequest().getItems().size() == 0) {
-      throw new SupercashInvalidValueException("You have to provide at least one item in this request.");
-    }
+//    List<Item> items = paymentRequest.getPayTicketRequest().getItems();
+//    if (items != null && items.size() == 0) {
+//      throw new SupercashInvalidValueException("You have to provide at least one item in this request.");
+//    }
 
     Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
 
@@ -216,12 +217,11 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     if (paymentRequest.getPayTicketRequest() != null) {
       TransactionRequest request = paymentRequest.getPayTicketRequest();
-      List<Item> items = request.getItems();
-
-      if (items == null || items.size() == 0) {
-        throw new SupercashInvalidValueException("At least one item must be provided.");
-      }
-      RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, items.get(0).getUnitPrice());
+//      List<Item> items = request.getItems();
+//      if (items == null || items.size() == 0) {
+//        throw new SupercashInvalidValueException("At least one item must be provided.");
+//      }
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
       paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,
               userId, marketplaceId, storeId);
 
