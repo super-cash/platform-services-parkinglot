@@ -15,7 +15,7 @@ public class SupercashExceptionModel {
     private SupercashErrorCode errorCode = SupercashErrorCode.NO_ERROR;
 
     @JsonProperty(value = "additional_error_code")
-    private HttpStatus additionalErrorCode = HttpStatus.OK;
+    private HttpStatus additionalErrorCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
     @JsonProperty(value = "additional_description")
     private String additionalDescription = "";

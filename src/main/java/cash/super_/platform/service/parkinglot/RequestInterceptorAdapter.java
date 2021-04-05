@@ -56,7 +56,8 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
 
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value);
-        if (value < appMinimalVersion) {
+
+        if (value == null || value < appMinimalVersion) {
             SupercashSimpleException exception = new SupercashWrongClientVersionException(headerName +
                     " required is: " + appMinimalVersion + ".");
             exception.addField("required_app_version", appMinimalVersion);

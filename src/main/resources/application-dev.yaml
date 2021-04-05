@@ -1,14 +1,14 @@
 spring:
 
-#  datasource:
-#    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
-#    username: supercash
-#    password: _#super#_123
-
   datasource:
-    url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+    username: supercash
+    password: _#super#_123
+
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
+#    username: postgres
+#    password: postgres
 
   jpa:
     hibernate:

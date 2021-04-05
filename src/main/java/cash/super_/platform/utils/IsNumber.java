@@ -11,10 +11,11 @@ public class IsNumber {
      */
     public static Double stringIsDouble(String numberStr) {
         try {
-            return Double.valueOf(numberStr);
+            if (numberStr != null) return Double.valueOf(numberStr);
         } catch (NumberFormatException nfe) {
             return null;
         }
+        return null;
     }
 
     public static Double stringIsDoubleWithException(String numberStr, String fieldName) {
@@ -27,7 +28,7 @@ public class IsNumber {
 
     public static Long stringIsLong(String numberStr) {
         try {
-            return Long.valueOf(numberStr);
+            if (numberStr != null) return Long.valueOf(numberStr);
         } catch (NumberFormatException nfe) {
             return null;
         }
