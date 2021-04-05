@@ -3,10 +3,15 @@ package cash.super_.platform.service.pagarme.transactions.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "pagarme_transaction_items")
 public class Item {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
     private Long itemId;
 
@@ -15,7 +20,7 @@ public class Item {
     private String title;
 
     @JsonProperty("unit_price")
-    private Integer unitPrice;
+    private Long unitPrice;
 
     private Integer quantity;
 
@@ -46,11 +51,11 @@ public class Item {
         this.title = title;
     }
 
-    public Integer getUnitPrice() {
+    public Long getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(Integer unitPrice) {
+    public void setUnitPrice(Long unitPrice) {
         this.unitPrice = unitPrice;
     }
 

@@ -20,7 +20,23 @@ public class IsNumber {
     public static Double stringIsDoubleWithException(String numberStr, String fieldName) {
         Double number = IsNumber.stringIsDouble(numberStr);
         if (number == null) {
-            throw new SupercashInvalidValueException("Field '" + fieldName + "' must be provided as a number.");
+            throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
+        }
+        return number;
+    }
+
+    public static Long stringIsLong(String numberStr) {
+        try {
+            return Long.valueOf(numberStr);
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
+    }
+
+    public static Long stringIsLongWithException(String numberStr, String fieldName) {
+        Long number = IsNumber.stringIsLong(numberStr);
+        if (number == null) {
+            throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
         }
         return number;
     }

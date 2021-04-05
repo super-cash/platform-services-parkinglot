@@ -21,7 +21,7 @@ public class TransactionResponseSummary {
      * Paid amount in the transaction
      */
     @JsonProperty(value = "paid_amount")
-    private Integer paidAmount;
+    private Long paidAmount;
 
     /**
      * Supercash internal ID, defined when a request enter for payment.
@@ -52,7 +52,7 @@ public class TransactionResponseSummary {
         return transactionId;
     }
 
-    public Integer getPaidAmount() {
+    public Long getPaidAmount() {
         return paidAmount;
     }
 

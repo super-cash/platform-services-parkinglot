@@ -1,9 +1,8 @@
 package cash.super_.platform.service.parkinglot;
 
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
-import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.error.supercash.SupercashWrongClientVersionException;
+import cash.super_.platform.error.supercash.*;
+import cash.super_.platform.service.parkinglot.model.Marketplace;
+import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
 import cash.super_.platform.utils.IsNumber;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -12,15 +11,20 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
+
 
 public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestInterceptorAdapter.class);
 
+    private MarketplaceRepository marketplaceRepository = null;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         String headerName;
+        Double value;
 
         /* Validating transaction id */
         headerName = "X-Supercash-Tid";
@@ -31,7 +35,7 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
 
         /* Validating user id */
         headerName = "X-Supercash-Uid";
-        Double value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
+        value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value);
 
         /* Validating marketplace id */
@@ -39,24 +43,37 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value);
 
-        /* Validating store id */
-        headerName = "X-Supercash-StoreId";
-        value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-        LOG.debug("{}: {}", headerName, value);
-
-        /* Validating app version */
+        /* Validating app version and marketplace Id in the database */
         headerName = "X-Supercash-App-Version";
-        Double appMinimalVersion = 1.0; // get minimal version for the current marketplace
+        Optional<Marketplace> marketplaceOpt = marketplaceRepository.findById(value.longValue());
+        Double appMinimalVersion = null;
+        if (marketplaceOpt.isPresent()) {
+            appMinimalVersion = marketplaceOpt.get().getAppVersion();
+        } else {
+            throw new SupercashMarketplaceNotFoundException("Marketplace with Id '" + value.longValue() + "' " +
+                    "not found.");
+        }
+
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value);
         if (value < appMinimalVersion) {
             SupercashSimpleException exception = new SupercashWrongClientVersionException(headerName +
-                    " must be at least " + appMinimalVersion + ".");
-            exception.addField("app_version", appMinimalVersion);
+                    " required is: " + appMinimalVersion + ".");
+            exception.addField("required_app_version", appMinimalVersion);
             throw exception;
         }
 
+        /* Validating store id */
+        /* TODO: Validate if store exists in the database. */
+        headerName = "X-Supercash-StoreId";
+        value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
+        LOG.debug("{}: {}", headerName, value);
+
         return true;
+    }
+
+    public void setMarketplaceRepository(MarketplaceRepository marketplaceRepository) {
+        this.marketplaceRepository = marketplaceRepository;
     }
 
 //    private String getParameters(HttpServletRequest request) {

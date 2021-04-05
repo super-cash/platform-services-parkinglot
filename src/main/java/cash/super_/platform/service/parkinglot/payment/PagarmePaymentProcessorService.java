@@ -6,6 +6,9 @@ import cash.super_.platform.error.supercash.SupercashUnknownHostException;
 import cash.super_.platform.service.pagarme.transactions.models.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
+import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
+import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
+import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -41,9 +45,11 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
+  @Autowired
+  private ParkinglotTicketRepository parkinglotTicketRepository;
+
   public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus,
-                                                             String userId, String marketplaceId, String storeId,
-                                                             String transactionId) {
+                                                             String userId, String marketplaceId, String storeId) {
 
     String fieldName;
 
@@ -87,11 +93,11 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     us.setChargeRemainderFee(true);
     us.setChargeProcessingFee(true);
 
-    Integer total = payRequest.getAmount();
+    Long total = payRequest.getAmount();
 
     /* Calculate our client amount to receive, based on percentage negociated. */
-    double ourClientAmount = total * properties.getClientPercentage() / 100;
-    ourClient.setAmount(Double.valueOf(ourClientAmount).intValue());
+    Double ourClientAmount = total * properties.getClientPercentage() / 100;
+    ourClient.setAmount(ourClientAmount.longValue());
 
     /*
      * Calculate our amount to receive, based on percentage negociated and on the additional service fee.
@@ -105,18 +111,21 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     splitRules.add(ourClient);
     splitRules.add(us);
 
-    Item item = payRequest.getItems().get(0);
-    item.setQuantity(1);
-    item.setTangible(false);
-    item.setTitle(properties.getTicketItemTitle());
+    Item ticketItem = new Item();
+    ticketItem.setId(ticketStatus.getNumeroTicket());
+    ticketItem.setUnitPrice(payRequest.getAmount());
+    ticketItem.setQuantity(1);
+    ticketItem.setTangible(false);
+    ticketItem.setTitle(properties.getTicketItemTitle());
+    payRequest.addItem(ticketItem);
 
-    Item tsItem = new Item();
-    tsItem.setId("1");
-    tsItem.setQuantity(1);
-    tsItem.setTangible(false);
-    tsItem.setTitle(properties.getServiceFeeItemTitle());
-    tsItem.setUnitPrice(properties.getOurFee());
-    payRequest.addItem(tsItem);
+    Item serviceFeeItem = new Item();
+    serviceFeeItem.setId("1");
+    serviceFeeItem.setQuantity(1);
+    serviceFeeItem.setTangible(false);
+    serviceFeeItem.setTitle(properties.getServiceFeeItemTitle());
+    serviceFeeItem.setUnitPrice(properties.getOurFee());
+    payRequest.addItem(serviceFeeItem);
 
     payRequest.setAmount(payRequest.getAmount() + properties.getOurFee());
 
@@ -124,8 +133,8 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
 
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
 
-    payRequest.addMetadata("ticket_number", item.getId());
-    payRequest.addMetadata("service_fee", tsItem.getUnitPrice().toString());
+    payRequest.addMetadata("ticket_number", ticketItem.getId());
+    payRequest.addMetadata("service_fee", serviceFeeItem.getUnitPrice().toString());
     payRequest.addMetadata("marketplace_id", marketplaceId);
     payRequest.addMetadata("store_id", storeId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
@@ -133,14 +142,13 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     if (allowedExitDateTime == null) {
       allowedExitDateTime = ticketStatus.getDataPermitidaSaida();
     }
-    payRequest.addMetadata("lapsed_time", String.valueOf(allowedExitDateTime.longValue()
-            - ticketStatus.getDataDeEntrada().longValue()));
+    payRequest.addMetadata("lapsed_time", String.valueOf(allowedExitDateTime - ticketStatus.getDataDeEntrada()));
 
     payRequest.setCapture(true);
 
     payRequest.setAsync(false);
 
-    TransactionResponseSummary transactionResponse = null;
+    TransactionResponse transactionResponse = null;
 
     try {
       transactionResponse = pagarmeClientService.requestPayment(payRequest);
@@ -152,12 +160,46 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
       throw re;
     }
 
+    /* Saving payment request into the database */
+    Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
+    Optional<ParkinglotTicket> parkinglotTicketOptional = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
+    ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
+    parkinglotTicketPayment.setAmount(transactionResponse.getPaidAmount());
+    parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
+    parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
+    parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
+    parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
+    parkinglotTicketPayment.setTransactionResponse(transactionResponse);
+    ParkinglotTicket parkinglotTicket = null;
+    parkinglotTicket = parkinglotTicketOptional.get();
+    if (parkinglotTicketOptional.isEmpty()) {
+      parkinglotTicket = new ParkinglotTicket();
+      parkinglotTicket.setTicketNumber(ticketNumber);
+    }
+    /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
+     * when we need to get specific info about this specific payment.
+     * */
+    parkinglotTicketPayment.setDate(-1L);
+    parkinglotTicket.addPayment(parkinglotTicketPayment);
+    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+
     /*
-     * Since we activate a sync transaction, PAID should be expected, otherwise we need to return that the
+     * Since we activate a sync transaction, PAID should be expected, otherwise we need to return saying that the
      * transaction was not accepted.
      */
     if (transactionResponse.getStatus() == Transaction.Status.PAID) {
-      return paymentAuthService.authorizePayment(userId, transactionId, payRequest, transactionResponse);
+      ParkingTicketAuthorizedPaymentStatus ap = paymentAuthService.authorizePayment(userId, payRequest,
+              transactionResponse);
+      for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
+        parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
+        if (parkinglotTicketPayment.getDate() == -1) {
+          /* Set the dataPagamento for future use, since this information is returned by the WPS. */
+          parkinglotTicketPayment.setDate(ap.getStatus().getDataPagamento());
+          break;
+        }
+      }
+      parkinglotTicketRepository.save(parkinglotTicket);
+      return ap;
     } else {
       ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
               "Transaction status is " + transactionResponse.getStatus());

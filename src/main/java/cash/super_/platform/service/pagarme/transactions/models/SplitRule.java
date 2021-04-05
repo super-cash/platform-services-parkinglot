@@ -1,12 +1,19 @@
 package cash.super_.platform.service.pagarme.transactions.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Table(name = "pagarme_split_rule")
 public class SplitRule {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
     private Long splitRuleId;
 
@@ -20,7 +27,7 @@ public class SplitRule {
 
     private Integer percentage;
 
-    private Integer amount;
+    private Long amount;
 
     @JsonProperty("charge_remainder_fee")
     private Boolean chargeRemainderFee;
@@ -65,11 +72,11 @@ public class SplitRule {
         this.percentage = percentage;
     }
 
-    public Integer getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(Integer amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 

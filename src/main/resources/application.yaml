@@ -3,6 +3,22 @@ spring:
   application:
     name: parking-plus-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
+    username: postgres
+    password: postgres
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    driverClassName: org.postgres.jdbc.Driver
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+#      ddl-auto: create-drop
+      ddl-auto: update
+    properties:
+      hibernate.temp.use_jdbc_metadata_defaults: false
+
   # Zipkin is the destination environment for the traces and it's disabled in development
   # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
   zipkin:
@@ -97,7 +113,7 @@ cash:
     platform:
       service:
         pagarme:
-          url: http://localhost:8120/v2
+          url: http://localhost:8120/v2/pagarme
         parkinglot:
           # Our API Version
           apiVersion: v2
@@ -149,6 +165,10 @@ cash:
 
           # The string used to filter the sales when load it from WPS
           saleNameStartWith: SUPERCASH
+
+          # Prefix to be used as an payment UDID. The UDID will be defined as ex.
+          # {prefix}-{marketplaceId}-{storeId}-{userId}. This field is also used as the "bandeira" for WPS transactions.
+          udidPrefix: supercash
 
           # Time, in seconds, the user can go out without paying the ticket
           gracePeriod: 1200

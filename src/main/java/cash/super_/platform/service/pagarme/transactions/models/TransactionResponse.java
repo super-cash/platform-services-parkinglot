@@ -1,12 +1,15 @@
 package cash.super_.platform.service.pagarme.transactions.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Entity;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionResponse extends Transaction {
 
@@ -85,24 +88,24 @@ public class TransactionResponse extends Transaction {
      * Valor em centavos autorizado na transação, sempre menor ou igual a amount.
      */
     @JsonProperty(value = "authorized_amount")
-    private Integer authorizedAmount;
+    private Long authorizedAmount;
 
     /**
      * Valor em centavos autorizado na transação, sempre menor ou igual a amount.
      */
     @JsonProperty(value = "paid_amount")
-    private Integer paidAmount;
+    private Long paidAmount;
 
     /**
      * Valor em centavos estornado até o momento na transação, sempre menor ou igual a paidamount.
      */
     @JsonProperty(value = "refunded_amount")
-    private Integer refundedAmount;
+    private Long refundedAmount;
 
     /**
      * Custo da transação para o lojista, envolvendo processamento e antifraude.
      */
-    private Integer cost;
+    private Long cost;
 
     /**
      * Últimos 4 dígitos do cartão.
@@ -158,7 +161,7 @@ public class TransactionResponse extends Transaction {
      * propriedade.
      */
     @JsonProperty(value = "subscription_id")
-    private Integer subscriptionId;
+    private Long subscriptionId;
 
     /**
      * Ip do solicitando do pagamento.
@@ -181,13 +184,13 @@ public class TransactionResponse extends Transaction {
     private String session;
 
     @JsonProperty(value = "old_status")
-    private Transaction.Status oldStatus;
+    private Status oldStatus;
 
     @JsonProperty(value = "current_status")
-    private Transaction.Status currentStatus;
+    private Status currentStatus;
 
     @JsonProperty(value = "desired_status")
-    private Transaction.Status desiredStatus;
+    private Status desiredStatus;
 
     public Object getObject() {
         return object;
@@ -283,35 +286,35 @@ public class TransactionResponse extends Transaction {
         this.updatedAt = updatedAt;
     }
 
-    public Integer getAuthorizedAmount() {
+    public Long getAuthorizedAmount() {
         return authorizedAmount;
     }
 
-    public void setAuthorizedAmount(Integer authorizedAmount) {
+    public void setAuthorizedAmount(Long authorizedAmount) {
         this.authorizedAmount = authorizedAmount;
     }
 
-    public Integer getPaidAmount() {
+    public Long getPaidAmount() {
         return paidAmount;
     }
 
-    public void setPaidAmount(Integer paidAmount) {
+    public void setPaidAmount(Long paidAmount) {
         this.paidAmount = paidAmount;
     }
 
-    public Integer getRefundedAmount() {
+    public Long getRefundedAmount() {
         return refundedAmount;
     }
 
-    public void setRefundedAmount(Integer refundedAmount) {
+    public void setRefundedAmount(Long refundedAmount) {
         this.refundedAmount = refundedAmount;
     }
 
-    public Integer getCost() {
+    public Long getCost() {
         return cost;
     }
 
-    public void setCost(Integer cost) {
+    public void setCost(Long cost) {
         this.cost = cost;
     }
 
@@ -379,11 +382,11 @@ public class TransactionResponse extends Transaction {
         this.referer = referer;
     }
 
-    public Integer getSubscriptionId() {
+    public Long getSubscriptionId() {
         return subscriptionId;
     }
 
-    public void setSubscriptionId(Integer subscriptionId) {
+    public void setSubscriptionId(Long subscriptionId) {
         this.subscriptionId = subscriptionId;
     }
 
@@ -403,12 +406,13 @@ public class TransactionResponse extends Transaction {
         this.session = session;
     }
 
+    @JsonIgnore
     public Map<String, Object> getSummary() {
         Map<String, Object> summary = new HashMap<>();
         summary.put("transaction_id", this.getTransactionId());
         summary.put("uuid", this.getUuid());
         summary.put("status", this.getStatus());
-        Integer i = this.getId();
+        Long i = this.getId();
         if (i != null) summary.put("gateway_transaction_id", i);
         i = this.getPaidAmount();
         summary.put("paid_amount", i);

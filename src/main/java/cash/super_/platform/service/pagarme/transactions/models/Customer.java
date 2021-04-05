@@ -14,7 +14,7 @@ public class Customer {
 
     private String name;
 
-    private Customer.Type type;
+    private Type type;
 
     private String country = "br";
 
@@ -47,11 +47,11 @@ public class Customer {
         this.name = name;
     }
 
-    public Customer.Type getType() {
+    public Type getType() {
         return type;
     }
 
-    public void setType(Customer.Type type) {
+    public void setType(Type type) {
         this.type = type;
     }
 

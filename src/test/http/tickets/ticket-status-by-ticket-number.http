@@ -17,8 +17,8 @@ GET {{host}}:{{port}}/v2/parking_lot/tickets/272565298908
 Accept: application/json
 X-Supercash-Uid: 1
 X-Supercash-Tid: new-transaction20303040
-X-Supercash-MarketplaceId: 123
+X-Supercash-MarketplaceId: 1
 X-Supercash-StoreId: 456
-X-Supercash-App-Version: 2.4
+X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json

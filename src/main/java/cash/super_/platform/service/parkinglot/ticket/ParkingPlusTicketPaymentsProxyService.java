@@ -1,13 +1,12 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import cash.super_.platform.service.parkinglot.model.ParkingPaidTicketStatus;
+import cash.super_.platform.service.parkinglot.model.*;
 import cash.super_.platform.service.parkinglot.payment.PagarmeClientService;
+import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketPaymentsRepository;
+import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.utils.IsNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,6 @@ import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.PagamentoEfetuado;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketPaymentsMadeQuery;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketPaymentsMadeStatus;
 import cash.super_.platform.utils.SecretsUtil;
 
 /**
@@ -33,17 +30,28 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
   @Autowired
   private PagarmeClientService pagarmeClientService;
 
-  public ParkingTicketPaymentsMadeStatus getPaymentsMade(String userId, Optional<Integer> start, Optional<Integer> limit) {
+  @Autowired
+  private ParkinglotTicketRepository parkinglotTicketRepository;
+
+  @Autowired
+  private ParkinglotTicketPaymentsRepository parkinglotTicketPaymentsRepository;
+
+  /* TODO: Reimplement this method to get data from our database, instead of from WPS. */
+  public ParkingTicketPaymentsMadeStatus getPaymentsMade(String userId, String marketplaceId, String storeId,
+                                                         Optional<Integer> start, Optional<Integer> limit) {
+
     LOG.debug("Query the payments made by a user: {}", userId);
 
     ParkingTicketPaymentsMadeQuery paymentsMadeQuery = new ParkingTicketPaymentsMadeQuery();
+
+    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
 
     // Set the default user
     paymentsMadeQuery.setUserId(userId);
     paymentsMadeQuery.setPaginationLimit(!limit.isPresent() ? 0 : (limit.get() < 1 ? 10 : limit.get()));
     paymentsMadeQuery.setPaginationStart(!start.isPresent() ? 0 : (start.get() < 0) ? 0 : start.get());
 
-    List<PagamentoEfetuado> paymentsMade = new ArrayList<PagamentoEfetuado>();
+    List<PagamentoEfetuado> paymentsMade = null;
     List<ParkingPaidTicketStatus> parkingPaidTicketStatuses = new ArrayList<>();
 
     // Trace the google geo API Call
@@ -59,26 +67,17 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
       paymentsMade = parkingTicketPaymentsApi.pagamentosEfetuadosUsingGET(apiKey, udid, apiKeyId,
           paymentsMadeQuery.getPaginationStart(), paymentsMadeQuery.getPaginationLimit());
 
+      /* Getting ticket service fee */
       paymentsMade.forEach((pagamentoEfetuado) -> {
         ParkingPaidTicketStatus parkingPaidTicketStatus = new ParkingPaidTicketStatus(pagamentoEfetuado);
-        Map<String, String> paymentMetadata = null;
-        try {
-          paymentMetadata = pagarmeClientService.getTransactionMetadata("ticket_number",
-                  pagamentoEfetuado.getTicket());
-        } catch (feign.RetryableException re) {
-          // TODO: this will be not necessary when we will store parking lot transaction info in the database.
-          if (re.getCause() instanceof UnknownHostException) {
-            LOG.error("Couldn't get service_fee for ticket {} due to unknown host exception: '{}'",
-                    pagamentoEfetuado.getTicket(), re.getCause().getMessage());
-          } else {
-            throw re;
-          }
-        }
-        LOG.debug("paymentMetadata is: {}", paymentMetadata);
-        if (paymentMetadata != null) {
-          String serviceFeeKey = "service_fee";
-          if (paymentMetadata.containsKey(serviceFeeKey)) {
-            parkingPaidTicketStatus.setServiceFee(IsNumber.stringIsDouble(paymentMetadata.get(serviceFeeKey)).longValue());
+
+        Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(IsNumber
+                .stringIsLongWithException(pagamentoEfetuado.getTicket(), "Número Ticket"));
+        if (parkinglotTicketOpt.isPresent()) {
+          Optional<ParkinglotTicketPayment> parkinglotTicketPayment = parkinglotTicketPaymentsRepository
+                  .findByDateAndParkinglotTicket(pagamentoEfetuado.getData(), parkinglotTicketOpt.get());
+          if (parkinglotTicketPayment.isPresent()) {
+            parkingPaidTicketStatus.setServiceFee(parkinglotTicketPayment.get().getServiceFee());
           }
         }
         parkingPaidTicketStatuses.add(parkingPaidTicketStatus);

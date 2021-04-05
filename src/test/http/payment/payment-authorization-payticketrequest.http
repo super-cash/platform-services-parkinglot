@@ -40,12 +40,6 @@ Accept-Encoding: application/json
         "complementary": "Apto 104"
       }
     },
-    "items": [
-      {
-        "id": "245731153582",
-        "unit_price": 1700
-      }
-    ],
     "metadata": {
       "device_id": "1",
       "private_ip": "10.0.0.1",

@@ -7,6 +7,7 @@ public enum SupercashErrorCode {
     STATUS_NOT_EXPECTED(1001, "Transaction status not expected."),
     SALE_NOT_FOUND(2001, "Sale not found."),
     INVALID_SALE(2002, "Sale not valid."),
+    MARKETPLACE_NOT_FOUND(2003, "Marketplace not found."),
     PAYMENT_NOT_APPROVED(3001, "Payment not approved."),
     AMOUNT_IS_ZERO(3002, "The ticket fee is 0."),
     ALREADY_PAID(3003, "This payment is already processed."),

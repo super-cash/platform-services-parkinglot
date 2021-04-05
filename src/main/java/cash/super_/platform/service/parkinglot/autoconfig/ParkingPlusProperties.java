@@ -38,7 +38,7 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
   private TimeUnit salesCacheTimeUnit;
 
   @NotNull
-  private Long saleId = Long.valueOf(0);
+  private Long saleId = 0L;
 
   @NotNull
   private String ticketItemTitle;
@@ -54,14 +54,14 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
 
   @Min(0)
   @Max(100)
-  private Double clientPercentage = Double.valueOf(0.0);
+  private Double clientPercentage = 0.0;
 
   @Min(0)
   @Max(100)
   private Double ourPercentage;
 
   @NotNull
-  private Integer ourFee;
+  private Long ourFee;
 
   private String saleNameStartWith = "SUPERCASH";
 
@@ -78,6 +78,9 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
 
   @NotNull
   private long retryMaxPeriod;
+
+  @NotNull
+  private String udidPrefix;
 
   public String getUserKey() {
     return userKey;
@@ -187,11 +190,11 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
     this.ourPercentage = ourPercentage;
   }
 
-  public Integer getOurFee() {
+  public Long getOurFee() {
     return ourFee;
   }
 
-  public void setOurFee(Integer ourFee) {
+  public void setOurFee(Long ourFee) {
     this.ourFee = ourFee;
   }
 
@@ -245,6 +248,14 @@ public class ParkingPlusProperties extends SupercashServiceProperties {
 
   public void setRetryMaxPeriod(long retryMaxPeriod) {
     this.retryMaxPeriod = retryMaxPeriod;
+  }
+
+  public String getUdidPrefix() {
+    return udidPrefix;
+  }
+
+  public void setUdidPrefix(String udidPrefix) {
+    this.udidPrefix = udidPrefix;
   }
 
   @Override

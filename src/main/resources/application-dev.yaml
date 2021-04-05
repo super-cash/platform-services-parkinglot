@@ -1,3 +1,19 @@
+spring:
+
+#  datasource:
+#    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+#    username: supercash
+#    password: _#super#_123
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 feign:
   client:
     config:
@@ -9,7 +25,7 @@ cash:
     platform:
       service:
         pagarme:
-          url: http://pagarme-service:8120/v2
+          url: http://pagarme-service:8120/v2/pagarme
         parkinglot:
           url: https://maceio.parkingplus.com.br/servicos
           userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f

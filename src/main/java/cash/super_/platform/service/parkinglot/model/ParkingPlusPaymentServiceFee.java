@@ -11,20 +11,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ParkingPlusPaymentServiceFee {
 
   @JsonProperty(value = "service_fee")
-  private Integer serviceFee;
+  private Long serviceFee;
 
   public ParkingPlusPaymentServiceFee() {
   }
 
-  public ParkingPlusPaymentServiceFee(Integer serviceFee) {
+  public ParkingPlusPaymentServiceFee(Long serviceFee) {
     this.serviceFee = serviceFee;
   }
 
-  public Integer getServiceFee() {
+  public Long getServiceFee() {
     return serviceFee;
   }
 
-  public void setServiceFee(Integer serviceFee) {
+  public void setServiceFee(Long serviceFee) {
     this.serviceFee = serviceFee;
   }
 

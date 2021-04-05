@@ -3,43 +3,60 @@ package cash.super_.platform.service.pagarme.transactions.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.beans.Transient;
 import java.util.*;
 
+@Entity
+@Table(name = "pagarme_transaction")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Transaction {
 
     /**
      * Supercash transaction ID in the database.
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
+    @Column(name = "transaction_id")
     private Long transactionId;
 
     /**
      * Supercash internal ID, defined when a request enter for payment.
      */
-    @JsonIgnore
     protected UUID uuid;
 
     /**
      * Número identificador da transação.
      */
-    private Integer id;
+    private Long id;
+
+    /*
+     * Usuário dono da transação
+     */
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+//    @JoinColumn(name = "user_id")
+//    private User user;
+    @JsonIgnore
+    @Column(name = "user_id", nullable = false)
+    private String userId;
 
     /**
      * Valor a ser cobrado. Deve ser passado em centavos. Ex: R$ 10.00 = 1000. Deve ser no mínimo 1 real (100).
      */
-    private Integer amount;
+    private Long amount;
 
     /**
      * Métodos de pagamento possíveis: <code>credit_card</code>,
      * <code>boleto</code> e <code>debit_card</code>
      */
     @JsonProperty(value = "payment_method")
-    private Transaction.PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
     /**
      * URL (endpoint) do sistema integrado a Pagar.me que receberá as respostas
@@ -71,32 +88,48 @@ public class Transaction {
     /**
      * Objeto com dados do cliente. Obrigatório com o antifraude habilitado.
      */
+    @Transient
     private Customer customer;
 
     /**
      * Dados de cobrança da transação. Obrigatório com o antifraude habilitado.
      */
+    @Transient
     private Billing billing;
 
     /**
      * Dados de envio do que foi comprado. Deve ser preenchido no caso de venda de bem físico.
      */
+    @Transient
     private Shipping shipping;
 
     /**
      * Dados sobre os produtos comprados. Obrigatório com o antifraude habilitado.
      */
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "transaction_id", referencedColumnName="transaction_id")
     private List<Item> items;
 
     /**
      * Objeto com dados adicionais do cliente/produto/serviço vendido
      */
+    @ElementCollection
+    @MapKeyColumn(name="name")
+    @Column(name="value")
+    @CollectionTable(name="pagarme_transaction_metadata", joinColumns = @JoinColumn(name = "transaction_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name="transaction_id")
+//    @JsonIgnore
     private Map<String, String> metadata = new HashMap<>();
 
     /**
      * Objeto com as regras de split definidas para essa transação.
      */
     @JsonProperty(value = "split_rules")
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "transaction_id", referencedColumnName="transaction_id")
     private List<SplitRule> splitRules;
 
     /**
@@ -113,6 +146,7 @@ public class Transaction {
     private String pixExpirationDate;
 
     @JsonIgnore
+    @Transient
     private static Map<CardBrand, String> cardsRegex = new HashMap<>() {{
         put(CardBrand.VISA, "/^4[0-9]{12}(?:[0-9]{3})/");
         put(CardBrand.MASTERCARD, "/^(5[1-5][0-9]{14}|2(22[1-9][0-9]{12}|2[3-9][0-9]{13}|[3-6][0-9]{14}|7[0-1][0-9]{13}|720[0-9]{12}))$/");
@@ -144,15 +178,15 @@ public class Transaction {
 
     public void setUuid(UUID uuid) { this.uuid = uuid; }
 
-    public Integer getId() { return id; }
+    public Long getId() { return id; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Integer getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(Integer amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 
@@ -185,7 +219,7 @@ public class Transaction {
     }
 
     public void setBoletoExpirationDate(String boletoExpirationDate) {
-        boletoExpirationDate = boletoExpirationDate;
+        this.boletoExpirationDate = boletoExpirationDate;
     }
 
     public String getSoftDescriptor() {
@@ -275,6 +309,30 @@ public class Transaction {
         return CardBrand.UNKNOWN;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getPixQrCode() {
+        return pixQrCode;
+    }
+
+    public void setPixQrCode(String pixQrCode) {
+        this.pixQrCode = pixQrCode;
+    }
+
+    public String getPixExpirationDate() {
+        return pixExpirationDate;
+    }
+
+    public void setPixExpirationDate(String pixExpirationDate) {
+        this.pixExpirationDate = pixExpirationDate;
+    }
+
     @Override
     public String toString() {
         return "Transaction{" +
@@ -282,6 +340,7 @@ public class Transaction {
                 ", transactionId=" + transactionId +
                 ", id=" + id +
                 ", amount=" + amount +
+                ", userId=" + userId +
                 '}';
     }
 
@@ -329,6 +388,7 @@ public class Transaction {
 
     }
 
+
     /**
      * Cards Brands
      */
@@ -338,7 +398,7 @@ public class Transaction {
          * em ambiente de testes
          */
         @JsonProperty("development")
-        DEVELOPMENT("development"),
+        DEVELOPMENT("Development"),
 
         @JsonProperty("unknown")
         UNKNOWN("Unknown"),
@@ -383,7 +443,7 @@ public class Transaction {
         JCB("JCB"),
 
         @JsonProperty("personalcard")
-        PERSONALCARD("Personalcard"),
+        PERSONALCARD("Personal card"),
 
         @JsonProperty("sorocred")
         SOROCRED("Sorocred"),

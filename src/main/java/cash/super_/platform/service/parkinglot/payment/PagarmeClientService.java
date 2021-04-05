@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot.payment;
 
 import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
+import cash.super_.platform.service.pagarme.transactions.models.TransactionResponse;
 import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
 import feign.Headers;
 import feign.Param;
@@ -16,7 +17,7 @@ public interface PagarmeClientService {
             "Content-Type: application/json",
             "Accept: application/json",
     })
-    public TransactionResponseSummary requestPayment(TransactionRequest transaction);
+    public TransactionResponse requestPayment(TransactionRequest transaction);
 
     @RequestLine("GET /transactions/supercash/metadataby/{metadataKey}/{metadataValue}")
     @Headers({
@@ -25,12 +26,5 @@ public interface PagarmeClientService {
     })
     public Map<String, String> getTransactionMetadata(@Param("metadataKey") String metadataKey,
                                                       @Param("metadataValue") String metadataValue);
-
-    @RequestLine("GET /transactions/testBadGateway")
-    @Headers({
-            "Content-Type: application/json",
-            "Accept: application/json",
-    })
-    public void requestTestBadGateway();
 
 }

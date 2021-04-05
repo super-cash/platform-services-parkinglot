@@ -78,7 +78,7 @@ public class TransactionRequest extends Transaction {
      * <code>ecommerce</code>
      */
     @JsonProperty(value = "capture_method")
-    private Transaction.CaptureMethod captureMethod;
+    private CaptureMethod captureMethod;
 
     /**
      * Campo instruções do boleto. Máximo de 255 caracteres.

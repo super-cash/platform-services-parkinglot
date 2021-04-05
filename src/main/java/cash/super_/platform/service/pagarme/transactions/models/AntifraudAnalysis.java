@@ -4,11 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.*;
 import java.util.Date;
 
+@Entity
+@Table(name = "pagarme_antifraud_analysis")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AntifraudAnalysis {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "antifraud_analysis_id")
     @JsonIgnore
     private Long antifraudAnalysisId;
 

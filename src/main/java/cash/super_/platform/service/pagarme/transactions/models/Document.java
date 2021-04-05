@@ -8,15 +8,15 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Document {
 
-    private Document.Type type;
+    private Type type;
 
     private String number;
 
-    public Document.Type getType() {
+    public Type getType() {
         return type;
     }
 
-    public void setType(Document.Type type) {
+    public void setType(Type type) {
         this.type = type;
     }
 

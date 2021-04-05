@@ -44,25 +44,21 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  public ParkingTicketStatus getStatus(String userId, String ticketId, Optional<Long> saleId) {
-    return getStatus(userId, ticketId, -1, true, false, saleId);
+  public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
+    return getStatus(userId, ticketNumber, -1, true, false, saleId);
   }
 
-  public ParkingTicketStatus getStatus(String userId, String ticketId, int amount, boolean validate,
+  public ParkingTicketStatus getStatus(String userId, String ticketNumber, long amount, boolean validate,
                                        boolean throwExceptionWhileValidating, Optional<Long> saleId) {
-    LOG.debug("Looking for the status of ticket: {}", ticketId);
+    LOG.debug("Looking for the status of ticket: {}", ticketNumber);
 
-    if (Strings.isNullOrEmpty(userId)) {
-      throw new SupercashInvalidValueException("User ID must be provided.");
-    }
-
-    if (Strings.isNullOrEmpty(ticketId)) {
+    if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided.");
     }
 
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(properties.getParkingLotId());
-    request.setNumeroTicket(ticketId);
+    request.setNumeroTicket(ticketNumber);
     request.setUdid(userId);
 
 // This logic is great, but is could be allow a client to set another sale_id
@@ -87,7 +83,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     RetornoConsulta ticketStatus;
 
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
-      LOG.info("Requesting parking lots ticket status: {}", ticketId);
+      LOG.info("Requesting parking lots ticket status: {}", ticketNumber);
       try {
         LOG.debug("Request is: {}", JsonUtil.toJson(request));
 
@@ -125,7 +121,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.error("Error deserializing status ticket to json.", jsonError);
     }
 
-    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
+      long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
     Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
     if (allowedExitEpochAfterLastPaymentObj != null) {
       if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
