@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: tests.Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
     volumes:
       - ./build:/builder/build/
 

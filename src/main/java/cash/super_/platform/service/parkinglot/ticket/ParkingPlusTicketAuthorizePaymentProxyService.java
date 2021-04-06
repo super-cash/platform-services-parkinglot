@@ -221,7 +221,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 //      if (items == null || items.size() == 0) {
 //        throw new SupercashInvalidValueException("At least one item must be provided.");
 //      }
-      
+
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
       paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,
               userId, marketplaceId, storeId);
