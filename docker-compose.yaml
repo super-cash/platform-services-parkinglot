@@ -29,6 +29,7 @@ services:
         - UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL=${CI_PIPELINE_URL:-UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL}
     environment:
       - DEBUG_ENV=true
+      - SPRING_PROFILES_ACTIVE=test
     ports:
       - 8082:8082
     networks:

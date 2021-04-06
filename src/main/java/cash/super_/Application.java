@@ -1,4 +1,4 @@
-package cash.super_.platform.service;
+package cash.super_;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

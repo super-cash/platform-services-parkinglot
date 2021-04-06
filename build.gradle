@@ -104,6 +104,7 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Validator for the properties
     // https://reflectoring.io/validate-spring-boot-configuration-parameters-at-startup/
@@ -129,7 +130,6 @@ dependencies {
 
     // Databases
     runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
 
     // Cloud-specific for tracing

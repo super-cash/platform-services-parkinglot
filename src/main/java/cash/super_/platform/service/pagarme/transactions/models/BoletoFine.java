@@ -12,7 +12,7 @@ public class BoletoFine {
     /**
      * Valor em centavos da multa.
      */
-    private Integer amount;
+    private Long amount;
 
     /**
      * Valor em porcentagem da multa.
@@ -27,11 +27,11 @@ public class BoletoFine {
         this.days = days;
     }
 
-    public Integer getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(Integer amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 
