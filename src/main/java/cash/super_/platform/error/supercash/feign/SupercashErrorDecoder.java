@@ -66,6 +66,7 @@ public class SupercashErrorDecoder implements ErrorDecoder {
       responseBody = new String(bodyBuffer.array(), StandardCharsets.UTF_8);
       SupercashSimpleException supercashSimpleException = null;
       SupercashExceptionModel supercashExceptionModel = null;
+      LOG.debug("Response body of the error: {}", responseBody);
       if (responseBody.contains("mensagem") && responseBody.contains("errorCode")) {
         WPSException wpsException = JsonUtil.toObject(responseBody, WPSException.class);
         supercashSimpleException = new SupercashThirdPartySystemException();
