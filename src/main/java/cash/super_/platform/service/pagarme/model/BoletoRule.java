@@ -1,4 +1,4 @@
-package cash.super_.platform.service.pagarme.transactions.models;
+package cash.super_.platform.service.pagarme.model;
 
 public enum BoletoRule {
     STRICT_EXPIRATION_DATE("strict_expiration_date"),

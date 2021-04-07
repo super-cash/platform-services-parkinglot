@@ -1,9 +1,8 @@
-package cash.super_.platform.service.pagarme.transactions.models;
+package cash.super_.platform.service.pagarme.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

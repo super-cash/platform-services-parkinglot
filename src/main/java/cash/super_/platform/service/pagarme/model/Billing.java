@@ -1,4 +1,4 @@
-package cash.super_.platform.service.pagarme.transactions.models;
+package cash.super_.platform.service.pagarme.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

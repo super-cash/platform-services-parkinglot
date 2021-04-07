@@ -3,9 +3,9 @@ package cash.super_.platform.service.parkinglot.ticket;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.service.pagarme.transactions.models.Item;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionResponse;
+import cash.super_.platform.service.pagarme.model.TransactionRequest;
+import cash.super_.platform.service.pagarme.model.TransactionResponse;
+import cash.super_.platform.service.pagarme.model.TransactionResponseSummary;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPayment;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
@@ -24,7 +24,6 @@ import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.utils.SecretsUtil;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,7 +49,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   private ParkinglotTicketRepository parkinglotTicketRepository;
 
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, TransactionRequest payRequest,
-                                                               TransactionResponse payResponse) {
+                                                               TransactionResponseSummary payResponse) {
     LOG.debug("Payment auth request after Supercash payment request/response: {} {}", payRequest, payResponse);
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();

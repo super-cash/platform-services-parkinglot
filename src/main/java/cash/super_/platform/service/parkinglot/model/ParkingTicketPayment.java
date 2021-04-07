@@ -2,7 +2,7 @@ package cash.super_.platform.service.parkinglot.model;
 
 import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
+import cash.super_.platform.service.pagarme.model.TransactionRequest;
 
 /**
  * The ticket payment body.

@@ -1,14 +1,12 @@
 package cash.super_.platform.service.parkinglot.payment;
 
-import cash.super_.platform.service.pagarme.transactions.models.TransactionRequest;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionResponse;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionResponseSummary;
+import cash.super_.platform.service.pagarme.model.TransactionRequest;
+import cash.super_.platform.service.pagarme.model.TransactionResponseSummary;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 
 import java.util.Map;
-import java.util.Optional;
 
 public interface PagarmeClientService {
 
@@ -17,7 +15,7 @@ public interface PagarmeClientService {
             "Content-Type: application/json",
             "Accept: application/json",
     })
-    public TransactionResponse requestPayment(TransactionRequest transaction);
+    public TransactionResponseSummary requestPayment(TransactionRequest transaction);
 
     @RequestLine("GET /transactions/supercash/metadataby/{metadataKey}/{metadataValue}")
     @Headers({

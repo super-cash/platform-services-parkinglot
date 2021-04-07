@@ -1,8 +1,8 @@
-package cash.super_.platform.service.pagarme.transactions.models;
+package cash.super_.platform.service.pagarme.model;
 
 import java.util.Objects;
 
-public class BoletoInterest {
+public class BoletoFine {
 
     /**
      * Dias após a expiração do boleto quando a multa deve ser cobrada.
@@ -12,7 +12,7 @@ public class BoletoInterest {
     /**
      * Valor em centavos da multa.
      */
-    private Integer amount;
+    private Long amount;
 
     /**
      * Valor em porcentagem da multa.
@@ -27,11 +27,11 @@ public class BoletoInterest {
         this.days = days;
     }
 
-    public Integer getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(Integer amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 
@@ -45,7 +45,7 @@ public class BoletoInterest {
 
     @Override
     public String toString() {
-        return "BoletoInterest{" +
+        return "BoletoFine{" +
                 "days=" + days +
                 ", amount=" + amount +
                 ", percentage=" + percentage +
@@ -55,8 +55,8 @@ public class BoletoInterest {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BoletoInterest)) return false;
-        BoletoInterest that = (BoletoInterest) o;
+        if (!(o instanceof BoletoFine)) return false;
+        BoletoFine that = (BoletoFine) o;
         return getDays().equals(that.getDays()) && getAmount().equals(that.getAmount()) && getPercentage().equals(that.getPercentage());
     }
 

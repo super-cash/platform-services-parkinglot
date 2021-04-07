@@ -3,12 +3,13 @@ package cash.super_.platform.service.parkinglot.payment;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
 import cash.super_.platform.error.supercash.SupercashUnknownHostException;
-import cash.super_.platform.service.pagarme.transactions.models.*;
+import cash.super_.platform.service.pagarme.model.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
+import cash.super_.platform.service.parkinglot.repository.TransactionRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
@@ -47,6 +48,9 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
+
+  @Autowired
+  private TransactionRepository transactionRepository;
 
   public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus,
                                                              String userId, String marketplaceId, String storeId) {
@@ -148,10 +152,10 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
 
     payRequest.setAsync(false);
 
-    TransactionResponse transactionResponse = null;
+    TransactionResponseSummary transactionResponseSummary = null;
 
     try {
-      transactionResponse = pagarmeClientService.requestPayment(payRequest);
+      transactionResponseSummary = pagarmeClientService.requestPayment(payRequest);
 
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
@@ -164,12 +168,16 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
     Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-    parkinglotTicketPayment.setAmount(transactionResponse.getPaidAmount());
+    parkinglotTicketPayment.setAmount(transactionResponseSummary.getPaidAmount());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
     parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
-    parkinglotTicketPayment.setTransactionResponse(transactionResponse);
+
+    Optional<Transaction> transactionOpt = transactionRepository.findById(transactionResponseSummary.getTransactionId());
+    if (transactionOpt.isPresent()) {
+      parkinglotTicketPayment.setTransactionResponse((TransactionResponse) transactionOpt.get());
+    }
     ParkinglotTicket parkinglotTicket = null;
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
@@ -184,16 +192,19 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-    transactionResponse.setUserId(userId);
+
+//    // TODO: not make this, instead pass only the userId to this method.
+//    String[] userIdFields = userId.split("-");
+//    transactionResponse.setUserId(userIdFields[3]);
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     /*
      * Since we activate a sync transaction, PAID should be expected, otherwise we need to return saying that the
      * transaction was not accepted.
      */
-    if (transactionResponse.getStatus() == Transaction.Status.PAID) {
+    if (transactionResponseSummary.getStatus() == Transaction.Status.PAID) {
       ParkingTicketAuthorizedPaymentStatus ap = paymentAuthService.authorizePayment(userId, payRequest,
-              transactionResponse);
+              transactionResponseSummary);
       for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
         parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
         if (parkinglotTicketPayment.getDate() == -1) {
@@ -206,7 +217,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
       return ap;
     } else {
       ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
-              "Transaction status is " + transactionResponse.getStatus());
+              "Transaction status is " + transactionResponseSummary.getStatus());
       LOG.error(exception.getMessage());
       throw exception;
     }

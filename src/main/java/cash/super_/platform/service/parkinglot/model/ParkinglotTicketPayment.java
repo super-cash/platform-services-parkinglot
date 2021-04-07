@@ -1,10 +1,7 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.pagarme.transactions.models.Transaction;
-import cash.super_.platform.service.pagarme.transactions.models.TransactionResponse;
+import cash.super_.platform.service.pagarme.model.TransactionResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.checkerframework.checker.units.qual.C;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
