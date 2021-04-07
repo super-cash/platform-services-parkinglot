@@ -1,6 +1,7 @@
 package cash.super_.platform.service.configuration.http;
 
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Retryer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.client.parkingplus.invoker.ApiClient;
 import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
 
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +34,7 @@ public class ParkingPlusFeignClientConfiguration {
   @Bean
   public ServicoPagamentoTicket2Api ticketApi() {
     ApiClient client = new ApiClient();
+    client.getObjectMapper().setTimeZone(TimeZone.getTimeZone(properties.getTimeZone()));
     client.setBasePath(properties.getUrl());
     // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
     client.getFeignBuilder()

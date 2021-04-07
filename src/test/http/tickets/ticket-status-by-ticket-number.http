@@ -13,7 +13,7 @@
 #   272565298908
 # You can pass ?sale_id={a_sale_id} for generate status based on the sale id.
 
-GET {{host}}:{{port}}/v2/parking_lot/tickets/326295307723
+GET {{host}}:{{port}}/v2/parking_lot/tickets/326295304252
 Accept: application/json
 X-Supercash-Uid: 1200
 X-Supercash-Tid: new-transaction20303040

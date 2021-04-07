@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ParkinglotTicketPayment {
@@ -21,8 +22,6 @@ public class ParkinglotTicketPayment {
 
     @JsonProperty(value = "service_fee")
     private Long serviceFee;
-
-    private Transaction.Status status;
 
     private Long date;
 
@@ -40,6 +39,7 @@ public class ParkinglotTicketPayment {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ticket_number")
+    @NotNull
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {
@@ -64,14 +64,6 @@ public class ParkinglotTicketPayment {
 
     public void setServiceFee(Long serviceFee) {
         this.serviceFee = serviceFee;
-    }
-
-    public Transaction.Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Transaction.Status status) {
-        this.status = status;
     }
 
     public Long getDate() {
@@ -104,6 +96,14 @@ public class ParkinglotTicketPayment {
 
     public void setRequesterService(String requesterService) {
         this.requesterService = requesterService;
+    }
+
+    public ParkinglotTicket getParkinglotTicket() {
+        return parkinglotTicket;
+    }
+
+    public void setParkinglotTicket(ParkinglotTicket parkinglotTicket) {
+        this.parkinglotTicket = parkinglotTicket;
     }
 
     public TransactionResponse getTransactionResponse() {

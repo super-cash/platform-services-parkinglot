@@ -4,6 +4,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,7 +15,7 @@ public class ParkinglotTicket {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ticket_number")
-    private List<ParkinglotTicketPayment> payments;
+    private List<ParkinglotTicketPayment> payments = new ArrayList<>();
 
     public Long getTicketNumber() {
         return ticketNumber;

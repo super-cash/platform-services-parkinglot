@@ -194,3 +194,6 @@ cash:
           healthProbe:
             readinessInterval: 1
             readinessTimeUnit: HOURS
+
+          # Timezone to be used in serialization and deserialization
+          timeZone: GMT-3:00

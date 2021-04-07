@@ -44,8 +44,6 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
 
     ParkingTicketPaymentsMadeQuery paymentsMadeQuery = new ParkingTicketPaymentsMadeQuery();
 
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-
     // Set the default user
     paymentsMadeQuery.setUserId(userId);
     paymentsMadeQuery.setPaginationLimit(!limit.isPresent() ? 0 : (limit.get() < 1 ? 10 : limit.get()));

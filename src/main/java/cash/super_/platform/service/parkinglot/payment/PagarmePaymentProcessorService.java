@@ -162,7 +162,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
 
     /* Saving payment request into the database */
     Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
-    Optional<ParkinglotTicket> parkinglotTicketOptional = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
     parkinglotTicketPayment.setAmount(transactionResponse.getPaidAmount());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
@@ -171,16 +171,20 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
     parkinglotTicketPayment.setTransactionResponse(transactionResponse);
     ParkinglotTicket parkinglotTicket = null;
-    parkinglotTicket = parkinglotTicketOptional.get();
-    if (parkinglotTicketOptional.isEmpty()) {
+    if (parkinglotTicketOpt.isPresent()) {
+      parkinglotTicket = parkinglotTicketOpt.get();
+    } else {
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(ticketNumber);
     }
+
     /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
      * when we need to get specific info about this specific payment.
      * */
+    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
+    transactionResponse.setUserId(userId);
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     /*

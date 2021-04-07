@@ -1,6 +1,7 @@
 package cash.super_.platform.service.pagarme.transactions.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
@@ -9,11 +10,13 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
 @Table(name = "pagarme_transaction")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(value = { "cvm_pin", "address" }, ignoreUnknown = true)
 public class Transaction {
 
     /**
@@ -49,6 +52,7 @@ public class Transaction {
     /**
      * Valor a ser cobrado. Deve ser passado em centavos. Ex: R$ 10.00 = 1000. Deve ser no mínimo 1 real (100).
      */
+    @NotNull
     private Long amount;
 
     /**

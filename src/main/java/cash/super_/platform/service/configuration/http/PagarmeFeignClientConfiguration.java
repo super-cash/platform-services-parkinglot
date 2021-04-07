@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.constraints.NotNull;
+import java.time.ZoneId;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,6 +61,7 @@ public class PagarmeFeignClientConfiguration {
 
   private ObjectMapper createObjectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setTimeZone(TimeZone.getTimeZone(properties.getTimeZone()));
     objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     objectMapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, false);
