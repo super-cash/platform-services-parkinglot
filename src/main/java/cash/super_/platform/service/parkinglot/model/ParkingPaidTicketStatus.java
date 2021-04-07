@@ -53,6 +53,15 @@ public class ParkingPaidTicketStatus {
     @JsonProperty("ticket")
     private String ticket;
 
+    @JsonProperty("tipo")
+    private PagamentoEfetuado.TipoEnum tipo = null;
+
+    @JsonProperty("valorPago")
+    private Long valorPago = null;
+
+    @JsonProperty("valorDesconto")
+    private Integer valorDesconto = null;
+
     @JsonProperty("service_fee")
     private Long serviceFee;
 
@@ -73,6 +82,9 @@ public class ParkingPaidTicketStatus {
         rps = pagamentoEfetuado.getRps();
         serieRps = pagamentoEfetuado.getSerieRps();
         ticket = pagamentoEfetuado.getTicket();
+        tipo = pagamentoEfetuado.getTipo();
+        valorPago = pagamentoEfetuado.getValorPago();
+        valorDesconto = pagamentoEfetuado.getValorDesconto();
         serviceFee = Long.valueOf(0);
     }
 
