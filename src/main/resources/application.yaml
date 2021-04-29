@@ -172,7 +172,7 @@ cash:
           # {prefix}-{marketplaceId}-{storeId}-{userId}. This field is also used as the "bandeira" for WPS transactions.
           udidPrefix: supercash
 
-          # Time, in seconds, the user can go out without paying the ticket
+          # Time, in seconds, the user can leave the parking lot without paying the ticket
           gracePeriod: 1200
 
           # Hosts and/or ports to retry (e.g localhost, 8080, localhost:8080)

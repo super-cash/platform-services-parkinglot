@@ -150,7 +150,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
         supercashTicketStatus = SupercashTicketStatus.FREE;
       } else {
         if (queryEpoch - entryEpoch <= properties.getGracePeriod() * 1000) {
-          message += "You can go out until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
+          message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
           supercashTicketStatus = SupercashTicketStatus.GRACE_PERIOD;
         }
       }

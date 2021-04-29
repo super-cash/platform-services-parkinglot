@@ -41,8 +41,8 @@ public class ParkingTicketPayment {
     this.request = request;
   }
 
-  public ParkingTicketPayment(TransactionRequest request) {
-    this.payTicketRequest = request; }
+  public ParkingTicketPayment(TransactionRequest payTicketRequest) {
+    this.payTicketRequest = payTicketRequest; }
 
   public PagamentoAutorizadoRequest getAuthorizedRequest() {
     return authorizedRequest;
