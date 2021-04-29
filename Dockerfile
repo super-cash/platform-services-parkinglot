@@ -44,5 +44,5 @@ COPY --from=unmazedboot-builder-artifacts /opt/java/openjdk/lib/security/cacerts
 
 # The location of the custom jvm is /opt/jdk-custom/jre
 # https://github.com/intuit/unmazedboot/blob/master/runner/custom-jlink-jdk/Dockerfile#L26
-RUN rm -f /opt/jdk-custom/jre/lib/security/cacerts
-RUN ln -s /etc/ssl/certs/java/cacerts /opt/jdk-custom/jre/lib/security/cacerts
+RUN rm -f /opt/jdk-custom/jre/lib/security/cacerts && \
+    ln -s /etc/ssl/certs/java/cacerts /opt/jdk-custom/jre/lib/security/cacerts
