@@ -1,7 +1,6 @@
 package cash.super_.platform.service.parkinglot.model;
 
 import java.util.List;
-import cash.super_.platform.client.parkingplus.model.PagamentoEfetuado;
 
 /**
  * The status of parking ticket payments made

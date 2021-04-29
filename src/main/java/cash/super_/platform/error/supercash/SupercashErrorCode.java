@@ -13,6 +13,7 @@ public enum SupercashErrorCode {
     ALREADY_PAID(3003, "This payment is already processed."),
     WRONG_CLIENT_VERSION(4001, "The client version is wrong."),
     GENERIC_ERROR(9001, "Generic error."),
+    UNKNOWN_ERROR(9996, "Unknown Error."),
     UNKNOWN_HOST(9996, "Unknown Host Exception."),
     MISSING_ARGUMENT(9997, "Missing argument."),
     THIRD_PARTY_EXCEPTION(9998, "Third-party system exception."),

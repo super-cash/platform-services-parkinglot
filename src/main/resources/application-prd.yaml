@@ -17,12 +17,16 @@ spring:
 cash:
   super:
     platform:
+      client:
+        # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+        clientLogLevel: FULL
+
       service:
         pagarme:
-          url: http://pagarme-service:8120/v2/pagarme
+          baseUrl: http://pagarme-service:8120/v2/pagarme
         parkinglot:
           # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
-          url: https://maceio.parkingplus.com.br/servicos
+          baseUrl: https://maceio.parkingplus.com.br/servicos
           # Review this for production
           ourFee: 80
           clientPercentage: 95

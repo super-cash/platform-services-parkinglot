@@ -6,13 +6,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import cash.super_.platform.service.configuration.json.CustomObjectMapper;
+import cash.super_.platform.clients.DefaultObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Utility methods used all around.
@@ -23,12 +22,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public enum JsonUtil {
   ;
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
+  // TODO: this will not use the timezone defined in the yaml file, but it will use the system timezone.
+  private static DefaultObjectMapper MAPPER = new DefaultObjectMapper();
 
-  /**
-   * For JSON parsing
-   */
-  public static final ObjectMapper MAPPER = new CustomObjectMapper();
+  private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
 
   /**
    * @param o An object instance from a POJO implementation.

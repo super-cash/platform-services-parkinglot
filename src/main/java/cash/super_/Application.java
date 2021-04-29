@@ -1,6 +1,9 @@
 package cash.super_;
 
-import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
+import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,8 +19,10 @@ import java.util.TimeZone;
         "cash.super_.platform.service.parkinglot.repository"})
 public class Application {
 
+  private static final Logger LOG = LoggerFactory.getLogger(Application.class);
+
   @Autowired
-  private ParkingPlusProperties properties;
+  private PlatformConfigurationProperties properties;
 
   @PostConstruct
   public void init(){

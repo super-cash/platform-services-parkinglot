@@ -13,12 +13,12 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 
-        // For src/gradle/tests
-        classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
-        // For src/gradle/jacoco
+		// For src/gradle/tests
+		classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
+		// For src/gradle/jacoco
         // JDK 15 not working yet https://github.com/emeraldpay/polkaj/commit/9f4baeb09baa95cbe25a223817378240aa4909b2
-        classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
-    }
+		classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
+	}
 }
 
 plugins {
@@ -26,7 +26,6 @@ plugins {
     id 'jacoco'
 }
 
-// plugins
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -45,7 +44,7 @@ apply from: 'src/gradle/jacoco.gradle'
 // CODE COVERAGE: JaCoCo enabled
 //apply from: 'src/gradle/swagger-client-stubs.gradle'
 
-group = "cash.super_.platform.service"
+group = 'cash.super.platform.service'
 version = '1.0.0-RELEASE'
 
 // https://github.com/gradle/gradle/issues/14500
@@ -89,8 +88,19 @@ repositories {
     }
 }
 
+configurations {
+	developmentOnly
+	runtimeClasspath {
+		extendsFrom developmentOnly
+	}
+}
+
 ext {
-    set('springCloudVersion', "Hoxton.SR8")
+	set('springCloudVersion', "Hoxton.SR8")
+	jackson_version = "2.12.3"
+	feign_jackson_version = "11.1"
+	feign_version = "11.1"
+	feign_form_version = "3.8.0"
 }
 
 dependencyManagement {
@@ -101,46 +111,52 @@ dependencyManagement {
 
 dependencies {
 
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    //////////////////////////////////////////////////
+    //  ****** General project dependencies ******  //
+    //////////////////////////////////////////////////
+    /*
+     README FIRST - Instructions for adding new dependencies:
+       - In all projects dependency (please, keep alphabetic order)
+    */
+    implementation("com.eclipsesource.j2v8:j2v8:6.2.0")
+    //implementation("com.eclipsesource.j2v8:j2v8_linux_x86_64:4.8.0")
+    implementation("com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jackson_version")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jackson_version")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jackson_version")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version")
+    //implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jackson_version")
+    //implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:$jackson_version")
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+    implementation("com.google.guava:guava:30.1.1-jre")
+    implementation("io.github.openfeign:feign-core:$feign_version")
+    implementation("io.github.openfeign:feign-jackson:$feign_version")
+    implementation("io.github.openfeign:feign-slf4j:$feign_version")
+    implementation("io.github.openfeign.form:feign-form:$feign_form_version")
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Validator for the properties
-    // https://reflectoring.io/validate-spring-boot-configuration-parameters-at-startup/
-    // https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-validation
-    // https://www.baeldung.com/configuration-properties-in-spring-boot
-    implementation('org.springframework.boot:spring-boot-starter-validation')
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-    // SpringBoot actuator for tracing, etc.
-    implementation('org.springframework.boot:spring-boot-starter-actuator')
-
-    // OpenAPI spec with SWAGGER 
-    // https://github.com/springfox/springfox/issues/3282#issuecomment-612009278
-    implementation("org.springframework.plugin:spring-plugin-core")
-    // https://www.baeldung.com/swagger-2-documentation-for-spring-rest-api
-    implementation('io.springfox:springfox-boot-starter:3.0.0')
- 
-    // Parking Plus
-    implementation group: 'cash.super_.platform.client', name: 'parking-plus-client-feign', version: '1.0.0-SNAPSHOT'
-
-    // https://mvnrepository.com/artifact/com.google.guava/guava
-    implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
-
-    // Databases
-    runtimeOnly 'org.postgresql:postgresql'
-    testImplementation group: 'org.hsqldb', name: 'hsqldb', version: '2.5.1'
-
-    // Cloud-specific for tracing
-    implementation('org.springframework.cloud:spring-cloud-starter-zipkin')
-    implementation('org.springframework.cloud:spring-cloud-starter-openfeign')
-
-    // https://stackoverflow.com/questions/37701330/spring-boot-dev-tools-turning-them-off-for-production/37702560#37702560
-    // Auto Reload while developing in IDEs
-    // https://www.youtube.com/watch?v=mQo3ZTdNx-A
-    // In STS Eclipse, make sure the project is with Build Automatic. Reload STS if adding manually first time
-    // https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools
+    implementation("org.openjdk.nashorn:nashorn-core:15.2")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.cloud:spring-cloud-starter-zipkin")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("org.springframework.plugin:spring-plugin-core")
+
+    /////////////////////////////////////////////////
+    //  ****** Specific project dependency ******  //
+    /////////////////////////////////////////////////
+    
+    // Parking Plus
+    implementation group: "cash.super_.platform.client", name: "parking-plus-client-feign", version: "1.0.0-SNAPSHOT"
+    testImplementation("org.hsqldb:hsqldb:2.5.1")
+    runtimeOnly("org.postgresql:postgresql")
 }
 
+test {
+
+	useJUnitPlatform()
+}

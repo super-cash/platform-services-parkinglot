@@ -1,12 +1,8 @@
 package cash.super_.platform.error.supercash.feign;
 
-import cash.super_.platform.error.model.SupercashExceptionModel;
-import cash.super_.platform.error.supercash.SupercashErrorCode;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import feign.Request;
 import feign.RetryableException;
-import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 

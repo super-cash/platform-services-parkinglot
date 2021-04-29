@@ -4,12 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import cash.super_.platform.error.supercash.feign.SupercashRetryableException;
-import cash.super_.platform.service.parkinglot.payment.PagarmeClientService;
-import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +17,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkingPlusProperties;
 import feign.FeignException;
 
 /**
@@ -41,9 +37,6 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
 
   @Autowired
   protected ParkingPlusProperties properties;
-
-  @Autowired
-  PagarmeClientService pagarmeClientService;
 
   /**
    * @return The default headers for all Controller Calls

@@ -12,7 +12,7 @@ import java.util.Map;
 public class SupercashExceptionModel {
 
     @JsonProperty(value = "error_code")
-    private SupercashErrorCode errorCode = SupercashErrorCode.NO_ERROR;
+    private SupercashErrorCode errorCode = SupercashErrorCode.GENERIC_ERROR;
 
     @JsonProperty(value = "additional_error_code")
     private HttpStatus additionalErrorCode = HttpStatus.INTERNAL_SERVER_ERROR;

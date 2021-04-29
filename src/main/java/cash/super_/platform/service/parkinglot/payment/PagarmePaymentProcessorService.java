@@ -1,9 +1,9 @@
 package cash.super_.platform.service.parkinglot.payment;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.clients.payment.PaymentServiceApiClient;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
 import cash.super_.platform.error.supercash.SupercashUnknownHostException;
-import cash.super_.platform.service.pagarme.model.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
@@ -11,6 +11,7 @@ import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.TransactionRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
+import cash.super_.platform.service.payment.model.*;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
   protected static final Logger LOG = LoggerFactory.getLogger(PagarmePaymentProcessorService.class);
 
   @Autowired
-  private PagarmeClientService pagarmeClientService;
+  private PaymentServiceApiClient paymentServiceApiClient;
 
   @Autowired
   private BuildProperties buildProperties;
@@ -103,13 +104,6 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     Double ourClientAmount = total * properties.getClientPercentage() / 100;
     ourClient.setAmount(ourClientAmount.longValue());
 
-    /*
-     * Calculate our amount to receive, based on percentage negociated and on the additional service fee.
-     * Note that in case we loose any cents, we solve this by calculate any potencial remind.
-     */
-//    Integer usClientAmount = total * (parkingPlusProperties.getOurPercentage() / 100);
-//    usClientAmount = usClientAmount + (total - ourClientAmount - usClientAmount);
-//    us.setAmount(usClientAmount + parkingPlusProperties.getOurFee());
     us.setAmount(total - ourClient.getAmount() + properties.getOurFee());
 
     splitRules.add(ourClient);
@@ -141,6 +135,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     payRequest.addMetadata("service_fee", serviceFeeItem.getUnitPrice().toString());
     payRequest.addMetadata("marketplace_id", marketplaceId);
     payRequest.addMetadata("store_id", storeId);
+    payRequest.addMetadata("user_id", userId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
     Long allowedExitDateTime = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
     if (allowedExitDateTime == null) {
@@ -155,7 +150,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     TransactionResponseSummary transactionResponseSummary = null;
 
     try {
-      transactionResponseSummary = pagarmeClientService.requestPayment(payRequest);
+      transactionResponseSummary = paymentServiceApiClient.requestPayment(payRequest);
 
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
@@ -164,6 +159,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
       throw re;
     }
 
+    // TODO: Review this and check if it is possible to reuse the transaction object
     /* Saving payment request into the database */
     Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
     Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
@@ -178,6 +174,7 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     if (transactionOpt.isPresent()) {
       parkinglotTicketPayment.setTransactionResponse((TransactionResponse) transactionOpt.get());
     }
+
     ParkinglotTicket parkinglotTicket = null;
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
@@ -192,10 +189,6 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-
-//    // TODO: not make this, instead pass only the userId to this method.
-//    String[] userIdFields = userId.split("-");
-//    transactionResponse.setUserId(userIdFields[3]);
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     /*

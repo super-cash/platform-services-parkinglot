@@ -1,12 +1,12 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.pagarme.model.TransactionResponse;
+import cash.super_.platform.service.payment.model.TransactionResponse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 @Entity
 public class ParkinglotTicketPayment {
@@ -33,10 +33,9 @@ public class ParkinglotTicketPayment {
     @JoinColumn(name = "transaction_id")
     private TransactionResponse transactionResponse;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "ticket_number")
-    @NotNull
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name="ticket_number", nullable = false)
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {

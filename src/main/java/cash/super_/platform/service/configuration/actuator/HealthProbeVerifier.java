@@ -3,6 +3,8 @@ package cash.super_.platform.service.configuration.actuator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.PostConstruct;
+
+import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +12,10 @@ import org.springframework.boot.availability.ApplicationAvailability;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
 
 /**
@@ -38,6 +41,9 @@ public class HealthProbeVerifier {
   private ParkingPlusParkingSalesCachedProxyService salesCacheService;
 
   @Autowired
+  private PlatformConfigurationProperties configurationProperties;
+
+  @Autowired
   private ParkingPlusProperties properties;
 
   @Autowired
@@ -56,7 +62,8 @@ public class HealthProbeVerifier {
 
     LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
         applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-        properties.getHealthProbe().getReadinessInterval(), properties.getHealthProbe().getReadinessTimeUnit());
+            configurationProperties.getHealthProbe().getReadinessInterval(),
+            configurationProperties.getHealthProbe().getReadinessTimeUnit());
 
     LOG.debug("Bootstrapping the probes helper");
     checkReadiness();
@@ -97,10 +104,12 @@ public class HealthProbeVerifier {
 
         LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
             applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-            properties.getHealthProbe().getReadinessInterval(), properties.getHealthProbe().getReadinessTimeUnit());
+                configurationProperties.getHealthProbe().getReadinessInterval(),
+                configurationProperties.getHealthProbe().getReadinessTimeUnit());
       }
 
-    }, 0L, properties.getHealthProbe().getReadinessInterval(), properties.getHealthProbe().getReadinessTimeUnit());
+    }, 0L, configurationProperties.getHealthProbe().getReadinessInterval(),
+            configurationProperties.getHealthProbe().getReadinessTimeUnit());
   }
 
 }

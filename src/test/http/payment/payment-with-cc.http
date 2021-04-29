@@ -1,15 +1,16 @@
-POST {{host}}:{{port}}/v2/parking_lot/tickets/030265292584/pay
+POST {{host}}:{{port}}/v2/parking_lot/tickets/541242230447/pay
 accept: application/json
-X-Supercash-Uid: leandro-123
+X-Supercash-Uid: 1200
 X-Supercash-Tid: new-transaction20303040
-X-Supercash-MarketplaceId: 123
-X-Supercash-StoreId: 456
+X-Supercash-MarketplaceId: 6115
+X-Supercash-StoreId: 1
+X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json
 
 {
   "request": {
-    "numeroTicket": "030265292584",
+    "numeroTicket": "541242230447",
     "enderecoIp": "10.0.0.1",
     "cartaoDeCredito": 4111111111111111,
     "codigoDeSeguranca": "111",

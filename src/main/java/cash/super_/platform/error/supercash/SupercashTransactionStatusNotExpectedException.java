@@ -1,6 +1,6 @@
 package cash.super_.platform.error.supercash;
 
-import cash.super_.platform.service.pagarme.model.Transaction;
+import cash.super_.platform.service.payment.model.Transaction;
 import org.springframework.http.HttpStatus;
 
 public class SupercashTransactionStatusNotExpectedException extends SupercashSimpleException {

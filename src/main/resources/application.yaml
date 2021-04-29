@@ -107,19 +107,24 @@ management:
       probes:
         enabled: true
 
-# Super cash platform
+# Supercash platform settings.
 cash:
   super:
     platform:
+      client:
+        # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+        clientLogLevel: FULL
+
       service:
-        pagarme:
-          url: http://localhost:8120/v2/pagarme
+        payment:
+          baseUrl: http://localhost:8120/v2/pagarme
+
         parkinglot:
           # Our API Version
           apiVersion: v2
 
           # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
-          url: https://demonstracao.parkingplus.com.br/servicos
+          baseUrl: https://demonstracao.parkingplus.com.br/servicos
 
           # Value provided by parking plus
           apiKeyId: 1
@@ -129,9 +134,6 @@ cash:
 
           # Our user ID for the API
           userKey: wps2@18pofe12g5412
-
-          # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
-          clientLogLevel: HEADERS
 
           # Duration the results will stay in memory cache to then be evicted
           salesCacheDuration: 5
@@ -173,7 +175,7 @@ cash:
           # Time, in seconds, the user can go out without paying the ticket
           gracePeriod: 1200
 
-          # Hosts or port to retry (e.g localhost, 8080, localhost:8080)
+          # Hosts and/or ports to retry (e.g localhost, 8080, localhost:8080)
           retryableDestinationHosts:
             - demonstracao.parkingplus.com.br
             - localhost
@@ -189,11 +191,22 @@ cash:
           # Max time, in seconds, we accept to wait as  the retry interval increases due to exponential backoff
           retryMaxPeriod: 20
 
-          # kubernetes readiness probe, reusing the cache and updating it
-          # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
-          healthProbe:
-            readinessInterval: 1
-            readinessTimeUnit: HOURS
+      configuration:
 
-          # Timezone to be used in serialization and deserialization
-          timeZone: GMT-3:00
+        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+        apiUrl: http://localhost:8501
+
+        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+        orchestratorUrl: http://localhost:8501
+
+        # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
+        defaultHeathCheckPort: 443
+
+        # Timezone to be used in serialization and deserialization
+        timeZone: GMT-3:00
+
+        # kubernetes readiness probe, reusing the cache and updating it
+        # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
+        healthProbe:
+          readinessInterval: 1
+          readinessTimeUnit: HOURS

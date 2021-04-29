@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
-import cash.super_.platform.service.parkinglot.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkingPlusProperties;
 
 /**
  * Retrieve the status of tickets, process payments, etc.

@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot;
 
 import cash.super_.platform.error.supercash.*;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.Marketplace;
 import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
 import cash.super_.platform.utils.IsNumber;
@@ -23,6 +24,8 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
+        if (request.getMethod().equals("OPTIONS")) return true;
+
         String headerName;
         Double value;
 
@@ -36,12 +39,12 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
         /* Validating user id */
         headerName = "X-Supercash-Uid";
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-        LOG.debug("{}: {}", headerName, value);
+        LOG.debug("{}: {}", headerName, value.longValue());
 
         /* Validating marketplace id */
         headerName = "X-Supercash-MarketplaceId";
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-        LOG.debug("{}: {}", headerName, value);
+        LOG.debug("{}: {}", headerName, value.longValue());
 
         /* Validating app version and marketplace Id in the database */
         headerName = "X-Supercash-App-Version";
@@ -68,7 +71,7 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
         /* TODO: Validate if store exists in the database. */
         headerName = "X-Supercash-StoreId";
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-        LOG.debug("{}: {}", headerName, value);
+        LOG.debug("{}: {}", headerName, value.longValue());
 
         return true;
     }

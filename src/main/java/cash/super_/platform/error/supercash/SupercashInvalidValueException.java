@@ -1,5 +1,7 @@
 package cash.super_.platform.error.supercash;
 
+import cash.super_.platform.error.supercash.SupercashErrorCode;
+import cash.super_.platform.error.supercash.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
 public class SupercashInvalidValueException extends SupercashSimpleException {

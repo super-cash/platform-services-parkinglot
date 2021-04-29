@@ -1,6 +1,6 @@
 package cash.super_.platform.service.parkinglot.repository;
 
-import cash.super_.platform.service.pagarme.model.Transaction;
+import cash.super_.platform.service.payment.model.Transaction;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

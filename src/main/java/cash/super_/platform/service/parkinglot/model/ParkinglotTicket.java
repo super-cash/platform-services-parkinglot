@@ -1,5 +1,7 @@
 package cash.super_.platform.service.parkinglot.model;
 
+import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -12,9 +14,21 @@ public class ParkinglotTicket {
     @Id
     private Long ticketNumber;
 
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
+    // TODO: link the user here
+//    private User user;
+
+    // TODO: link the marketplace here
+//    @OneToOne
+//    @JoinColumn(name = "id")
+//    private Marketplace marketplace;
+
+    // TODO: link the store here
+//    private Store store;
+
+    @JsonIgnore
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+            mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "ticket_number")
     private List<ParkinglotTicketPayment> payments = new ArrayList<>();
 
     public Long getTicketNumber() {
@@ -24,6 +38,8 @@ public class ParkinglotTicket {
     public void setTicketNumber(Long ticketNumber) {
         this.ticketNumber = ticketNumber;
     }
+
+
 
     public List<ParkinglotTicketPayment> getPayments() {
         return payments;

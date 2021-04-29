@@ -2,16 +2,15 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.TimeZone;
 
 import cash.super_.platform.error.supercash.*;
+import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.SupercashTicketStatus;
+import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
-import net.bytebuddy.implementation.bind.annotation.Super;
-import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,11 +19,9 @@ import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
-import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.utils.JsonUtil;
-import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -142,9 +139,10 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     long queryEpoch = ticketStatus.getDataConsulta();
     long entryEpoch = ticketStatus.getDataDeEntrada();
 
-    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), ZoneId.systemDefault());
+    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), TimeZone.getDefault()
+            .toZoneId());
     LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
-            ZoneId.systemDefault());
+            TimeZone.getDefault().toZoneId());
 
     if (ticketFee == 0) {
       if (allowedExitEpoch - entryEpoch < 0) {

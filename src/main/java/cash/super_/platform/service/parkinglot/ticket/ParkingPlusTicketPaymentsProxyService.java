@@ -1,20 +1,18 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
-import java.net.UnknownHostException;
 import java.util.*;
 
+import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.*;
-import cash.super_.platform.service.parkinglot.payment.PagarmeClientService;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketPaymentsRepository;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.utils.IsNumber;
+import cash.super_.platform.utils.SecretsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.PagamentoEfetuado;
-import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.utils.SecretsUtil;
 
 /**
  * Proxy service to Retrieve the status of tickets, process payments, etc.
@@ -26,9 +24,6 @@ import cash.super_.platform.utils.SecretsUtil;
  */
 @Service
 public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotProxyService {
-
-  @Autowired
-  private PagarmeClientService pagarmeClientService;
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;

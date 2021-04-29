@@ -8,28 +8,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author leandromsales
  *
  */
-public class ParkingPlusPaymentServiceFee {
+public static class ParkingPlusPaymentServiceFee {
 
-  @JsonProperty(value = "service_fee")
-  private Long serviceFee;
+    @JsonProperty(value = "service_fee")
+    private Long serviceFee;
 
-  public ParkingPlusPaymentServiceFee() {
-  }
+    public ParkingPlusPaymentServiceFee() {
+    }
 
-  public ParkingPlusPaymentServiceFee(Long serviceFee) {
-    this.serviceFee = serviceFee;
-  }
+    public ParkingPlusPaymentServiceFee(Long serviceFee) {
+        this.serviceFee = serviceFee;
+    }
 
-  public Long getServiceFee() {
-    return serviceFee;
-  }
+    public Long getServiceFee() {
+        return serviceFee;
+    }
 
-  public void setServiceFee(Long serviceFee) {
-    this.serviceFee = serviceFee;
-  }
+    public void setServiceFee(Long serviceFee) {
+        this.serviceFee = serviceFee;
+    }
 
-  @Override
-  public String toString() {
-    return this.getClass().getSimpleName() + " [serviceFee=" + serviceFee + "]";
-  }
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " [serviceFee=" + serviceFee + "]";
+    }
 }
