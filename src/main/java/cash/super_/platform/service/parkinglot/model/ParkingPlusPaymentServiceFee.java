@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author leandromsales
  *
  */
-public static class ParkingPlusPaymentServiceFee {
+public class ParkingPlusPaymentServiceFee {
 
     @JsonProperty(value = "service_fee")
     private Long serviceFee;

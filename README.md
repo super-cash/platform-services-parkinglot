@@ -508,7 +508,9 @@ $ gradle tests check
   * Reports will be stored under in the mapped volume in `tests-docker-compose.yaml`
 
 ```
-$ docker-compose -f tests.docker-compose.yaml up
+$ docker-compose -f tests.docker-compose.yaml rm
+$ docker-compose -f tests.docker-compose.yaml build
+$ docker-compose -f tests.docker-compose.yaml up --abort-on-container-exit tests
 ```
 
 * In Gitlab for code coverage: https://docs.gitlab.com/ee/ci/pipelines/settings.html#test-coverage-parsing
