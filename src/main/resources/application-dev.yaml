@@ -25,7 +25,7 @@ cash:
         clientLogLevel: FULL
 
       service:
-        pagarme:
+        payment:
 
           baseUrl: http://pagarme-service:8120/v2/pagarme
 
