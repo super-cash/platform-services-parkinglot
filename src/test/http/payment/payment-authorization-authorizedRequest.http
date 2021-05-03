@@ -1,0 +1,16 @@
+POST {{host}}:{{port}}/v2/parking_lot/tickets/029466836971/pay
+accept: application/json
+X-Supercash-Uid: marcello-123
+X-Supercash-Tid: new-transaction20303040
+X-Supercash-MarketplaceId: 123
+X-Supercash-StoreId: 456
+Content-Type: application/json
+Accept-Encoding: application/json
+
+{
+  "authorizedRequest": {
+    "idTransacao": "supercash-payment-3",
+    "numeroTicket": "029466836971",
+    "valor": 100
+  }
+}

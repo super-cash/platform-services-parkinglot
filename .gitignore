@@ -4,9 +4,13 @@
 .project
 bin/
 build/
+/gradle
+gradlew
+gradlew.bat
 
 .idea/
 out/
 
 zipkin/elasticsearch/
 zipkin/filebeat/
+.DS_Store

@@ -3,6 +3,22 @@ spring:
   application:
     name: parking-plus-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
+    username: postgres
+    password: postgres
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    driverClassName: org.postgres.jdbc.Driver
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+#      ddl-auto: create-drop
+      ddl-auto: update
+    properties:
+      hibernate.temp.use_jdbc_metadata_defaults: false
+
   # Zipkin is the destination environment for the traces and it's disabled in development
   # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
   zipkin:
@@ -14,12 +30,22 @@ spring:
   sleuth:
     baggage:
       remote-fields:
-        - "supercash_tid"
-        - "supercash_cid"
+        - "X-Supercash-Tid"
+        - "X-Supercash-Uid"
       correlation-fields:
-        - "supercash_tid"
-        - "supercash_cid"
+        - "X-Supercash-Tid"
+        - "X-Supercash-Uid"
 
+  jackson:
+    mapper:
+      accept_case_insensitive_enums: true
+
+  devtools:
+    livereload:
+      port: 35730
+
+# https://reflectoring.io/springboot-logging/#changing-the-color-of-log-output-in-the-console
+# https://www.baeldung.com/spring-boot-changing-log-level-at-runtime
 logging:
   level:
     org.springframework.core.env: warn
@@ -31,6 +57,8 @@ logging:
     #org.apache.tomcat: DEBUG
     #org.apache.catalina: DEBUG
     #cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api: DEBUG
+    cash.super_.platform.service.configuration: DEBUG
+    cash.super_.platform.service.parkinglot: DEBUG
 
 feign:
   client:
@@ -42,7 +70,7 @@ feign:
 # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
 # https://stackoverflow.com/questions/36780680/how-do-you-tell-spring-boot-to-send-the-embedded-tomcats-access-logs-to-stdout/54566643#54566643
 server:
-  #port: 8080 default
+  port: 8082
   tomcat:
     accesslog:
       enabled: true
@@ -56,7 +84,7 @@ server:
       # https://tomcat.apache.org/tomcat-8.0-doc/config/valve.html
       # https://howtodoinjava.com/spring-boot2/logging/embedded-server-logging-config/
       # https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
-      pattern: "[ACCESS] %h %t %{org.apache.catalina.AccessLog.RemoteAddr}r http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S %u supercash_tid=%{supercash_tid}i supercash_cid=%{supercash_cid}i x_b3_traceid=%{X-B3-TraceId}o"
+      pattern: "[ACCESS] %h %t %{org.apache.catalina.AccessLog.RemoteAddr}r http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S %u tid=%{X-Supercash-Tid}i uid=%{X-Supercash-Uid}i x_b3_traceid=%{X-B3-TraceId}o"
 
 # SpringFox Swagger
 # https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
@@ -72,13 +100,32 @@ management:
       exposure:
         include: "*"
 
-# Super cash platform
+  # Liveness and Readiness probe endpoints only work with this setup
+  # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Supercash platform settings.
 cash:
   super:
     platform:
+      client:
+        # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+        clientLogLevel: FULL
+
       service:
-        parkingplus:
-          apiVersion: v1
+        payment:
+          baseUrl: http://localhost:8120/v2/payments
+
+        parkinglot:
+          # Our API Version
+          apiVersion: v2
+
+          # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
+          baseUrl: https://demonstracao.parkingplus.com.br/servicos
+
           # Value provided by parking plus
           apiKeyId: 1
 
@@ -88,5 +135,78 @@ cash:
           # Our user ID for the API
           userKey: wps2@18pofe12g5412
 
-          # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
-          clientLogLevel: HEADERS
+          # Duration the results will stay in memory cache to then be evicted
+          salesCacheDuration: 5
+
+          # java.util.concurrent.TimeUnit https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/TimeUnit.html
+          salesCacheTimeUnit: DAYS
+
+          # Sale ID to apply. Please, use 0 in casa of no sale have to be applied.
+          saleId: -1
+
+          # The ticket title of the item in the transaction
+          ticketItemTitle: "Estacionamento Maceió Shopping"
+
+          # The service title of the item in the transaction
+          serviceFeeItemTitle: "Taxa de Serviço"
+
+          # Our client recipient id in the gateway
+          clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
+
+          # Our recipient id in the gateway
+          ourRecipientId: re_cklqszzdc03ra0p9tf9vgkcgl
+
+          # The percentage our client will receive per each transaction
+          clientPercentage: 95
+
+          # The percentage we will receive per each transaction
+          ourPercentage: 5
+
+          # Our additional service fee (in Real cents)
+          ourFee: 80
+
+          # The string used to filter the sales when load it from WPS
+          saleNameStartWith: SUPERCASH
+
+          # Prefix to be used as an payment UDID. The UDID will be defined as ex.
+          # {prefix}-{marketplaceId}-{storeId}-{userId}. This field is also used as the "bandeira" for WPS transactions.
+          udidPrefix: supercash
+
+          # Time, in seconds, the user can leave the parking lot without paying the ticket
+          gracePeriod: 1200
+
+          # Hosts and/or ports to retry (e.g localhost, 8080, localhost:8080)
+          retryableDestinationHosts:
+            - demonstracao.parkingplus.com.br
+            - localhost
+
+          # When we have http outgoing connections that returns HTTP Status 5xx, we will retry 'retryMaxAttempt'
+          # before stop. If 0 value is defined, we will retry indefinitely.
+          retryMaxAttempt: 5
+
+          # Time, in seconds, we wait until retry an http request sent to any host in 'retryableDestinationHosts',
+          # in case we have HTTP Response Status 5xx.
+          retryInterval: 3
+
+          # Max time, in seconds, we accept to wait as  the retry interval increases due to exponential backoff
+          retryMaxPeriod: 20
+
+      configuration:
+
+        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+        apiUrl: http://localhost:8501
+
+        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+        orchestratorUrl: http://localhost:8501
+
+        # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
+        defaultHeathCheckPort: 443
+
+        # Timezone to be used in serialization and deserialization
+        timeZone: GMT-3:00
+
+        # kubernetes readiness probe, reusing the cache and updating it
+        # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
+        healthProbe:
+          readinessInterval: 1
+          readinessTimeUnit: HOURS

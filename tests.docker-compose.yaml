@@ -2,11 +2,48 @@ version: "3.6"
 
 services:
 
-  parking-plus-service-tests:
-    # https://github.com/intuit/unmazedboot/releases/tag/v0.5.0
-    image: supercash/parking-plus-service-tests
+  # Test cases declared
+  tests:
+    image: supercash/service-tests
     build:
       context: .
       dockerfile: tests.Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
     volumes:
-      - ./build/docker-container-build-artifacts:/builder/build/
+      - ./build:/builder/build/
+
+  # Merge the test reports under build/test-results/test/TEST-*.xml into test-results/junit-testsuites.xml
+  merge-tests-reports:
+    image: marcellodesales/java-junit-xml-merger
+    command: -i=/test-results/test -o=/test-results/junit-testsuites.xml -s="Supercash Tests Suite"
+    volumes:
+      - ./build/test-results:/test-results
+
+  # Generate the text report of the tests for the report stage
+  generate-tests-report-text:
+    image: marcellodesales/java-junit-xml-merger
+    volumes:
+      - ./build/test-results:/test-results
+    environment:
+      - REPORT_FILE_NAME=/test-results/junit-report.txt
+      - TEST_SUITES_FILE_NAME=/test-results/junit-testsuites.xml
+
+  # Translates the jacoco report to cobertura.xml so we can use it in Gitlab's reports
+  generate-cobertura-report:
+    image: marcellodesales/cover2cover
+    volumes:
+      - .:/app
+    environment:
+      - JACOCO_XML=/app/build/reports/jacoco/test/jacocoTestReport.xml 
+      - SRC_MAIN_JAVA_DIR=/app/src/main/java
+      - COBERTURA_XML_FILE=/app/build/reports/cobertura.xml
+
+  # Prints the cobertura report to a file at build/reports/cobertura.txt
+  save-cobertura-report:
+    image: marcellodesales/pycobertura-reports
+    command: show /reports/cobertura.xml
+    environment:
+      - REPORT_FILE=/reports/cobertura.txt
+    volumes:
+      - ./build/reports:/reports

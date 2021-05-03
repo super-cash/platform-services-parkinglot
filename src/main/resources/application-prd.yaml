@@ -1,0 +1,47 @@
+# SpringBoot
+spring:
+
+  zipkin:
+    base-url: http://localhost:9411/
+    enabled: false
+
+  datasource:
+    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+    username: supercash
+    password: _#super#_123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+cash:
+  super:
+    platform:
+      client:
+        # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+        clientLogLevel: FULL
+
+      service:
+        pagarme:
+          baseUrl: http://pagarme-service:8120/v2/payments
+        parkinglot:
+          # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
+          baseUrl: https://maceio.parkingplus.com.br/servicos
+          # Review this for production
+          ourFee: 80
+          clientPercentage: 95
+          ourPercentage: 5
+          saleId: -1
+          clientRecipientId: re_cklqt3bhu03t00o9tjjlqxibb
+          ourRecipientId: re_cklqszzdc03ra0p9tf9vgkcgl
+          apiKeyId: 1
+          parkingLotId: 1
+          userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
+          saleNameStartWith: MACEIOSHOPPING
+          gracePeriod: 1200
+          retryableDestinationHosts:
+            - maceio.parkingplus.com.br
+            - pagarme-service
+            - orchestrator
+          retryMaxAttempt: 10
+          retryInterval: 5000
