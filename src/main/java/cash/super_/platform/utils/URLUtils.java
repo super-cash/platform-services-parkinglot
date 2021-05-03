@@ -13,12 +13,13 @@ public class URLUtils {
     public static URL validateURL(String urlStr, int defaultPort) {
         URL url = null;
         try {
-            url = new URL(urlStr);
+            url = new java.net.URL(urlStr);
             if (url.getPort() == -1) {
                 return new URL(url.getProtocol(), url.getHost(), defaultPort, url.getFile());
             }
             return url;
         } catch (MalformedURLException e) {
+            LOG.error("{} and/or port {} is/are invalid: {}", urlStr, defaultPort, e.getMessage());
             return null;
         }
     }

@@ -1,5 +1,6 @@
 package cash.super_.platform.service.payment.model;
 
+import cash.super_.platform.service.payment.model.pagarme.Transaction;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,7 +15,7 @@ public class TransactionResponseSummary {
      * Supercash transaction ID in the database.
      */
     @JsonProperty(value = "transaction_id")
-    private Long transactionId;
+    private String transactionId;
 
     /**
      * Paid amount in the transaction
@@ -47,28 +48,52 @@ public class TransactionResponseSummary {
      */
     private Map<String, String> metadata = new HashMap<>();
 
-    public Long getTransactionId() {
+    public String getTransactionId() {
         return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
     public Long getPaidAmount() {
         return paidAmount;
     }
 
+    public void setPaidAmount(Long paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
     public String getUuid() {
         return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Transaction.Status getStatus() {
         return status;
     }
 
+    public void setStatus(Transaction.Status status) {
+        this.status = status;
+    }
+
     public Integer getGatewayTransactionId() {
         return gatewayTransactionId;
     }
 
+    public void setGatewayTransactionId(Integer gatewayTransactionId) {
+        this.gatewayTransactionId = gatewayTransactionId;
+    }
+
     public Map<String, String> getMetadata() {
         return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 
     @Override

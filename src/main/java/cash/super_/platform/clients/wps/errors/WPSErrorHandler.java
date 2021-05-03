@@ -35,6 +35,13 @@ public class WPSErrorHandler implements SupercashAbstractErrorHandler {
           supercashSimpleException.SupercashExceptionModel.addField("third_party_message", wpsException.getMessage());
           supercashSimpleException.SupercashExceptionModel.addField("third_party_error_code", wpsException.getErrorCode());
         }
+        // TODO: when any error ocurrs here, the user payment is already processed, we have to deal with any error here
+        // including send an SMS or similar (ex. notify the web system) to the responsible of the parking lot and help
+        // the user to handle this situation
+        //
+        // We have to analyse the erroCode here and take decisions:
+        // https://demonstracao.parkingplus.com.br/servicos/swagger-ui.html#!/servico-pagamento-ticket-2/pagamentosEfetuadosUsingGET
+
         break;
 
       case MediaType.TEXT_HTML_VALUE:

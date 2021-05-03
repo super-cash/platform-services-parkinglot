@@ -3,7 +3,7 @@ package cash.super_.platform.service.parkinglot.ticket;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.service.payment.model.TransactionRequest;
+import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
 import cash.super_.platform.service.payment.model.TransactionResponseSummary;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPayment;
@@ -67,7 +67,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     wpsAuthorizedPaymentRequest.setNumeroTicket(ticketNumber);
     wpsAuthorizedPaymentRequest.setFaturado(true);
     wpsAuthorizedPaymentRequest.setIdGaragem(properties.getParkingLotId());
-    wpsAuthorizedPaymentRequest.setPermitirValorExcedente(false);
+    wpsAuthorizedPaymentRequest.setPermitirValorExcedente(true);
     wpsAuthorizedPaymentRequest.setPermitirValorParcial(false);
     wpsAuthorizedPaymentRequest.setUdid(userId);
     wpsAuthorizedPaymentRequest.setValor(payRequest.getItems().get(0).getUnitPrice().intValue());
@@ -219,6 +219,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 //      if (items == null || items.size() == 0) {
 //        throw new SupercashInvalidValueException("At least one item must be provided.");
 //      }
+
 
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
       paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,

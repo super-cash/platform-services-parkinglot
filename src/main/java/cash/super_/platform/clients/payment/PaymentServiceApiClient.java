@@ -6,8 +6,9 @@ import cash.super_.platform.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.clients.DefaultObjectMapper;
 import cash.super_.platform.clients.payment.errors.PaymentErrorHandler;
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
-import cash.super_.platform.service.payment.model.TransactionRequest;
+import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
 import cash.super_.platform.service.payment.model.TransactionResponseSummary;
+import cash.super_.platform.service.payment.model.pagseguro.TransactionResponse;
 import feign.*;
 import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
@@ -24,12 +25,19 @@ import java.util.concurrent.TimeUnit;
              configuration = PaymentServiceApiClient.ConfigurationForPaymentServiceApiClient.class)
 public interface PaymentServiceApiClient {
 
-    @RequestLine("POST /transactions/credit")
+    @RequestLine("POST /pagarme/transactions/pay")
     @Headers({
             "Content-Type: application/json",
             "Accept: application/json",
     })
-    public TransactionResponseSummary requestPayment(TransactionRequest transaction);
+    public TransactionResponseSummary requestPaymentUsingPagarme(TransactionRequest transaction);
+
+    @RequestLine("POST /transactions/pay")
+    @Headers({
+            "Content-Type: application/json",
+            "Accept: application/json",
+    })
+    public TransactionResponse requestPayment(cash.super_.platform.service.payment.model.pagseguro.TransactionRequest transaction);
 
     @RequestLine("GET /transactions/supercash/metadataby/{metadataKey}/{metadataValue}")
     @Headers({

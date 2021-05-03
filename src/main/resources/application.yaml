@@ -117,7 +117,7 @@ cash:
 
       service:
         payment:
-          baseUrl: http://localhost:8120/v2/pagarme
+          baseUrl: http://localhost:8120/v2/payments
 
         parkinglot:
           # Our API Version
