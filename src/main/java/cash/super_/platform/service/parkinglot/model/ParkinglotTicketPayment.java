@@ -1,6 +1,6 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.payment.model.TransactionResponse;
+import cash.super_.platform.service.payment.model.pagarme.TransactionResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;

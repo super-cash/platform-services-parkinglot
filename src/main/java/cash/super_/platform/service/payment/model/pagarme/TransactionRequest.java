@@ -1,8 +1,11 @@
-package cash.super_.platform.service.payment.model;
+package cash.super_.platform.service.payment.model.pagarme;
 
+import cash.super_.platform.service.payment.model.pagseguro.*;
+import cash.super_.platform.service.payment.model.pagseguro.Customer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -242,6 +245,64 @@ public class TransactionRequest extends Transaction {
 
     public void setDocuments(List<Document> documents) {
         this.documents = documents;
+    }
+
+    public cash.super_.platform.service.payment.model.pagseguro.TransactionRequest toPagseguroTransactionRequest() {
+        cash.super_.platform.service.payment.model.pagseguro.TransactionRequest transactionRequest =
+                new cash.super_.platform.service.payment.model.pagseguro.TransactionRequest();
+        OrderRequest orderRequest = new OrderRequest();
+        Customer customer = new Customer();
+
+        orderRequest.setReferenceId(this.getReferenceKey());
+
+        customer.setName(this.getCustomer().getName());
+        customer.setEmail(this.getCustomer().getEmail());
+        customer.setTaxId(this.getCustomer().getDocuments().get(0).getNumber());
+        for (String phoneNumber : this.getCustomer().getPhoneNumbers()) {
+            String pn = phoneNumber.substring(phoneNumber.length() - 9);
+            String code = phoneNumber.substring(phoneNumber.length() - 11, phoneNumber.length() - 9);
+            String country = phoneNumber.replace(pn, "").replace(code, ""   );
+            customer.addPhoneNumber(country, code, pn, "MOBILE");
+        }
+        orderRequest.setCustomer(customer);
+
+        for (Item item : this.getItems()) {
+            cash.super_.platform.service.payment.model.pagseguro.Item psItem =
+                    new cash.super_.platform.service.payment.model.pagseguro.Item();
+            psItem.setItemId(item.getId());
+            psItem.setQuantity(item.getQuantity());
+            psItem.setName(item.getTitle());
+            psItem.setReferenceId(item.getId());
+            psItem.setUnitAmount(item.getUnitPrice());
+            orderRequest.addItem(psItem);
+        }
+
+        orderRequest.clearChargeRequest();
+        orderRequest.clearNotificationUrls();
+
+        ChargeRequest chargeRequest = new ChargeRequest();
+//        chargeRequest.setDescription("");
+        PaymentMethodRequest paymentMethodRequest = new PaymentMethodRequest();
+        paymentMethodRequest.setCapture(true);
+        CardRequest cardRequest = new CardRequest();
+        cardRequest.setNumber(this.cardNumber);
+        cardRequest.setHolder(new Holder(this.cardHolderName));
+        cardRequest.setExpMonth(Integer.parseInt(this.cardExpirationDate.substring(0, 1)));
+        cardRequest.setExpYear(Integer.parseInt(this.cardExpirationDate.substring(2)));
+        paymentMethodRequest.setCard(cardRequest);
+        paymentMethodRequest.setInstallments(this.getInstallments());
+        paymentMethodRequest.setType(PaymentMethodType.CREDIT_CARD);
+        paymentMethodRequest.setSoftDescriptor(this.getSoftDescriptor());
+        chargeRequest.setPaymentMethod(paymentMethodRequest);
+
+        Amount amount = new Amount();
+        amount.setCurrency(Currency.BRL);
+        amount.setValue(this.getAmount());
+        chargeRequest.setAmount(amount);
+        chargeRequest.setMetadata(this.getMetadata());
+        orderRequest.addChargeRequest(chargeRequest);
+        transactionRequest.setOrderRequest(orderRequest);
+        return transactionRequest;
     }
 
     @Override

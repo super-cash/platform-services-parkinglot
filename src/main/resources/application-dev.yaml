@@ -27,7 +27,7 @@ cash:
       service:
         payment:
 
-          baseUrl: http://pagarme-service:8120/v2/pagarme
+          baseUrl: http://pagarme-service:8120/v2/payments
 
         parkinglot:
 

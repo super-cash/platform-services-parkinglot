@@ -11,7 +11,8 @@ import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.TransactionRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
-import cash.super_.platform.service.payment.model.*;
+import cash.super_.platform.service.payment.model.TransactionResponseSummary;
+import cash.super_.platform.service.payment.model.pagarme.*;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,8 +151,12 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     TransactionResponseSummary transactionResponseSummary = null;
 
     try {
-      transactionResponseSummary = paymentServiceApiClient.requestPayment(payRequest);
-
+      cash.super_.platform.service.payment.model.pagseguro.TransactionResponse transactionResponse =
+              paymentServiceApiClient.requestPayment(payRequest.toPagseguroTransactionRequest());
+      transactionResponseSummary = transactionResponse.summary();
+      // TODO: we have to certify that WPS accept the payment, otherwise we have to inform the user and ask him
+      // to go to the support center. This implementation have to be implemented in the
+      // cash.super_.platform.clients.wps.errors.WPSErrorHandlercash.super_.platform.clients.wps.errors.WPSErrorHandler
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
@@ -170,7 +175,8 @@ public class PagarmePaymentProcessorService extends AbstractParkingLotProxyServi
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
-    Optional<Transaction> transactionOpt = transactionRepository.findById(transactionResponseSummary.getTransactionId());
+    Optional<Transaction> transactionOpt =
+            transactionRepository.findById(transactionResponseSummary.getTransactionId());
     if (transactionOpt.isPresent()) {
       parkinglotTicketPayment.setTransactionResponse((TransactionResponse) transactionOpt.get());
     }

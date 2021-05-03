@@ -1,4 +1,4 @@
-package cash.super_.platform.service.payment.model;
+package cash.super_.platform.service.payment.model.pagarme;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

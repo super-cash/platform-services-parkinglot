@@ -16,7 +16,8 @@
 # 326295307723
 # 326478403994
 
-GET {{host}}:{{port}}/v2/parking_lot/tickets/326503194981
+GET {{host}}:{{port}}/v2/parking_lot/tickets/
+
 Accept: application/json
 X-Supercash-Uid: 1200
 X-Supercash-Tid: new-transaction20303040
