@@ -165,7 +165,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
         message = "The ticket is already paid.";
         LOG.debug(message);
         supercashTicketStatus = SupercashTicketStatus.PAID;
-        if (throwExceptionWhileValidating) throw new SupercashTransactionAlreadyPaidException(message);
+        if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
 
       } else {
         if (amount != ticketFee) {

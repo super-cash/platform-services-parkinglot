@@ -57,8 +57,7 @@ logging:
     #org.apache.tomcat: DEBUG
     #org.apache.catalina: DEBUG
     #cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api: DEBUG
-    cash.super_.platform.service.configuration: DEBUG
-    cash.super_.platform.service.parkinglot: DEBUG
+    cash.super_.platform: DEBUG
 
 feign:
   client:
