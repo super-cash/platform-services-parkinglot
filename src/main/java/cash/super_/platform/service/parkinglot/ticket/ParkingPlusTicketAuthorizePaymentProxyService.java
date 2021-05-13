@@ -4,13 +4,13 @@ import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
-import cash.super_.platform.service.payment.model.TransactionResponseSummary;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPayment;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.payment.PagarmePaymentProcessorService;
+import cash.super_.platform.service.parkinglot.payment.PaymentProcessorService;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
+import cash.super_.platform.service.payment.model.supercash.PaymentResponseSummary;
 import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.SecretsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import java.util.Optional;
 public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParkingLotProxyService {
 
   @Autowired
-  PagarmePaymentProcessorService pagarmePaymentProcessorService;
+  PaymentProcessorService paymentProcessorService;
 
   @Autowired
   private ParkingPlusTicketStatusProxyService statusService;
@@ -48,7 +48,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   private ParkinglotTicketRepository parkinglotTicketRepository;
 
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, TransactionRequest payRequest,
-                                                               TransactionResponseSummary payResponse) {
+                                                               PaymentResponseSummary payResponse) {
     LOG.debug("Payment auth request after Supercash payment request/response: {} {}", payRequest, payResponse);
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
@@ -222,18 +222,18 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
 
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
-      paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,
+      paymentStatus = paymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,
               userId, marketplaceId, storeId);
 
     } else if (paymentRequest.getAuthorizedRequest() != null) {
-      throw new SupercashSimpleException("Direct request for WPS is payment gateway currently disabled.");
+      throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
       /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
 //      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
 //      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());
 //      paymentStatus = authorizePayment(userId, request);
 
     } else if (paymentRequest.getRequest() != null) {
-      throw new SupercashSimpleException("Direct request for WPS is payment gateway currently disabled.");
+      throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
       /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
 //      PagamentoRequest request = paymentRequest.getRequest();
 //      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());

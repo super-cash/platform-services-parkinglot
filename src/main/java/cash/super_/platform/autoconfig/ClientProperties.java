@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
+
 @Validated
 @Component
 @org.springframework.boot.context.properties.ConfigurationProperties(prefix = "cash.super.platform.client")
@@ -12,7 +14,8 @@ public class ClientProperties {
 
     protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ClientProperties.class);
 
-    private Logger.Level clientLogLevel = Logger.Level.BASIC;
+    @NotNull
+    private Logger.Level clientLogLevel;
 
     public Logger.Level getClientLogLevel() {
         return clientLogLevel;

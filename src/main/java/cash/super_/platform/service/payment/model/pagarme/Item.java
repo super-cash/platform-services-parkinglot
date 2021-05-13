@@ -24,12 +24,13 @@ public class Item {
 
     private Integer quantity;
 
+    // TODO: investigate why this is not being properly stored in the database
     private Boolean tangible;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "transaction_id")
-//    @JsonIgnore
-//    private Transaction transaction;
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name="transaction_id", nullable = false)
+    private Transaction transaction;
 
     public Long getItemId() { return itemId; }
 

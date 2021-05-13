@@ -70,30 +70,11 @@ public class SupercashErrorDecoder implements ErrorDecoder {
       if (errorHandler != null) {
         supercashSimpleException = errorHandler.handle(response, responseBody);
       }
-//        } else if (responseBody.contains("errors") && responseBody.contains("parameter_name")) {
-//          PagarmeException pagarmeException = JsonUtil.toObject(responseBody, PagarmeException.class);
-//          supercashSimpleException = new SupercashThirdPartySystemException();
-//          supercashSimpleException.SupercashExceptionModel.addField("third_party_errors", pagarmeException.getErrors());
-//          supercashSimpleException.SupercashExceptionModel.addField("third_party_url", pagarmeException.getUrl());
-//          supercashSimpleException.SupercashExceptionModel.addField("third_party_method", pagarmeException.getMethod());
-//        } else {
-//          // TODO: implement pagseguro errors handing
-//        } else {
-//          supercashSimpleException = JsonUtil.toObject(responseBody, SupercashSimpleException.class);
-//        }
-//      } else {
-//        // TODO: create default exception to handle other types of content-type
-//        LOG.error("Occurred a third-party error, but it is not a JSON content type.");
-//      }
 
-      // TODO: implement specific pagseguro errors here based on this template
-//      {
-//        "error_messages" : [ {
-//        "code" : "40001",
-//                "description" : "required_parameter",
-//                "parameter_name" : "payment_method.card.number"
-//      } ]
-//      }
+      if (supercashSimpleException == null) {
+        return exception;
+      }
+
       // TODO: Send SMS to the admin
 
       if (HttpStatus.valueOf(response.status()).is5xxServerError() ||
@@ -109,7 +90,8 @@ public class SupercashErrorDecoder implements ErrorDecoder {
       }
 
       if (supercashSimpleException != null) {
-        return supercashSimpleException;
+        //return supercashSimpleException;
+        throw supercashSimpleException;
       }
     }
 

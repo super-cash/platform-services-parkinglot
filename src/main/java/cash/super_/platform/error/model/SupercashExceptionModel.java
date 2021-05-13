@@ -14,6 +14,8 @@ public class SupercashExceptionModel {
     @JsonProperty(value = "error_code")
     private SupercashErrorCode errorCode = SupercashErrorCode.GENERIC_ERROR;
 
+    private String description;
+
     @JsonProperty(value = "additional_error_code")
     private HttpStatus additionalErrorCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -23,14 +25,13 @@ public class SupercashExceptionModel {
     @JsonProperty(value = "additional_fields")
     private Map<String, Object> additionalFields = new HashMap<>();
 
+    public SupercashExceptionModel () {
+        this.description = errorCode.description();
+    }
+
     @JsonGetter(value = "error_code")
     public Integer getErrorCode() {
         return errorCode.value();
-    }
-
-    @JsonIgnore
-    public SupercashErrorCode getErrorCodeAsSupercashErrorCode() {
-        return errorCode;
     }
 
     @JsonSetter(value = "error_code")
@@ -38,12 +39,22 @@ public class SupercashExceptionModel {
         this.errorCode = SupercashErrorCode.valueOf(errorCode);
     }
 
+    @JsonIgnore
+    public SupercashErrorCode getErrorCodeAsSupercashErrorCode() {
+        return errorCode;
+    }
+
     public void setErrorCodeAsSupercashErrorCode(SupercashErrorCode errorCode) {
         this.errorCode = errorCode;
     }
 
-    @JsonGetter(value = "description")
-    public String getDescription() { return errorCode.description(); }
+    public String getDescription() {
+        return errorCode.description();
+    }
+
+    public void setDescription(String description) {
+
+    }
 
     @JsonGetter(value = "additional_error_code")
     public Integer getAdditionalErrorCode() {
@@ -88,6 +99,7 @@ public class SupercashExceptionModel {
     public String toString() {
         return "SupercashException{" +
                 "errorCode=" + errorCode +
+                ", description='" + errorCode.description() + '\'' +
                 ", additionalErrorCode=" + additionalErrorCode +
                 ", additionalDescription='" + additionalDescription + '\'' +
                 ", additionalFields=" + additionalFields +

@@ -39,6 +39,7 @@ public class Transaction {
     private Long id;
 
     /*
+     * TODO: formally link (foreign key) the user here
      * Usuário dono da transação
      */
 //    @JsonIgnore
@@ -110,9 +111,9 @@ public class Transaction {
     /**
      * Dados sobre os produtos comprados. Obrigatório com o antifraude habilitado.
      */
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+            mappedBy = "transaction") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "transaction_id", referencedColumnName="transaction_id")
     private List<Item> items = new ArrayList<>();
 
     /**
@@ -124,7 +125,6 @@ public class Transaction {
     @CollectionTable(name="pagarme_transaction_metadata", joinColumns = @JoinColumn(name = "transaction_id"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name="transaction_id")
-//    @JsonIgnore
     private Map<String, String> metadata = new HashMap<>();
 
     /**
@@ -148,6 +148,12 @@ public class Transaction {
 
     @JsonProperty(value = "pix_expiration_date")
     private String pixExpirationDate;
+
+    @JsonIgnore
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+            mappedBy = "transaction") // mappedBy value is the name of the java class attribute there in the child class
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<Notification> notifications = new ArrayList<>();
 
     @JsonIgnore
     @Transient
@@ -340,11 +346,26 @@ public class Transaction {
     @Override
     public String toString() {
         return "Transaction{" +
-                "uuid=" + uuid +
-                ", transactionId=" + transactionId +
+                "transactionId=" + transactionId +
+                ", uuid=" + uuid +
                 ", id=" + id +
+                ", userId='" + userId + '\'' +
                 ", amount=" + amount +
-                ", userId=" + userId +
+                ", paymentMethod=" + paymentMethod +
+                ", postbackUrl='" + postbackUrl + '\'' +
+                ", installments=" + installments +
+                ", boletoExpirationDate='" + boletoExpirationDate + '\'' +
+                ", softDescriptor='" + softDescriptor + '\'' +
+                ", customer=" + customer +
+                ", billing=" + billing +
+                ", shipping=" + shipping +
+                ", items=" + items +
+                ", metadata=" + metadata +
+                ", splitRules=" + splitRules +
+                ", referenceKey='" + referenceKey + '\'' +
+                ", pixQrCode='" + pixQrCode + '\'' +
+                ", pixExpirationDate='" + pixExpirationDate + '\'' +
+//                ", notifications=" + notifications +
                 '}';
     }
 
@@ -528,7 +549,7 @@ public class Transaction {
         /**
          * Transação sendo processada.
          */
-        @JsonProperty("processing")
+        @JsonProperty("PROCESSING")
         PROCESSING,
 
         /**
@@ -537,44 +558,44 @@ public class Transaction {
          * dias. Caso a transação <b>não seja capturada</b>, a autorização é
          * cancelada automaticamente.
          */
-        @JsonProperty("authorized")
+        @JsonProperty("AUTHORIZED")
         AUTHORIZED,
 
         /**
          * Transação paga (autorizada e capturada).
          */
-        @JsonProperty("paid")
+        @JsonProperty("PAID")
         PAID,
 
         /**
          * Transação estornada.
          */
-        @JsonProperty("refunded")
+        @JsonProperty("REFUNDED")
         REFUNDED,
 
         /**
          * Transação aguardando pagamento (status para transações criadas com
          * boleto bancário ou pix).
          */
-        @JsonProperty("waiting_payment")
+        @JsonProperty("WAITING_PAYMENT")
         WAITING_PAYMENT,
 
         /**
          * Transação paga com boleto aguardando para ser estornada.
          */
-        @JsonProperty("pending_refund")
+        @JsonProperty("PENDING_REFUND")
         PENDING_REFUND,
 
         /**
          * Transação não autorizada.
          */
-        @JsonProperty("refused")
+        @JsonProperty("REFUSED")
         REFUSED,
 
         /**
          * Transação sofreu chargeback.
          */
-        @JsonProperty("chargedback")
+        @JsonProperty("CHARGEDBACK")
         CHARGEDBACK;
 
 //        @JsonIgnore
