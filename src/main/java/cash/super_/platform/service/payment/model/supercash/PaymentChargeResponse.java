@@ -78,7 +78,7 @@ public class PaymentChargeResponse extends PaymentCharge {
     public String getChargeId() {
         return chargeId;
     }
-    
+
     public void setChargeId(String chargeId) {
         this.chargeId = chargeId;
     }

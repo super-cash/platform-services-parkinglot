@@ -177,7 +177,6 @@ cash:
           # Hosts and/or ports to retry (e.g localhost, 8080, localhost:8080)
           retryableDestinationHosts:
             - demonstracao.parkingplus.com.br
-            - localhost
 
           # When we have http outgoing connections that returns HTTP Status 5xx, we will retry 'retryMaxAttempt'
           # before stop. If 0 value is defined, we will retry indefinitely.
@@ -193,10 +192,10 @@ cash:
       configuration:
 
         # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        apiUrl: http://localhost:8501
+        apiUrl: http://orchestrator:8501
 
         # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        orchestratorUrl: http://localhost:8501
+        orchestratorUrl: http://orchestrator:8501
 
         # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
         defaultHeathCheckPort: 443

@@ -22,8 +22,8 @@ cash:
         clientLogLevel: FULL
 
       service:
-        pagarme:
-          baseUrl: http://pagarme-service:8120/v2/payments
+        payment:
+          baseUrl: http://payment-service:8120/v2/payments
         parkinglot:
           # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
           baseUrl: https://maceio.parkingplus.com.br/servicos
@@ -41,7 +41,7 @@ cash:
           gracePeriod: 1200
           retryableDestinationHosts:
             - maceio.parkingplus.com.br
-            - pagarme-service
+            - payment-service
             - orchestrator
           retryMaxAttempt: 10
           retryInterval: 5000
