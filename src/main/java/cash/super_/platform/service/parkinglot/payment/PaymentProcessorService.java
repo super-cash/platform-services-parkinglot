@@ -209,6 +209,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
        * transaction was not accepted.
        */
       if (chargeResponse.getStatus() == ChargeStatus.PAID) {
+        userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
         ParkingTicketAuthorizedPaymentStatus ap = paymentAuthService.authorizePayment(userId, payRequest,
                 paymentResponse.summary());
         for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
