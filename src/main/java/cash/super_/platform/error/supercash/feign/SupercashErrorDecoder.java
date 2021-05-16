@@ -77,9 +77,11 @@ public class SupercashErrorDecoder implements ErrorDecoder {
 
       // TODO: Send SMS to the admin
 
+      LOG.debug("Checking if error is 5xx or {}... ", HttpStatus.NOT_ACCEPTABLE);
       if (HttpStatus.valueOf(response.status()).is5xxServerError() ||
               HttpStatus.valueOf(response.status()) == HttpStatus.NOT_ACCEPTABLE) {
         List<String> retryableDestinationHosts = errorHandler.getRetryableDestinationHosts();
+        LOG.debug("List of retryable destinations: {}... ", retryableDestinationHosts);
         if (retryableDestinationHosts.contains(url.getHost()) || retryableDestinationHosts.contains(url.getPort()) ||
                 retryableDestinationHosts.contains(url.getHost() + ":" + url.getPort())) {
           LOG.error("Retrying send request to {} due to response with HTTP Status {}. Request:\n{}", request.url(),
@@ -87,11 +89,12 @@ public class SupercashErrorDecoder implements ErrorDecoder {
           return new SupercashRetryableException(response.status(), "Retry due to http status " +
                   HttpStatus.valueOf(response.status()), request.httpMethod(), supercashSimpleException, null, request);
         }
+      } else {
+        LOG.debug("... No!");
       }
 
       if (supercashSimpleException != null) {
-        //return supercashSimpleException;
-        throw supercashSimpleException;
+        return supercashSimpleException;
       }
     }
 
