@@ -1,6 +1,5 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -38,8 +37,6 @@ public class ParkinglotTicket {
     public void setTicketNumber(Long ticketNumber) {
         this.ticketNumber = ticketNumber;
     }
-
-
 
     public List<ParkinglotTicketPayment> getPayments() {
         return payments;

@@ -1,5 +1,6 @@
-package cash.super_.platform.service.payment.model.supercash;
+package cash.super_.platform.service.payment.model.supercash.card;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,16 +9,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-@Entity(name = "payment_processor")
+@Entity(name = "payment_card")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PaymentProcessor {
+public abstract class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonIgnore
     private Long id;
 
-    private String name;
+    @JsonProperty(value = "card_id")
+    private String cardId;
 
     public Long getId() {
         return id;
@@ -27,22 +29,22 @@ public class PaymentProcessor {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public void setCardId(String cardId) {
+        this.cardId = cardId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getCardId() {
+        return cardId;
     }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer(System.lineSeparator());
-        sb.append("PaymentProcessor{");
+        sb.append("Card{");
         sb.append(System.lineSeparator());
         sb.append("  \"id\": ").append(id).append(',').append(System.lineSeparator());
-        sb.append("  \"name\": \"").append(name).append("\",").append(System.lineSeparator());
-        sb.append(super.toString()).append(System.lineSeparator()).append('}');
+        sb.append("  \"cardId\": \"").append(cardId).append("\",").append(System.lineSeparator());
+        sb.append(System.lineSeparator()).append('}');
         return sb.toString();
     }
 }

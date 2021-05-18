@@ -14,6 +14,9 @@ import cash.super_.platform.service.parkinglot.repository.PaymentRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.service.payment.model.pagarme.*;
 import cash.super_.platform.service.payment.model.supercash.*;
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargeStatus;
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
+import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,19 +149,14 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
     payRequest.addMetadata("lapsed_time", String.valueOf(allowedExitDateTime - ticketStatus.getDataDeEntrada()));
 
-    payRequest.setCapture(true);
+    payRequest.setCapture(false);
 
     payRequest.setAsync(false);
 
     PaymentOrderResponse paymentResponse = null;
     try {
-      paymentResponse = paymentServiceApiClient.requestPayment(payRequest.toPagseguroTransactionRequest());
-//      responseSummary = paymentResponse.summary();
+      paymentResponse = paymentServiceApiClient.authorizePayment(payRequest.toSupercashPaymentOrderRequest());
       LOG.error("PAYMENT RESPONSE: {}", paymentResponse);
-//      LOG.error("SUMMARY: {}", responseSummary);
-      // TODO: we have to certify that WPS accept the payment, otherwise we have to inform the user and ask him
-      // to go to the support center. This implementation have to be implemented in the
-      // cash.super_.platform.clients.wps.errors.WPSErrorHandlercash.super_.platform.clients.wps.errors.WPSErrorHandler
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
@@ -170,63 +168,73 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
       PaymentChargeResponse chargeResponse = paymentResponse.getCharges().stream().findFirst().get();
 
-      // TODO: Review this and check if it is possible to reuse the transaction object
-      /* Saving payment request into the database */
-      Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
-      ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-      parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
-      parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
-      parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
-      parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
-      parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
+      ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus = null;
+      if (chargeResponse.getStatus() == ChargeStatus.AUTHORIZED) {
+        userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+        parkingTicketAuthorizedPaymentStatus = paymentAuthService.authorizePayment(userId, payRequest,
+                paymentResponse.summary());
+        if (parkingTicketAuthorizedPaymentStatus.getStatus().isTicketPago()) {
+          PaymentChargeCaptureRequest paymentChargeCaptureRequest = new PaymentChargeCaptureRequest();
+          paymentChargeCaptureRequest.setAmount(chargeResponse.getAmount());
+          chargeResponse = paymentServiceApiClient.capturePayment(chargeResponse.getId(), chargeResponse.getPaymentId(),
+                  paymentChargeCaptureRequest);
+          if (chargeResponse.getStatus() == ChargeStatus.PAID) {
+            /* Saving payment request into the database */
+            Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
+            ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
+            parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
+            parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
+            parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
+            parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
+            parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
-      Optional<Payment> paymentOpt = paymentRepository.findById(paymentResponse.getId());
-      if (paymentOpt.isPresent()) {
-        paymentResponse = (PaymentOrderResponse) paymentOpt.get();
-        parkinglotTicketPayment.setPayment(paymentResponse);
-      }
+            Optional<Payment> paymentOpt = paymentRepository.findById(paymentResponse.getId());
+            if (paymentOpt.isPresent()) {
+              paymentResponse = (PaymentOrderResponse) paymentOpt.get();
+              parkinglotTicketPayment.setPayment(paymentResponse);
+            }
 //      parkinglotTicketPayment.setPayment(paymentResponse);
 
-      ParkinglotTicket parkinglotTicket = null;
-      Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
-      if (parkinglotTicketOpt.isPresent()) {
-        parkinglotTicket = parkinglotTicketOpt.get();
-      } else {
-        parkinglotTicket = new ParkinglotTicket();
-        parkinglotTicket.setTicketNumber(ticketNumber);
-      }
+            ParkinglotTicket parkinglotTicket = null;
+            Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
+            if (parkinglotTicketOpt.isPresent()) {
+              parkinglotTicket = parkinglotTicketOpt.get();
+            } else {
+              parkinglotTicket = new ParkinglotTicket();
+              parkinglotTicket.setTicketNumber(ticketNumber);
+            }
 
-      /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
-       * when we need to get specific info about this specific payment.
-       * */
-      parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-      parkinglotTicketPayment.setDate(-1L);
-      parkinglotTicket.addPayment(parkinglotTicketPayment);
-      parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+            /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
+             * when we need to get specific info about this specific payment.
+             * */
+            parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
+            parkinglotTicketPayment.setDate(-1L);
+            parkinglotTicket.addPayment(parkinglotTicketPayment);
+            parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
-      /*
-       * Since we activate a sync transaction, PAID should be expected, otherwise we need to return saying that the
-       * transaction was not accepted.
-       */
-      if (chargeResponse.getStatus() == ChargeStatus.PAID) {
-        userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-        ParkingTicketAuthorizedPaymentStatus ap = paymentAuthService.authorizePayment(userId, payRequest,
-                paymentResponse.summary());
-        for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
-          parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
-          if (parkinglotTicketPayment.getDate() == -1) {
-            /* Set the dataPagamento for future use, since this information is returned by the WPS. */
-            parkinglotTicketPayment.setDate(ap.getStatus().getDataPagamento());
-            break;
+            for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
+              parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
+              if (parkinglotTicketPayment.getDate() == -1) {
+                /* Set the dataPagamento for future use, since this information is returned by the WPS. */
+                parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
+                break;
+              }
+            }
+            parkinglotTicketRepository.save(parkinglotTicket);
+            return parkingTicketAuthorizedPaymentStatus;
+          } else {
+            // TODO: Review this situation, since the ticket is authorized, but the payment was not effectivelly
+            //  possible, although AUTHORIZED. The best decision is to send a WPS request to rollback the request of
+            //  payment authorization.
+            ParkingPlusPaymentNotApprovedException exception =
+                    new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN, "Payment status is " +
+                            chargeResponse.getStatus());
+            LOG.error(exception.getMessage());
+            throw exception;
           }
         }
-        parkinglotTicketRepository.save(parkinglotTicket);
-        return ap;
       } else {
-        ParkingPlusPaymentNotApprovedException exception = new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN,
-                "Transaction status is " + chargeResponse.getStatus());
-        LOG.error(exception.getMessage());
-        throw exception;
+        throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
       }
     }
     throw new SupercashPaymentErrorException("Parking lot service were unable to process payment gateway response. " +

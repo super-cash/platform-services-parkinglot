@@ -1,5 +1,6 @@
 package cash.super_.platform.service.payment.model.supercash;
 
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargeStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -97,13 +98,17 @@ public class PaymentResponseSummary {
 
     @Override
     public String toString() {
-        return "TransactionResponseSummary{" +
-                "transactionId=" + transactionId +
-                ", paidAmount=" + paidAmount +
-                ", uuid=" + uuid +
-                ", status=" + status +
-                ", gatewayTransactionId=" + gateway +
-                '}';
+        final StringBuffer sb = new StringBuffer(System.lineSeparator());
+        sb.append("PaymentResponseSummary{");
+        sb.append(System.lineSeparator());
+        sb.append("  \"transactionId\": ").append(transactionId).append(',').append(System.lineSeparator());
+        sb.append("  \"paidAmount\": ").append(paidAmount).append(',').append(System.lineSeparator());
+        sb.append("  \"uuid\": \"").append(uuid).append("\",").append(System.lineSeparator());
+        sb.append("  \"status\": ").append(status).append(',').append(System.lineSeparator());
+        sb.append("  \"gateway\": ").append(gateway).append(',').append(System.lineSeparator());
+        sb.append("  \"metadata\": ").append(metadata).append(',').append(System.lineSeparator());
+        sb.append(super.toString()).append(System.lineSeparator()).append('}');
+        return sb.toString();
     }
 
     @Override

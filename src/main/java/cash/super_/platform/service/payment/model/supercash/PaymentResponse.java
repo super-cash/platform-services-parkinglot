@@ -1,5 +1,7 @@
 package cash.super_.platform.service.payment.model.supercash;
 
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
+import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,9 +32,12 @@ public class PaymentResponse {
 
     @Override
     public String toString() {
-        return "TransactionResponse{" +
-                "orderResponse=" + orderResponse +
-                ", chargeResponse=" + chargeResponse +
-                '}';
+        final StringBuffer sb = new StringBuffer(System.lineSeparator());
+        sb.append("PaymentResponse{");
+        sb.append(System.lineSeparator());
+        sb.append("  \"orderResponse\": ").append(orderResponse).append(',').append(System.lineSeparator());
+        sb.append("  \"chargeResponse\": ").append(chargeResponse).append(',').append(System.lineSeparator());
+        sb.append(super.toString()).append(System.lineSeparator()).append('}');
+        return sb.toString();
     }
 }

@@ -1,6 +1,13 @@
 package cash.super_.platform.service.payment.model.pagarme;
 
-import cash.super_.platform.service.payment.model.supercash.*;
+import cash.super_.platform.service.payment.model.supercash.amount.Amount;
+import cash.super_.platform.service.payment.model.supercash.amount.AmountCurrency;
+import cash.super_.platform.service.payment.model.supercash.card.CardHolder;
+import cash.super_.platform.service.payment.model.supercash.card.CardRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodType;
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.order.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -246,7 +253,7 @@ public class TransactionRequest extends Transaction {
         this.documents = documents;
     }
 
-    public PaymentOrderRequest toPagseguroTransactionRequest() {
+    public PaymentOrderRequest toSupercashPaymentOrderRequest() {
         PaymentOrderRequest orderRequest = new PaymentOrderRequest();
         orderRequest.setReferenceId(this.getReferenceKey());
 

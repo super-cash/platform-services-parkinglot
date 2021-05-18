@@ -1,5 +1,7 @@
 package cash.super_.platform.service.payment.model.supercash;
 
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
+import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Length;
@@ -9,12 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "payment")
+@Inheritance(strategy = InheritanceType.JOINED)
+//@MappedSuperclass
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @Length(max = 41)
+    private String paymentId;
+
+    private PaymentType type;
 
     @JsonProperty(value = "reference_id")
     @Length(max = 64)
@@ -32,6 +41,22 @@ public abstract class Payment {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public PaymentType getType() {
+        return type;
+    }
+
+    public void setType(PaymentType requestType) {
+        this.type = requestType;
     }
 
     public String getReferenceId() {
@@ -93,18 +118,21 @@ public abstract class Payment {
         sb.append("Payment{");
         sb.append(System.lineSeparator());
         sb.append("  \"id\": ").append(id).append(',').append(System.lineSeparator());
+        sb.append("  \"paymentId\": \"").append(paymentId).append("\",").append(System.lineSeparator());
+        sb.append("  \"type\": ").append(type).append(',').append(System.lineSeparator());
         sb.append("  \"referenceId\": \"").append(referenceId).append("\",").append(System.lineSeparator());
         sb.append("  \"gateway\": ").append(gateway).append(',').append(System.lineSeparator());
         sb.append("  \"notificationUrls\": ").append(notificationUrls).append(',').append(System.lineSeparator());
-        sb.append('}').append(System.lineSeparator());
+        sb.append(System.lineSeparator()).append('}');
         return sb.toString();
     }
 
-    public enum PaymentRequestType {
+    public enum PaymentType {
         CHARGE, ORDER;
     }
 
     public enum PaymentGateway {
         PAGSEGURO, PAGARME, STRIPE, EBANX, REDE, MULTIPAG;
     }
+
 }

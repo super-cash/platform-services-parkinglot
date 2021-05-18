@@ -1,8 +1,6 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.payment.model.pagarme.TransactionResponse;
-import cash.super_.platform.service.payment.model.supercash.Payment;
-import cash.super_.platform.service.payment.model.supercash.PaymentOrderResponse;
+import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
@@ -32,12 +30,12 @@ public class ParkinglotTicketPayment {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "payment_id")
+    @JoinColumn(name = "payment_id", foreignKey = @ForeignKey(name = "parking_ticket_payment_order_response_fk"))
     private PaymentOrderResponse payment;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="ticket_number", nullable = false)
+    @JoinColumn(name="ticket_number", nullable = false, foreignKey = @ForeignKey(name = "parking_ticket_parking_ticket_payment_fk"))
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {
