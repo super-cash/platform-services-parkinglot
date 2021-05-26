@@ -295,7 +295,7 @@ public class TransactionRequest extends Transaction {
         }
 
         PaymentChargeRequest chargeRequest = new PaymentChargeRequest();
-//        chargeRequest.setDescription(this.);
+        chargeRequest.setDescription("Estacionamento");
         ChargePaymentMethodRequest paymentMethodRequest = new ChargePaymentMethodRequest();
         paymentMethodRequest.setCapture(true);
         CardRequest cardRequest = new CardRequest();
