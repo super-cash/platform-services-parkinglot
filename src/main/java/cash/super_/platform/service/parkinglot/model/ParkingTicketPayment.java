@@ -3,11 +3,13 @@ package cash.super_.platform.service.parkinglot.model;
 import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentShortChargeRequest;
 
 /**
  * The ticket payment body.
  *
  * @author marcellodesales
+ * @author leandromsales
  *
  */
 public class ParkingTicketPayment {
@@ -27,6 +29,11 @@ public class ParkingTicketPayment {
    */
   private TransactionRequest payTicketRequest;
 
+  /**
+   * Process the payment with Supercash Gateway with few payment information (e.g only creditcard info)
+   */
+  private PaymentShortChargeRequest shortTicketPaymentRequest;
+
   // Used for deserialization
   public ParkingTicketPayment() {
     
@@ -43,6 +50,10 @@ public class ParkingTicketPayment {
   public ParkingTicketPayment(TransactionRequest payTicketRequest) {
     this.payTicketRequest = payTicketRequest; }
 
+  public ParkingTicketPayment(PaymentShortChargeRequest shortTicketPaymentRequest) {
+    this.shortTicketPaymentRequest = shortTicketPaymentRequest;
+  }
+
   public PagamentoAutorizadoRequest getAuthorizedRequest() {
     return authorizedRequest;
   }
@@ -53,12 +64,17 @@ public class ParkingTicketPayment {
 
   public TransactionRequest getPayTicketRequest() { return payTicketRequest; }
 
+  public PaymentShortChargeRequest getShortTicketPaymentRequest() {
+    return shortTicketPaymentRequest;
+  }
+
   @Override
   public String toString() {
     return "ParkingTicketPayment{" +
             "authorizedRequest=" + authorizedRequest +
             ", request=" + request +
             ", transactionRequest=" + payTicketRequest +
+            ", shortTicketPaymentRequest=" + shortTicketPaymentRequest +
             '}';
   }
 }
