@@ -16,7 +16,8 @@ public class SupercashExceptionModel {
 
     private String description;
 
-    @JsonProperty(value = "additional_error_code")
+//    @JsonProperty(value = "additional_error_code")
+    @JsonIgnore
     private HttpStatus additionalErrorCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
     @JsonProperty(value = "additional_description")
@@ -56,7 +57,8 @@ public class SupercashExceptionModel {
 
     }
 
-    @JsonGetter(value = "additional_error_code")
+//    @JsonGetter(value = "additional_error_code")
+    @JsonIgnore
     public Integer getAdditionalErrorCode() {
         return additionalErrorCode.value();
     }
@@ -66,7 +68,8 @@ public class SupercashExceptionModel {
         return additionalErrorCode;
     }
 
-    @JsonSetter(value = "additional_error_code")
+//    @JsonSetter(value = "additional_error_code")
+    @JsonIgnore
     public void setAdditionalErrorCode(Integer additionalErrorCode) {
         this.additionalErrorCode = HttpStatus.valueOf(additionalErrorCode);
     }

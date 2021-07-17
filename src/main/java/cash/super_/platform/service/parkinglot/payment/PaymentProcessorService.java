@@ -156,7 +156,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     PaymentOrderResponse paymentResponse = null;
     try {
       paymentResponse = paymentServiceApiClient.authorizePayment(payRequest.toSupercashPaymentOrderRequest());
-      LOG.error("PAYMENT RESPONSE: {}", paymentResponse);
+      LOG.debug("PAYMENT RESPONSE: {}", paymentResponse);
     } catch (feign.RetryableException re) {
       if (re.getCause() instanceof UnknownHostException) {
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
@@ -170,7 +170,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
       ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus = null;
       if (chargeResponse.getStatus() == ChargeStatus.AUTHORIZED) {
-        userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+        userId = properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
         parkingTicketAuthorizedPaymentStatus = paymentAuthService.authorizePayment(userId, payRequest,
                 paymentResponse.summary());
         if (parkingTicketAuthorizedPaymentStatus.getStatus().isTicketPago()) {

@@ -9,6 +9,7 @@ import feign.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,9 @@ public class WPSErrorHandler implements SupercashAbstractErrorHandler {
           WPSException wpsException = JsonUtil.toObject(responseBody, WPSException.class);
           supercashSimpleException.SupercashExceptionModel.addField("third_party_message", wpsException.getMessage());
           supercashSimpleException.SupercashExceptionModel.addField("third_party_error_code", wpsException.getErrorCode());
+          if (wpsException.getErrorCode() == 1) {
+            supercashSimpleException.SupercashExceptionModel.setAdditionalErrorCode(HttpStatus.NOT_FOUND.value());
+          }
         }
         // TODO: when any error ocurrs here, the user payment is already processed, we have to deal with any error here
         // including send an SMS or similar (ex. notify the web system) to the responsible of the parking lot and help
