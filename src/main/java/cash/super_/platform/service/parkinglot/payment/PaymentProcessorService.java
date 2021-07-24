@@ -16,10 +16,7 @@ import cash.super_.platform.service.payment.model.pagarme.*;
 import cash.super_.platform.service.payment.model.supercash.*;
 import cash.super_.platform.service.payment.model.supercash.amount.Amount;
 import cash.super_.platform.service.payment.model.supercash.card.CardRequest;
-import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodRequest;
-import cash.super_.platform.service.payment.model.supercash.types.charge.ChargeStatus;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
-import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.*;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
@@ -68,6 +65,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     String fieldName;
 
     ChargePaymentMethodRequest paymentMethodRequest = payRequest.getPaymentMethod();
+    paymentMethodRequest.setType(ChargePaymentMethodType.CREDIT_CARD);
     CardRequest card = paymentMethodRequest.getCard();
     fieldName = "Card Number";
     IsNumber.stringIsDoubleWithException(card.getNumber(), fieldName);
