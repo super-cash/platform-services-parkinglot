@@ -11,7 +11,7 @@ import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.payment.PaymentProcessorService;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.payment.model.supercash.PaymentResponseSummary;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentShortChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.SecretsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -225,9 +225,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
 
-    } else if (paymentRequest.getShortTicketPaymentRequest() != null) {
-      // short ticket payment request (supercash format for short payment request (anonymous request)
-      PaymentShortChargeRequest request = paymentRequest.getShortTicketPaymentRequest();
+    } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
+      // anonymous ticket payment request (supercash format for anonymous payment request
+      AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount().getValue());
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
 

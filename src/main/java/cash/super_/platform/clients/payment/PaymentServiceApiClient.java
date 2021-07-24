@@ -7,9 +7,8 @@ import cash.super_.platform.clients.DefaultObjectMapper;
 import cash.super_.platform.clients.payment.errors.PaymentErrorHandler;
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
 import cash.super_.platform.service.payment.model.supercash.PaymentChargeCaptureRequest;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentShortChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import feign.*;
@@ -33,7 +32,7 @@ public interface PaymentServiceApiClient {
             "Content-Type: application/json",
             "Accept: application/json",
     })
-    public PaymentChargeResponse authorizePayment(PaymentShortChargeRequest paymentOrderRequest);
+    public PaymentChargeResponse authorizePayment(AnonymousPaymentChargeRequest paymentOrderRequest);
 
     @RequestLine("POST /pay/orders")
     @Headers({

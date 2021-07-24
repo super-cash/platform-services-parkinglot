@@ -14,8 +14,8 @@ public class PaymentAnyRequest {
     @JsonProperty(value = "charge_request")
     private PaymentChargeRequest chargeRequest;
 
-    @JsonProperty(value = "shortTicketPaymentRequest")
-    private PaymentChargeRequest shortTicketPaymentRequest;
+    @JsonProperty(value = "anonymousTicketPaymentRequest")
+    private PaymentChargeRequest anonymousTicketPaymentRequest;
 
     public PaymentAnyRequest() {
         

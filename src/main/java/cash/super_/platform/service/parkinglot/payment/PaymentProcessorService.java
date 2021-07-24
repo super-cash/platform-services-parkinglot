@@ -19,7 +19,7 @@ import cash.super_.platform.service.payment.model.supercash.card.CardRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.ChargeStatus;
 import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentShortChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import cash.super_.platform.utils.IsNumber;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   private PaymentRepository paymentRepository;
 
   // TODO: Refactor this method (processPayment)
-  public ParkingTicketAuthorizedPaymentStatus processPayment(PaymentShortChargeRequest payRequest, RetornoConsulta ticketStatus,
+  public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus,
                                                              String userId, String marketplaceId, String storeId) {
 
     String fieldName;

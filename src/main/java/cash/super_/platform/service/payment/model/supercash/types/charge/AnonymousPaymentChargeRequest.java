@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.UUID;
 
-public class PaymentShortChargeRequest extends PaymentCharge {
+public class AnonymousPaymentChargeRequest extends PaymentCharge {
 
     @JsonProperty(value = "payment_method")
     public ChargePaymentMethodRequest paymentMethod;
 
-    public PaymentShortChargeRequest() {
+    public AnonymousPaymentChargeRequest() {
         this.metadata.put("uuid", UUID.randomUUID().toString());
     }
 
-    public PaymentShortChargeRequest(UUID uuid) {
+    public AnonymousPaymentChargeRequest(UUID uuid) {
         this.metadata.put("uuid", uuid.toString());
     }
 
@@ -28,7 +28,7 @@ public class PaymentShortChargeRequest extends PaymentCharge {
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer(System.lineSeparator());
-        sb.append("PaymentChargeRequest{");
+        sb.append("AnonymousPaymentChargeRequest{");
         sb.append(System.lineSeparator());
         sb.append("  \"paymentMethod\": ").append(paymentMethod).append(',').append(System.lineSeparator());
         sb.append(super.toString()).append(System.lineSeparator()).append('}');

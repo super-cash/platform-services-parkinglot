@@ -3,7 +3,7 @@ package cash.super_.platform.service.parkinglot.model;
 import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
-import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentShortChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 
 /**
  * The ticket payment body.
@@ -32,7 +32,7 @@ public class ParkingTicketPayment {
   /**
    * Process the payment with Supercash Gateway with few payment information (e.g only creditcard info)
    */
-  private PaymentShortChargeRequest shortTicketPaymentRequest;
+  private AnonymousPaymentChargeRequest anonymousTicketPaymentRequest;
 
   // Used for deserialization
   public ParkingTicketPayment() {
@@ -50,8 +50,8 @@ public class ParkingTicketPayment {
   public ParkingTicketPayment(TransactionRequest payTicketRequest) {
     this.payTicketRequest = payTicketRequest; }
 
-  public ParkingTicketPayment(PaymentShortChargeRequest shortTicketPaymentRequest) {
-    this.shortTicketPaymentRequest = shortTicketPaymentRequest;
+  public ParkingTicketPayment(AnonymousPaymentChargeRequest anonymousTicketPaymentRequest) {
+    this.anonymousTicketPaymentRequest = anonymousTicketPaymentRequest;
   }
 
   public PagamentoAutorizadoRequest getAuthorizedRequest() {
@@ -64,8 +64,8 @@ public class ParkingTicketPayment {
 
   public TransactionRequest getPayTicketRequest() { return payTicketRequest; }
 
-  public PaymentShortChargeRequest getShortTicketPaymentRequest() {
-    return shortTicketPaymentRequest;
+  public AnonymousPaymentChargeRequest getAnonymousTicketPaymentRequest() {
+    return anonymousTicketPaymentRequest;
   }
 
   @Override
@@ -74,7 +74,7 @@ public class ParkingTicketPayment {
             "authorizedRequest=" + authorizedRequest +
             ", request=" + request +
             ", transactionRequest=" + payTicketRequest +
-            ", shortTicketPaymentRequest=" + shortTicketPaymentRequest +
+            ", anonymousTicketPaymentRequest=" + anonymousTicketPaymentRequest +
             '}';
   }
 }
