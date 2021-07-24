@@ -193,39 +193,46 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
 
-//    List<Item> items = paymentRequest.getPayTicketRequest().getItems();
-//    if (items != null && items.size() == 0) {
-//      throw new SupercashInvalidValueException("You have to provide at least one item in this request.");
-//    }
-
-
-    Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
-
-    if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
-      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
-      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
-      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
-    }
-
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     if (paymentRequest.getPayTicketRequest() != null) {
+      Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
+
+      if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
+        throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
+        throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
+        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+      }
+
       // pay ticket request (format version of pagarme to be parsed to pagseguro)
       TransactionRequest request = paymentRequest.getPayTicketRequest();
-//      List<Item> items = request.getItems();
-//      if (items == null || items.size() == 0) {
-//        throw new SupercashInvalidValueException("At least one item must be provided.");
-//      }
 
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
 
     } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
+      Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
+
+      if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
+        throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("user_agent"))) {
+        throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("lapsed_time"))) {
+        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("credit_card_issuer"))) {
+        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+      }
       // anonymous ticket payment request (supercash format for anonymous payment request
       AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount().getValue());
@@ -254,7 +261,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   }
 
   protected RetornoConsulta isTicketAndAmountValid(String userId, String ticketNumber, long amount) {
-
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided");
     }

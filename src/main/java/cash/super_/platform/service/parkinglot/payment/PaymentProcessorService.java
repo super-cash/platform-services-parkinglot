@@ -65,7 +65,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   // TODO: Refactor this method (processPayment)
   public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus,
                                                              String userId, String marketplaceId, String storeId) {
-
     String fieldName;
 
     ChargePaymentMethodRequest paymentMethodRequest = payRequest.getPaymentMethod();
