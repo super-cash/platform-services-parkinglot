@@ -166,18 +166,18 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
         LOG.debug(message);
         supercashTicketStatus = SupercashTicketStatus.PAID;
         if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
-
-      } else {
-        if (amount != ticketFee) {
-          supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
-          if (throwExceptionWhileValidating) {
-            message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-                    ticketFee;
-            LOG.debug(message);
-            throw new SupercashInvalidValueException(message);
-          }
-        }
       }
+//      } else {
+//        if (amount != ticketFee) {
+//          supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
+//          if (throwExceptionWhileValidating) {
+//            message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
+//                    ticketFee;
+//            LOG.debug(message);
+//            throw new SupercashInvalidValueException(message);
+//          }
+//        }
+//      }
     }
 
     return new ParkingTicketStatus(ticketStatus, supercashTicketStatus);
