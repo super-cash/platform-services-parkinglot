@@ -25,13 +25,12 @@ Accept-Encoding: application/json
           "name": "Marcello de Sales"
         }
       }
+    },
+    "metadata": {
+      "public_ip":"23.125.120.55",
+      "user_agent":"Chrome 1.1",
+      "lapsed_time":6735,
+      "credit_card_issuer":"Cartão"
     }
-  }
-  ,
-  "metadata": {
-    "public_ip":"23.125.120.55",
-    "user_agent":"Chrome 1.1",
-    "lapsed_time":6735,
-    "credit_card_issuer":"Cartão"
   }
 }

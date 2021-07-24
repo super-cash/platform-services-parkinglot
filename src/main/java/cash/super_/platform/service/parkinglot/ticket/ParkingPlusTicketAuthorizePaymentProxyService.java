@@ -188,7 +188,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
   public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String userId,
                                                       String ticketNumber, String marketplaceId, String storeId) {
-
     if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
@@ -219,19 +218,19 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
 
       if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
-        throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
-      }
-
-      if (Strings.isNullOrEmpty(metadata.get("user_agent"))) {
         throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
       }
 
+      if (Strings.isNullOrEmpty(metadata.get("user_agent"))) {
+        throw new SupercashInvalidValueException("The key/value user_agent field must be provided in the metadata.");
+      }
+
       if (Strings.isNullOrEmpty(metadata.get("lapsed_time"))) {
-        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+        throw new SupercashInvalidValueException("The key/value lapsed_time field must be provided in the metadata.");
       }
 
       if (Strings.isNullOrEmpty(metadata.get("credit_card_issuer"))) {
-        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+        throw new SupercashInvalidValueException("The key/value credit_card_issuer field must be provided in the metadata.");
       }
       // anonymous ticket payment request (supercash format for anonymous payment request
       AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
