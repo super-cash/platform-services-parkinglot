@@ -29,12 +29,29 @@ import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 public class TestingParkingLotStatusInMemoryRepository {
 
 	protected static final Logger LOG = LoggerFactory.getLogger(TestingParkingLotStatusInMemoryRepository.class);
-
+	/**
+	 * The cache of the ticket status
+	 */
 	private static final Map<String, ParkingTicketStatus> statusCache = new ConcurrentHashMap<>();
+	/**
+	 * The cache of the queries per ticket
+	 */
 	private static final Map<String, RetornoConsulta> queryResultsCache = new ConcurrentHashMap<>();
+	/**
+	 * The cache of the list of payments per ticket
+	 */
 	private static final Map<String, List<RetornoPagamento>> paymentsCache = new ConcurrentHashMap<>();
+	/**
+	 * The ticket number that never changes its state. It's always free!
+	 */
 	public static final String ALWAYS_FREE_TICKET_NUMBER = "112233445566";
+	/**
+	 * The ticket number whose price can be paid only once. After a while, it will be considered that the user left the parking lot
+	 */
 	public static final String NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER = "010101010101";
+	/**
+	 * The ticket number whose price will always increase and the user can pay it multiple times without leaving the parking lot
+	 */
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
 
 	// https://www.quora.com/How-do-I-create-a-thread-which-runs-every-one-minute-in-Java/answer/Anand-Dwivedi-4
@@ -47,10 +64,10 @@ public class TestingParkingLotStatusInMemoryRepository {
 				// Always increment the price of the non-free tickets that need payment at every 3 minutes for testing
 				if (!ALWAYS_FREE_TICKET_NUMBER.equals(ticketNumber)) {
 					int priceBefore = ticketStatus.getStatus().getTarifa();
-					int pricePlus15Percent = priceBefore + (int) (priceBefore * 0.30);
-					ticketStatus.getStatus().setTarifa(pricePlus15Percent);
-					ticketStatus.getStatus().setTarifaSemDesconto(pricePlus15Percent);
-					LOG.debug("Updating prices for testing ticket={} from {} to {}", ticketNumber, priceBefore, pricePlus15Percent);
+					int nextPrice = priceBefore + 2;
+					ticketStatus.getStatus().setTarifa(nextPrice);
+					ticketStatus.getStatus().setTarifaSemDesconto(nextPrice);
+					LOG.debug("Updating prices for testing ticket={} from {} to {}", ticketNumber, priceBefore, nextPrice);
 				}
 			});
 		}
