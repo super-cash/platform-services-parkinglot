@@ -24,10 +24,6 @@ public class ParkingTicketStatus {
     
   }
 
-  public ParkingTicketStatus(RetornoConsulta status) {
-    this.status = status;
-  }
-
   public ParkingTicketStatus(RetornoConsulta status, SupercashTicketStatus supercashTicketStatus) {
     this.status = status;
     this.supercashTicketStatus = supercashTicketStatus;

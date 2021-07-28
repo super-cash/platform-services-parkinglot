@@ -9,6 +9,7 @@ import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
+import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.PaymentRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
@@ -59,11 +60,28 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   @Autowired
   private PaymentRepository paymentRepository;
 
+  @Autowired
+  private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
+
   // TODO: Refactor this method (processPayment)
   public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus,
                                                              String userId, String marketplaceId, String storeId) {
-    String fieldName;
 
+    // load the ticket status or load a testing ticket
+    final String ticketNumber = ticketStatus.getNumeroTicket();
+    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+      LOG.debug("LOADING TESTING Ticket Authorized Payment STATUS for Anonymous Payments: {}", ticketNumber);
+
+      long amountToPay = payRequest.getAmount().getValue() + properties.getOurFee();
+      ParkingTicketAuthorizedPaymentStatus paymentStatus = testingParkinglotTicketRepository.authorizePayment(
+              ticketNumber, amountToPay);
+
+      LOG.debug("LOADED TESTING Authorized Payment STATUS for Anonymous Payments: {}: {}", ticketNumber, paymentStatus);
+      return paymentStatus;
+    }
+
+    LOG.debug("Loading Authorized Payment STATUS for Anonymous Payments: {}", ticketNumber);
+    String fieldName;
     ChargePaymentMethodRequest paymentMethodRequest = payRequest.getPaymentMethod();
     paymentMethodRequest.setType(ChargePaymentMethodType.CREDIT_CARD);
     CardRequest card = paymentMethodRequest.getCard();
@@ -90,7 +108,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     us.setAmount(payRequest.getAmount().getValue() - ourClient.getAmount() + properties.getOurFee());
     splitRules.add(ourClient);
     splitRules.add(us);
-//    payRequest.setSplitRules(splitRules);
 
     Long ticketPriceWithoutFee = payRequest.getAmount().getValue();
     payRequest.setAmount(new Amount(payRequest.getAmount().getValue() + properties.getOurFee()));
@@ -104,44 +121,90 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     payRequest.addMetadata("store_id", storeId);
     payRequest.addMetadata("user_id", userId);
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
+
     Long allowedExitDateTime = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
     if (allowedExitDateTime == null) {
       allowedExitDateTime = ticketStatus.getDataPermitidaSaida();
     }
     payRequest.addMetadata("lapsed_time", String.valueOf(allowedExitDateTime - ticketStatus.getDataDeEntrada()));
 
+    LOG.debug("Requesting Payment Authorization for Anonymous Payments: {}", ticketNumber);
+    // Authorize the payment first
     PaymentChargeResponse chargeResponse = null;
     try {
       chargeResponse = paymentServiceApiClient.authorizePayment(payRequest);
-      LOG.error("PAYMENT RESPONSE: {}", chargeResponse);
+      LOG.debug("Payment Authorization for Anonymous Payments SUCCESS: {}", chargeResponse);
+
     } catch (feign.RetryableException re) {
+      LOG.error("Payment Authorization for Anonymous Payments FAILED: {}", chargeResponse);
+
       if (re.getCause() instanceof UnknownHostException) {
+        LOG.error("Payment Authorization for Anonymous Payments FAILED unknown host: {}", re.getCause().getMessage());
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
       }
       throw re;
     }
 
-    ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus = null;
-    if (chargeResponse.getStatus() == ChargeStatus.AUTHORIZED) {
-      userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-      parkingTicketAuthorizedPaymentStatus = paymentAuthService.authorizePayment(userId,
-              ticketStatus.getNumeroTicket(), ticketPriceWithoutFee, chargeResponse.summary());
-      if (parkingTicketAuthorizedPaymentStatus.getStatus().isTicketPago()) {
-        PaymentChargeCaptureRequest paymentChargeCaptureRequest = new PaymentChargeCaptureRequest();
-        paymentChargeCaptureRequest.setAmount(chargeResponse.getAmount());
-        chargeResponse = paymentServiceApiClient.capturePayment(chargeResponse.getId(), chargeResponse.getPaymentId(),
-                paymentChargeCaptureRequest);
-        if (chargeResponse.getStatus() == ChargeStatus.PAID) {
-          /* Saving payment request into the database */
-          Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
-          ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-          parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
-          parkinglotTicketPayment.setServiceFee(properties.getOurFee());
-          parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
-          parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
-          parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
+    if (chargeResponse.getStatus() != ChargeStatus.AUTHORIZED) {
+      LOG.error("Payment Authorization for Anonymous Payments FAILED: with status {}", chargeResponse.getStatus());
+      throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
+    }
 
-          // TODO: implement charge storage
+    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(userId,
+            ticketStatus.getNumeroTicket(), ticketPriceWithoutFee, chargeResponse.summary());
+
+    if (!paymentStatus.getStatus().isTicketPago()) {
+      throw new SupercashPaymentErrorException("Parking lot service were unable to process payment gateway response. " +
+              "Ticket is set to not paid");
+    }
+
+    LOG.debug("Payment Capture request for Anonymous Payments: amount={}", chargeResponse.getAmount());
+    PaymentChargeCaptureRequest paymentChargeCaptureRequest = new PaymentChargeCaptureRequest();
+    paymentChargeCaptureRequest.setAmount(chargeResponse.getAmount());
+    chargeResponse = paymentServiceApiClient.capturePayment(chargeResponse.getId(), chargeResponse.getPaymentId(),
+            paymentChargeCaptureRequest);
+
+    if (chargeResponse.getStatus() != ChargeStatus.PAID) {
+      // TODO: Review this situation, since the ticket is authorized, but the payment was not effectivelly
+      //  possible, although AUTHORIZED. The best decision is to send a WPS request to rollback the request of
+      //  payment authorization.
+      ParkingPlusPaymentNotApprovedException exception =
+              new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN, "Payment status is " +
+                      chargeResponse.getStatus());
+      LOG.error("Payment Capture request for Anonymous Payments failed with status different than paid: status={}: {}",
+              chargeResponse.getAmount(), exception.getMessage());
+      // TODO: Send a report to us (via email or sms) to report this situation.
+      throw exception;
+    }
+
+    LOG.debug("Anonymous payment captured successfully and will be stored: {}", chargeResponse);
+    // Cache the payment in our storage so the user can view them
+    cacheAnonymousAuthorizationPayment(ticketStatus, chargeResponse, marketplaceId, storeId, paymentStatus);
+    return paymentStatus;
+  }
+
+  /**
+   * Store the payment in our database
+   * @param ticketStatus
+   * @param chargeResponse
+   * @param marketplaceId
+   * @param storeId
+   * @param parkingTicketAuthorizedPaymentStatus
+   */
+  private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
+                                                  String marketplaceId, String storeId,
+                                                  ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
+    /* Saving payment request into the database */
+    Long paidParkingTicketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
+    ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
+    parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
+    parkinglotTicketPayment.setServiceFee(properties.getOurFee());
+    parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
+    parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
+    parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
+
+    // TODO: implement charge storage
 //          Optional<Payment> paymentOpt = paymentRepository.findById(chargeResponse.getId());
 //          if (paymentOpt.isPresent()) {
 //            chargeResponse = (PaymentChargeResponse) paymentOpt.get();
@@ -149,56 +212,53 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 //          }
 //      parkinglotTicketPayment.setPayment(paymentResponse);
 
-          ParkinglotTicket parkinglotTicket = null;
-          Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
-          if (parkinglotTicketOpt.isPresent()) {
-            parkinglotTicket = parkinglotTicketOpt.get();
-          } else {
-            parkinglotTicket = new ParkinglotTicket();
-            parkinglotTicket.setTicketNumber(ticketNumber);
-          }
-
-          /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
-           * when we need to get specific info about this specific payment.
-           * */
-          parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-          parkinglotTicketPayment.setDate(-1L);
-          parkinglotTicket.addPayment(parkinglotTicketPayment);
-          parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
-
-          for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
-            parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
-            if (parkinglotTicketPayment.getDate() == -1) {
-              /* Set the dataPagamento for future use, since this information is returned by the WPS. */
-              parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
-              break;
-            }
-          }
-          parkinglotTicketRepository.save(parkinglotTicket);
-          return parkingTicketAuthorizedPaymentStatus;
-        } else {
-          // TODO: Review this situation, since the ticket is authorized, but the payment was not effectivelly
-          //  possible, although AUTHORIZED. The best decision is to send a WPS request to rollback the request of
-          //  payment authorization.
-          ParkingPlusPaymentNotApprovedException exception =
-                  new ParkingPlusPaymentNotApprovedException(HttpStatus.FORBIDDEN, "Payment status is " +
-                          chargeResponse.getStatus());
-          LOG.error(exception.getMessage());
-          // TODO: Send a report to us (via email or sms) to report this situation.
-          throw exception;
-        }
-      }
+    ParkinglotTicket parkinglotTicket = null;
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(paidParkingTicketNumber);
+    if (parkinglotTicketOpt.isPresent()) {
+      parkinglotTicket = parkinglotTicketOpt.get();
     } else {
-      throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
+      parkinglotTicket = new ParkinglotTicket();
+      parkinglotTicket.setTicketNumber(paidParkingTicketNumber);
     }
-    throw new SupercashPaymentErrorException("Parking lot service were unable to process payment gateway response. " +
-            "The response id is null.");
 
+    /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
+     * when we need to get specific info about this specific payment.
+     * */
+    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
+    parkinglotTicketPayment.setDate(-1L);
+    parkinglotTicket.addPayment(parkinglotTicketPayment);
+    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+
+    for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
+      parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
+      if (parkinglotTicketPayment.getDate() == -1) {
+        /* Set the dataPagamento for future use, since this information is returned by the WPS. */
+        parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
+        break;
+      }
+    }
+
+    // Store in the repository
+    parkinglotTicketRepository.save(parkinglotTicket);
   }
 
   // TODO: Refactor this method (processPayment)
   public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus,
                                                              String userId, String marketplaceId, String storeId) {
+
+    // load the ticket status or load a testing ticket
+    final String ticketNumberToProcess = ticketStatus.getNumeroTicket();
+    if (testingParkinglotTicketRepository.containsTicket(ticketNumberToProcess)) {
+      LOG.debug("LOADING TESTING TICKET STATUS: {}", ticketNumberToProcess);
+
+      long amountToPay = payRequest.getAmount() + properties.getOurFee();
+      ParkingTicketAuthorizedPaymentStatus paymentStatus = testingParkinglotTicketRepository.authorizePayment(
+              ticketNumberToProcess, amountToPay);
+
+      LOG.debug("LOADED TESTING TICKET PAYMENT STATUS: {}: {}", ticketNumberToProcess, paymentStatus);
+      return paymentStatus;
+    }
+
     String fieldName;
     long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
