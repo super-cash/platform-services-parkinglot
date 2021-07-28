@@ -266,10 +266,20 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, amount, true, true,
             Optional.of(properties.getSaleId()));
+
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
+    int ticketFee = ticketStatus.getTarifa();
+    int ticketPaidCharge = ticketStatus.getTarifaPaga();
+
+    // When the user pays the ticket multiple times, the value of ticketFee will always increase while the paid charge is the lumpsum of all payments
+    int valueToBePaid = ticketFee - ticketPaidCharge;
+    if (valueToBePaid != amount) {
+        String message = "The amount has to be equal to ticket fee less the paid charge. amount=" + amount + " valueToBePaid=" + valueToBePaid;
+        LOG.debug(message);
+        throw new SupercashInvalidValueException(message);
+    }
 
     LOG.debug("Ticket status for {}: {}", ticketNumber, ticketStatus);
-
     return ticketStatus;
   }
 
