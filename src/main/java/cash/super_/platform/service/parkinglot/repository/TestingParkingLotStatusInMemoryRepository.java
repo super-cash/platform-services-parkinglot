@@ -32,6 +32,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 	private static final Map<String, ParkingTicketStatus> statusCache = new ConcurrentHashMap<>();
 	private static final Map<String, RetornoConsulta> queryResultsCache = new ConcurrentHashMap<>();
+	private static final Map<String, List<RetornoPagamento>> paymentsCache = new ConcurrentHashMap<>();
 	public static final String ALWAYS_FREE_TICKET_NUMBER = "112233445566";
 	public static final String NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER = "010101010101";
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
@@ -46,7 +47,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 				// Always increment the price of the non-free tickets that need payment at every 3 minutes for testing
 				if (!ALWAYS_FREE_TICKET_NUMBER.equals(ticketNumber)) {
 					int priceBefore = ticketStatus.getStatus().getTarifa();
-					int pricePlus15Percent = priceBefore + (int) (priceBefore * 0.15);
+					int pricePlus15Percent = priceBefore + (int) (priceBefore * 0.30);
 					ticketStatus.getStatus().setTarifa(pricePlus15Percent);
 					ticketStatus.getStatus().setTarifaSemDesconto(pricePlus15Percent);
 					LOG.debug("Updating prices for testing ticket={} from {} to {}", ticketNumber, priceBefore, pricePlus15Percent);
@@ -83,7 +84,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
 		Timer timer = new Timer();
-		long threeMinutes = 1000 * 60 * 3;
+		long threeMinutes = 1000 * 60 * 5;
 		timer.schedule(new PriceUpdaterTask(), threeMinutes, threeMinutes);//3 Min
     }
 
@@ -212,13 +213,61 @@ public class TestingParkingLotStatusInMemoryRepository {
 			if (now.isAfter(testingGracePeriod)) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
 						ticketNumber, entranceDateTime, testingGracePeriod, now);
-				supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
+				testingTicketStatus.setSupercashTicketStatus(SupercashTicketStatus.NOT_PAID);
 			}
 		}
-
-		testingTicketStatus.setSupercashTicketStatus(supercashTicketStatus);
-		statusCache.put(ticketNumber, testingTicketStatus);
 		return testingTicketStatus;
+	}
+
+	/**
+	 * Just authenticate the test tickets
+	 * @param ticketNumber
+	 * @param paidAmount
+	 * @return The authorized payment status for the testing ticket
+	 */
+	public ParkingTicketAuthorizedPaymentStatus authorizePayment(String ticketNumber, long paidAmount) {
+		if (ticketNumber.equals(ALWAYS_FREE_TICKET_NUMBER)) {
+			throw new SupercashInvalidValueException("Can't process a payment of a testing ticket that's always FREE");
+		}
+
+		// construct the ticket status for tickets that need payment
+		ParkingTicketStatus ticketStatus = this.getStatus(ticketNumber);
+
+		// record the payment on the ticket status and the exit time being 3 minutes later for testing
+		LocalDateTime exitDateTimeAfterPayment = LocalDateTime.now().plusMinutes(3);
+		ticketStatus.getStatus().setDataPermitidaSaidaUltimoPagamento(getMillis(exitDateTimeAfterPayment));
+
+		// just a hack to make the prices to be the same to what it was submitted
+		ticketStatus.getStatus().setTarifaPaga((int)paidAmount);
+		ticketStatus.getStatus().setTarifa((int)paidAmount);
+		ticketStatus.getStatus().setTarifaSemDesconto((int)paidAmount);
+
+		// Update the state with the paid
+		ticketStatus.setSupercashTicketStatus(SupercashTicketStatus.PAID);
+
+		// Create the fake payment done
+		RetornoPagamento paymentDone = new RetornoPagamento();
+		paymentDone.setDataHoraSaida(ticketStatus.getStatus().getDataPermitidaSaidaUltimoPagamento());
+		paymentDone.setDataPagamento(getMillis(LocalDateTime.now()));
+		paymentDone.setErrorCode(0);
+		paymentDone.setMensagem("Pagamento efetuado com sucesso (ticket test)");
+		paymentDone.setNumeroTicket(ticketNumber);
+		paymentDone.setTicketPago(true);
+
+		List<RetornoPagamento> paymentsMade = paymentsCache.get(ticketNumber);
+		// Create a linked list of paymnets as the prices are paid in order
+		if (paymentsMade == null) {
+			paymentsMade = new LinkedList<>();
+		}
+
+		// Cache the payment made for the ticket
+		paymentsMade.add(paymentDone);
+
+		ParkingTicketAuthorizedPaymentStatus status = new ParkingTicketAuthorizedPaymentStatus();
+		status.setStatus(paymentDone);
+
+		// TODO Create a cache of the payments as well similar to what's implemented at cacheParkingTicketPayment
+		return status;
 	}
 
 }
