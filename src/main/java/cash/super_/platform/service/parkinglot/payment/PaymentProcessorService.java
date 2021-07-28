@@ -90,7 +90,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     us.setAmount(payRequest.getAmount().getValue() - ourClient.getAmount() + properties.getOurFee());
     splitRules.add(ourClient);
     splitRules.add(us);
-//    payRequest.setSplitRules(splitRules);
 
     Long ticketPriceWithoutFee = payRequest.getAmount().getValue();
     payRequest.setAmount(new Amount(payRequest.getAmount().getValue() + properties.getOurFee()));

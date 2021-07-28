@@ -6,7 +6,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import cash.super_.platform.autoconfig.ServiceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -60,7 +59,7 @@ public class ParkingPlusProperties extends ServiceProperties {
   private String saleNameStartWith = "SUPERCASH";
 
   @NotNull
-  private Integer gracePeriod;
+  private Integer gracePeriodInMinutes;
 
   @NotNull
   private String udidPrefix;
@@ -173,12 +172,12 @@ public class ParkingPlusProperties extends ServiceProperties {
     this.saleNameStartWith = saleNameStartWith;
   }
 
-  public Integer getGracePeriod() {
-    return gracePeriod;
+  public Integer getGracePeriodInMinutes() {
+    return gracePeriodInMinutes;
   }
 
-  public void setGracePeriod(Integer gracePeriod) {
-    this.gracePeriod = gracePeriod;
+  public void setGracePeriodInMinutes(Integer gracePeriodInMinutes) {
+    this.gracePeriodInMinutes = gracePeriodInMinutes;
   }
 
   public String getUdidPrefix() {
@@ -204,7 +203,7 @@ public class ParkingPlusProperties extends ServiceProperties {
             ", ourPercentage=" + ourPercentage +
             ", ourFee=" + ourFee +
             ", saleNameStartWith=" + saleNameStartWith +
-            ", gracePeriod=" + gracePeriod +
+            ", gracePeriod=" + gracePeriodInMinutes +
             ", " + super.toString() +
             '}';
   }

@@ -53,11 +53,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     LOG.debug("Payment auth request after Supercash payment request/response: {} {}", ticketNumber, payResponse);
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
-
-//    String saleIdStr = payResponse.getMetadata().get("sale_id");
-//    if (saleIdStr != null) {
-//      wpsAuthorizedPaymentRequest.setIdPromocao(Long.parseLong(saleIdStr));
-//    }
     long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
       wpsAuthorizedPaymentRequest.setIdPromocao(saleIdProperty);

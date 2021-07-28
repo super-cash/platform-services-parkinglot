@@ -48,27 +48,126 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   public ParkingTicketStatus getStatus(String userId, String ticketNumber, long amount, boolean validate,
                                        boolean throwExceptionWhileValidating, Optional<Long> saleId) {
     LOG.debug("Looking for the status of ticket: {}", ticketNumber);
-
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided.");
     }
 
+    // load the ticket status or load a testing ticket
+    RetornoConsulta ticketStatus = null;
+    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+      LOG.debug("LOADING Query TESTING TICKET STATUS: {}", ticketNumber);
+      ticketStatus = testingParkinglotTicketRepository.getQueryResult(ticketNumber);
+      LOG.debug("LOADED Query TICKET STATUS: {}: {}", ticketNumber, ticketStatus);
+
+    } else {
+      LOG.debug("Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
+      ticketStatus = retrieveFromWPS(ticketNumber, userId);
+    }
+
+    // The ticket is not a test one... We need to retrieve it from WPS
+    long allowedExitEpoch = calculateAllowedExitDateTime(ticketStatus);
+    SupercashTicketStatus supercashTicketStatus = calculateTicketStatus(throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
+
+    // For the testing tickets, just set the status computed
+    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+      return testingParkinglotTicketRepository.updateStatus(ticketNumber, supercashTicketStatus);
+    }
+
+    // There's nothing to validate yet
+    //    if (!validate) {
+    //      return new ParkingTicketStatus(ticketStatus);
+    //    }
+
+    return new ParkingTicketStatus(ticketStatus, supercashTicketStatus);
+  }
+
+  private long calculateAllowedExitDateTime(RetornoConsulta ticketStatus) {
+    LOG.debug("Calculating the ticket status exit date: {}", ticketStatus);
+
+    // Adjust the exit times depending on the payment
+    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
+    Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
+    if (allowedExitEpochAfterLastPaymentObj != null) {
+      if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
+        LOG.debug("Ticket status has payments time and it is greater... Setting new value");
+
+        allowedExitEpoch = allowedExitEpochAfterLastPaymentObj;
+        ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
+      }
+    }
+    LOG.debug("Ticket status with calculated exit date: {}", ticketStatus);
+    return allowedExitEpoch;
+  }
+
+  private SupercashTicketStatus calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus,
+                                                      long allowedExitEpoch) {
+    int ticketFee = ticketStatus.getTarifa();
+    int ticketFeePaid = ticketStatus.getTarifaPaga();
+    String message = "";
+    SupercashTicketStatus supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
+
+    long queryEpoch = ticketStatus.getDataConsulta();
+    long entryEpoch = ticketStatus.getDataDeEntrada();
+
+    // TODO Needs to be verified because it's local time
+    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), TimeZone.getDefault().toZoneId());
+    LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch), TimeZone.getDefault().toZoneId());
+    LocalDateTime gracePeriodTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(entryEpoch),
+            TimeZone.getDefault().toZoneId()).plusMinutes(properties.getGracePeriodInMinutes());
+
+    LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    LOG.debug("The ticket queryTimeStamp={} allowedExitTimeStamp={} gracePeriodTimeStamp={}",
+            formatter.format(queryDateTime), formatter.format(allowedExitDateTime), formatter.format(gracePeriodTime));
+
+    if (queryDateTime.isBefore(gracePeriodTime)) {
+      LOG.debug("The ticket queryTimeStamp={} is before gracePeriodTimeStamp={} so setting state to grace period",
+              formatter.format(queryDateTime), formatter.format(gracePeriodTime));
+              message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
+      supercashTicketStatus = SupercashTicketStatus.GRACE_PERIOD;
+    }
+
+    // we should not charge the user if the fee is 0
+    if (ticketFee == 0) {
+      if (allowedExitEpoch - entryEpoch < 0) {
+        message += "Today is free.";
+        supercashTicketStatus = SupercashTicketStatus.FREE;
+      }
+
+      // Status message
+      LOG.debug(message);
+
+      SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
+      exception.addField("entry_date", entryEpoch);
+      exception.addField("exit_allowed_date", allowedExitEpoch);
+      if (throwExceptionWhileValidating) throw exception;
+
+    } else {
+
+      // the user is still in the parking lot after making a payment
+      if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
+        message = "The ticket is already paid and the user is still in the parking lot (since the ststus is still != 404)";
+        LOG.debug(message);
+        supercashTicketStatus = SupercashTicketStatus.PAID;
+        if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
+      }
+    }
+    return supercashTicketStatus;
+  }
+
+  /**
+   * Fetches the ticket status from WPS
+   * @param ticketNumber is the ticket number
+   * @param userId is the userId
+   * @return The query result
+   */
+  private RetornoConsulta retrieveFromWPS(String ticketNumber, String userId) {
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(properties.getParkingLotId());
     request.setNumeroTicket(ticketNumber);
     request.setUdid(userId);
 
-// This logic is great, but is could be allow a client to set another sale_id
-//    if (saleId.isPresent()) {
-//      Long sid = saleId.get();
-//      if (sid < 0) {
-//        saleId = Optional.of(Long.valueOf(properties.getSaleId().longValue()));
-//      }
-//      // Paid tickets will resolve an an error
-//      request.setIdPromocao(saleId.get());
-//    } else {
-//      request.setIdPromocao(Long.valueOf(properties.getSaleId().longValue()));
-//    }
     long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
       request.setIdPromocao(saleIdProperty);
