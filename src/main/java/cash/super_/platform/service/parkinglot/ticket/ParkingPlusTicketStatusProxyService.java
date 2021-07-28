@@ -9,6 +9,7 @@ import java.util.TimeZone;
 import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.SupercashTicketStatus;
+import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,9 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+
+  @Autowired
+  private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
 
   public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
     return getStatus(userId, ticketNumber, -1, true, false, saleId);
@@ -212,74 +216,13 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     try {
       LOG.debug("Ticket status: {}", JsonUtil.toJson(ticketStatus));
+      return ticketStatus;
+
 
     } catch (JsonProcessingException jsonError) {
       LOG.error("Error deserializing status ticket to json.", jsonError);
+      return null;
     }
-
-    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
-    Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-    if (allowedExitEpochAfterLastPaymentObj != null) {
-      if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
-        allowedExitEpoch = allowedExitEpochAfterLastPaymentObj;
-        ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
-      }
-    }
-
-    if (!validate) {
-      return new ParkingTicketStatus(ticketStatus);
-    }
-
-    int ticketFee = ticketStatus.getTarifa();
-    int ticketFeePaid = ticketStatus.getTarifaPaga();
-    String message = "";
-    SupercashTicketStatus supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
-
-    long queryEpoch = ticketStatus.getDataConsulta();
-    long entryEpoch = ticketStatus.getDataDeEntrada();
-
-    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), TimeZone.getDefault()
-            .toZoneId());
-    LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch),
-            TimeZone.getDefault().toZoneId());
-
-    if (ticketFee == 0) {
-      if (allowedExitEpoch - entryEpoch < 0) {
-        message += "Today is free.";
-        supercashTicketStatus = SupercashTicketStatus.FREE;
-      } else {
-        if (queryEpoch - entryEpoch <= properties.getGracePeriod() * 1000) {
-          message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
-          supercashTicketStatus = SupercashTicketStatus.GRACE_PERIOD;
-        }
-      }
-      LOG.debug(message);
-      SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
-      exception.addField("entry_date", entryEpoch);
-      exception.addField("exit_allowed_date", allowedExitEpoch);
-      if (throwExceptionWhileValidating) throw exception;
-
-    } else {
-      if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
-        message = "The ticket is already paid.";
-        LOG.debug(message);
-        supercashTicketStatus = SupercashTicketStatus.PAID;
-        if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
-      }
-//      } else {
-//        if (amount != ticketFee) {
-//          supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
-//          if (throwExceptionWhileValidating) {
-//            message = "Amount has to be equal to ticket fee. Amount provided is " + amount + " and Ticket fee is " +
-//                    ticketFee;
-//            LOG.debug(message);
-//            throw new SupercashInvalidValueException(message);
-//          }
-//        }
-//      }
-    }
-
-    return new ParkingTicketStatus(ticketStatus, supercashTicketStatus);
   }
 
 }
