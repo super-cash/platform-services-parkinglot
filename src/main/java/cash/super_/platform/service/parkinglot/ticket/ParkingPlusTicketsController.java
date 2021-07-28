@@ -83,7 +83,6 @@ public class ParkingPlusTicketsController extends AbstractController {
       @PathVariable("ticket_number") String ticketNumber,
       @RequestBody ParkingTicketPayment paymentRequest) {
 
-    // TODO: define the userId inside the service
     ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketNumber,
             marketplaceId, storeId);
 

@@ -32,6 +32,12 @@ public class Amount {
     @JsonProperty(value = "summary")
     private AmountSummary summary;
 
+    public Amount() { }
+
+    public Amount(Long value) {
+        this.value = value;
+    }
+
     public Long getValue() {
         return value;
     }

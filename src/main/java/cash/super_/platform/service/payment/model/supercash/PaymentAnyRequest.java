@@ -1,5 +1,6 @@
 package cash.super_.platform.service.payment.model.supercash;
 
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +14,9 @@ public class PaymentAnyRequest {
 
     @JsonProperty(value = "charge_request")
     private PaymentChargeRequest chargeRequest;
+
+    @JsonProperty(value = "anonymousTicketPaymentRequest")
+    private AnonymousPaymentChargeRequest anonymousTicketPaymentRequest;
 
     public PaymentAnyRequest() {
         
@@ -49,6 +53,7 @@ public class PaymentAnyRequest {
         sb.append(System.lineSeparator());
         sb.append("  \"orderRequest\": ").append(orderRequest).append(',').append(System.lineSeparator());
         sb.append("  \"chargeRequest\": ").append(chargeRequest).append(',').append(System.lineSeparator());
+        sb.append("  \"anonymousRequest\": ").append(anonymousTicketPaymentRequest).append(',').append(System.lineSeparator());
         sb.append(super.toString()).append(System.lineSeparator()).append('}');
         return sb.toString();
     }

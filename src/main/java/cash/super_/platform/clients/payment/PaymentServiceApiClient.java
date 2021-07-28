@@ -8,6 +8,7 @@ import cash.super_.platform.clients.payment.errors.PaymentErrorHandler;
 import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
 import cash.super_.platform.service.payment.model.supercash.PaymentChargeCaptureRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeResponse;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderRequest;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import feign.*;
@@ -25,6 +26,13 @@ import java.util.concurrent.TimeUnit;
 @FeignClient(name = "paymentApiClient", url = "${cash.super.platform.service.payment.baseUrl}",
              configuration = PaymentServiceApiClient.ConfigurationForPaymentServiceApiClient.class)
 public interface PaymentServiceApiClient {
+
+    @RequestLine("POST /pay/charges")
+    @Headers({
+            "Content-Type: application/json",
+            "Accept: application/json",
+    })
+    public PaymentChargeResponse authorizePayment(AnonymousPaymentChargeRequest paymentOrderRequest);
 
     @RequestLine("POST /pay/orders")
     @Headers({
