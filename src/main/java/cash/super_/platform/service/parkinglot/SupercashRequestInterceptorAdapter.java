@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 
-public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
+public class SupercashRequestInterceptorAdapter extends HandlerInterceptorAdapter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RequestInterceptorAdapter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SupercashRequestInterceptorAdapter.class);
 
     private MarketplaceRepository marketplaceRepository = null;
 
@@ -41,17 +41,22 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value.longValue());
 
+        /* Validating app version and marketplace Id in the database */
+        headerName = "X-Supercash-App-Version";
+        if (request.getHeader(headerName) == null || request.getHeader(headerName).equals("")) {
+            new SupercashInvalidValueException(headerName + " required");
+        }
+
         /* Validating marketplace id */
         headerName = "X-Supercash-MarketplaceId";
         value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
         LOG.debug("{}: {}", headerName, value.longValue());
 
-        /* Validating app version and marketplace Id in the database */
-        headerName = "X-Supercash-App-Version";
         Optional<Marketplace> marketplaceOpt = marketplaceRepository.findById(value.longValue());
         Double appMinimalVersion = null;
         if (marketplaceOpt.isPresent()) {
             appMinimalVersion = marketplaceOpt.get().getAppVersion();
+
         } else {
             throw new SupercashMarketplaceNotFoundException("Marketplace with Id '" + value.longValue() + "' " +
                     "not found.");
@@ -66,12 +71,6 @@ public class RequestInterceptorAdapter extends HandlerInterceptorAdapter {
             exception.addField("required_app_version", appMinimalVersion);
             throw exception;
         }
-
-        /* Validating store id */
-        /* TODO: Validate if store exists in the database. */
-        headerName = "X-Supercash-StoreId";
-        value = IsNumber.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-        LOG.debug("{}: {}", headerName, value.longValue());
 
         return true;
     }

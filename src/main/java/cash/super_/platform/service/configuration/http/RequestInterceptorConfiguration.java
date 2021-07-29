@@ -1,6 +1,6 @@
 package cash.super_.platform.service.configuration.http;
 
-import cash.super_.platform.service.parkinglot.RequestInterceptorAdapter;
+import cash.super_.platform.service.parkinglot.SupercashRequestInterceptorAdapter;
 import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +15,7 @@ public class RequestInterceptorConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        RequestInterceptorAdapter ria = new RequestInterceptorAdapter();
+        SupercashRequestInterceptorAdapter ria = new SupercashRequestInterceptorAdapter();
         ria.setMarketplaceRepository(marketplaceRepository);
         registry.addInterceptor(ria);
     }
