@@ -60,7 +60,9 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   @Autowired
   private PaymentRepository paymentRepository;
 
-  @Autowired
+  // Since it's only loaded in certain profiles, autowire is optional
+  // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
+  @Autowired(required = false)
   private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
 
   // TODO: Refactor this method (processPayment)

@@ -2,13 +2,16 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
 import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.SupercashTicketStatus;
+import cash.super_.platform.service.parkinglot.model.TicketState;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
@@ -35,14 +38,17 @@ import cash.super_.platform.utils.JsonUtil;
 @Service
 public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxyService {
 
-  // TODO: Remove this once we are in production
+  public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
+
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  @Autowired
+  // Since it's only loaded in certain profiles, autowire is optional
+  // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
+  @Autowired(required = false)
   private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
 
   public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
@@ -69,12 +75,12 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     }
 
     // The ticket is not a test one... We need to retrieve it from WPS
-    long allowedExitEpoch = calculateAllowedExitDateTime(ticketStatus);
-    SupercashTicketStatus supercashTicketStatus = calculateTicketStatus(throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
+    long allowedExitEpoch = ParkingTicketStatus.calculateAllowedExitDateTime(ticketStatus);
+    TicketState ticketState = calculateTicketStatus(throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
 
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
-      return testingParkinglotTicketRepository.updateStatus(ticketNumber, supercashTicketStatus);
+      return testingParkinglotTicketRepository.updateStatus(ticketNumber);
     }
 
     // There's nothing to validate yet
@@ -82,33 +88,19 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     //      return new ParkingTicketStatus(ticketStatus);
     //    }
 
-    return new ParkingTicketStatus(ticketStatus, supercashTicketStatus);
+    LocalDateTime gracePeriodTime = ParkingTicketStatus.calculateGracePeriod(ticketStatus, properties.getGracePeriodInMinutes(), TIMEZONE_AMERICA_SAO_PAULO);
+    return new ParkingTicketStatus(ticketStatus, ticketState, getMillis(gracePeriodTime));
   }
 
-  private long calculateAllowedExitDateTime(RetornoConsulta ticketStatus) {
-    LOG.debug("Calculating the ticket status exit date: {}", ticketStatus);
-
-    // Adjust the exit times depending on the payment
-    long allowedExitEpoch = ticketStatus.getDataPermitidaSaida();
-    Long allowedExitEpochAfterLastPaymentObj = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
-    if (allowedExitEpochAfterLastPaymentObj != null) {
-      if (allowedExitEpochAfterLastPaymentObj > allowedExitEpoch) {
-        LOG.debug("Ticket status has payments time and it is greater... Setting new value");
-
-        allowedExitEpoch = allowedExitEpochAfterLastPaymentObj;
-        ticketStatus.setDataPermitidaSaida(allowedExitEpoch);
-      }
-    }
-    LOG.debug("Ticket status with calculated exit date: {}", ticketStatus);
-    return allowedExitEpoch;
+  private static long getMillis(LocalDateTime dateTime) {
+    return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
   }
 
-  private SupercashTicketStatus calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus,
-                                                      long allowedExitEpoch) {
+  private TicketState calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus, long allowedExitEpoch) {
     int ticketFee = ticketStatus.getTarifa();
     int ticketFeePaid = ticketStatus.getTarifaPaga();
     String message = "";
-    SupercashTicketStatus supercashTicketStatus = SupercashTicketStatus.NOT_PAID;
+    TicketState ticketState = TicketState.NOT_PAID;
 
     long queryEpoch = ticketStatus.getDataConsulta();
     long entryEpoch = ticketStatus.getDataDeEntrada();
@@ -116,8 +108,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     // TODO Needs to be verified because it's local time
     LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), TimeZone.getDefault().toZoneId());
     LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch), TimeZone.getDefault().toZoneId());
-    LocalDateTime gracePeriodTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(entryEpoch),
-            TimeZone.getDefault().toZoneId()).plusMinutes(properties.getGracePeriodInMinutes());
+    LocalDateTime gracePeriodTime = ParkingTicketStatus.calculateGracePeriod(ticketStatus, properties.getGracePeriodInMinutes(), TIMEZONE_AMERICA_SAO_PAULO);
 
     LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);
 
@@ -128,15 +119,15 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     if (queryDateTime.isBefore(gracePeriodTime)) {
       LOG.debug("The ticket queryTimeStamp={} is before gracePeriodTimeStamp={} so setting state to grace period",
               formatter.format(queryDateTime), formatter.format(gracePeriodTime));
-              message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + ".";
-      supercashTicketStatus = SupercashTicketStatus.GRACE_PERIOD;
+              message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+      ticketState = TicketState.GRACE_PERIOD;
     }
 
     // we should not charge the user if the fee is 0
     if (ticketFee == 0) {
       if (allowedExitEpoch - entryEpoch < 0) {
         message += "Today is free.";
-        supercashTicketStatus = SupercashTicketStatus.FREE;
+        ticketState = TicketState.FREE;
       }
 
       // Status message
@@ -153,11 +144,11 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
         message = "The ticket is already paid and the user is still in the parking lot (since the ststus is still != 404)";
         LOG.debug(message);
-        supercashTicketStatus = SupercashTicketStatus.PAID;
+        ticketState = TicketState.PAID;
         if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
       }
     }
-    return supercashTicketStatus;
+    return ticketState;
   }
 
   /**
@@ -199,8 +190,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.debug("Request User ApiKey is: {}", properties.getUserKey());
       LOG.debug("Request ApiKey is: {}", apiKey);
 
-      ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request,
-              properties.getApiKeyId());
+      ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId());
 
       // For the tracer
       newSpan.tag("ticketValue", String.valueOf(ticketStatus.getTarifa()));
@@ -222,6 +212,22 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     } catch (JsonProcessingException jsonError) {
       LOG.error("Error deserializing status ticket to json.", jsonError);
       return null;
+    }
+  }
+
+  /**
+   * Reset the testing tickets starte back to how they are bootstrapped
+   */
+  public void resetTestTickets(String transactionId, String marketplaceId, String userId) {
+    LOG.info("Resetting testing tickets requested transactionId={} marketplaceId={} userId={}", transactionId, marketplaceId, userId);
+
+    try {
+      testingParkinglotTicketRepository.bootstrap();
+      LOG.info("Finished resetting testing tickets requested transactionId={} userId={}", transactionId, userId);
+
+    } catch (InterruptedException error) {
+      LOG.error("Couldn't reset testing tickets requested transactionId={} userId={}: {}", transactionId, userId, error.getMessage());
+      throw new IllegalStateException("Couldn't reset the state of the testing tickets: " + error.getMessage());
     }
   }
 
