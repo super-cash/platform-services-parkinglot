@@ -82,9 +82,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 	@PostConstruct
     public void bootstrap() throws InterruptedException {
     	// Remove all
-    	statusCache.clear();
-    	queryResultsCache.clear();
-    	paymentsCache.clear();
+        statusCache.clear();
+        queryResultsCache.clear();
+        paymentsCache.clear();
 
     	// Create the free ticket
     	saveTicketStatusRetrieval(
@@ -169,7 +169,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		LocalDateTime gracePeriodMaxTime = ParkingTicketStatus.calculateGracePeriod(statusRetrieval, properties.getGracePeriodInMinutes(), null);
 		long gracePeriodMills = getMillis(gracePeriodMaxTime);
-    	ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state, gracePeriodMills);
+        ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state, gracePeriodMills);
 		statusCache.put(statusRetrieval.getNumeroTicket(), status);
     }
 

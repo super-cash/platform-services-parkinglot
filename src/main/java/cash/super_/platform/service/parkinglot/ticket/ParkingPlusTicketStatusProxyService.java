@@ -213,4 +213,20 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     }
   }
 
+  /**
+   * Reset the testing tickets starte back to how they are bootstrapped
+   */
+  public void resetTestTickets(String transactionId, String marketplaceId, String userId) {
+    LOG.info("Resetting testing tickets requested transactionId={} marketplaceId={} userId={}", transactionId, marketplaceId, userId);
+
+    try {
+      testingParkinglotTicketRepository.bootstrap();
+      LOG.info("Finished resetting testing tickets requested transactionId={} userId={}", transactionId, userId);
+
+    } catch (InterruptedException error) {
+      LOG.error("Couldn't reset testing tickets requested transactionId={} userId={}: {}", transactionId, userId, error.getMessage());
+      throw new IllegalStateException("Couldn't reset the state of the testing tickets: " + error.getMessage());
+    }
+  }
+
 }
