@@ -39,14 +39,16 @@ import cash.super_.platform.utils.JsonUtil;
 public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxyService {
 
   public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
-  // TODO: Remove this once we are in production
+
   @Autowired
   private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
 
   @Autowired
   private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  @Autowired
+  // Since it's only loaded in certain profiles, autowire is optional
+  // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
+  @Autowired(required = false)
   private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
 
   public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
