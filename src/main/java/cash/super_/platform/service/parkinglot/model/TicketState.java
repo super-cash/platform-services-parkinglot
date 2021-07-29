@@ -1,6 +1,6 @@
 package cash.super_.platform.service.parkinglot.model;
 
-public enum SupercashTicketStatus {
+public enum TicketState {
     FREE,
     GRACE_PERIOD,
     NOT_PAID,
