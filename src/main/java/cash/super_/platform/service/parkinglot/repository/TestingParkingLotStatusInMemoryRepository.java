@@ -16,6 +16,7 @@ import cash.super_.platform.service.parkinglot.model.TicketState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
@@ -28,6 +29,7 @@ import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
  *
  */
 @Component
+@Profile({"dev", "default"})
 public class TestingParkingLotStatusInMemoryRepository {
 
 	protected static final Logger LOG = LoggerFactory.getLogger(TestingParkingLotStatusInMemoryRepository.class);

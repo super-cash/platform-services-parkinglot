@@ -26,16 +26,16 @@ public class ParkingPlusTicketsController extends AbstractController {
   /**
    * The endpoint for the tickets status
    */
-  private static final String TICKETS_ENDPOINT = BASE_ENDPOINT + "/tickets";
+  protected static final String TICKETS_ENDPOINT = BASE_ENDPOINT + "/tickets";
 
   @Autowired
-  private ParkingPlusTicketStatusProxyService statusService;
+  protected ParkingPlusTicketStatusProxyService statusService;
 
   @Autowired
-  private ParkingPlusTicketPaymentsProxyService paymentsService;
+  protected ParkingPlusTicketPaymentsProxyService paymentsService;
 
   @Autowired
-  private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+  protected ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
   /**
    * Gets the current list of tickets for a given user
@@ -59,6 +59,34 @@ public class ParkingPlusTicketsController extends AbstractController {
     userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
     ParkingTicketPaymentsMadeStatus parkingTicketStatus = paymentsService.getPaymentsMade(userId, marketplaceId,
             storeId, paginationStart, paginationLimit);
+
+    return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+  }
+
+  /**
+   * Retrieve the status of a given ticket for of a given user
+   * @param transactionId
+   * @param userId
+   * @param marketplaceId
+   * @param storeId
+   * @param ticketNumber
+   * @param saleId
+   * @return ParkingTicketStatus
+   */
+  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_number}")
+  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}", method = RequestMethod.GET,
+          produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<ParkingTicketStatus> getTicketStatus(
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Uid") String userId,
+          @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
+          @RequestHeader("X-Supercash-StoreId") String storeId,
+          @PathVariable("ticket_number") String ticketNumber,
+          @RequestParam("sale_id") Optional<Long> saleId) {
+
+    // TODO: define the userId inside the service
+    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, saleId);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
@@ -88,50 +116,4 @@ public class ParkingPlusTicketsController extends AbstractController {
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 
-  /**
-   * Retrieve the status of a given ticket for of a given user
-   * @param transactionId
-   * @param userId
-   * @param marketplaceId
-   * @param storeId
-   * @param ticketNumber
-   * @param saleId
-   * @return ParkingTicketStatus
-   */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_number}")
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}", method = RequestMethod.GET,
-          produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<ParkingTicketStatus> getTicketStatus(
-      @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String userId,
-      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("ticket_number") String ticketNumber,
-      @RequestParam("sale_id") Optional<Long> saleId) {
-
-    // TODO: define the userId inside the service
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, saleId);
-
-    return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
-  }
-
-  /**
-   * Reset the state of the testing parking tickets
-   * @param transactionId
-   * @param userId
-   * @return ParkingTicketPaymentsMadeStatus
-   */
-  @ApiOperation(value = "", nickname = BASE_ENDPOINT + "/tests/reset")
-  @RequestMapping(value = BASE_ENDPOINT + "/tests/reset", method = RequestMethod.PUT, produces = {MediaType.TEXT_PLAIN_VALUE})
-  public ResponseEntity<String> resetTestingParkingTickets(
-          @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String userId,
-          @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId) {
-
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + userId;
-    statusService.resetTestTickets(transactionId, marketplaceId, userId);
-    // The call succeeded
-    return new ResponseEntity<>("OK", makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
-  }
 }
