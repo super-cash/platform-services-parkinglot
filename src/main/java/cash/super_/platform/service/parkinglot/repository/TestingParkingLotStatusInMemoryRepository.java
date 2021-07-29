@@ -8,12 +8,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
+import cash.super_.platform.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
-import cash.super_.platform.service.parkinglot.model.SupercashTicketStatus;
+import cash.super_.platform.service.parkinglot.model.TicketState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
@@ -54,6 +56,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 */
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
 
+	@Autowired
+	protected ParkingPlusProperties properties;
+
 	// https://www.quora.com/How-do-I-create-a-thread-which-runs-every-one-minute-in-Java/answer/Anand-Dwivedi-4
 	class PriceUpdaterTask extends TimerTask {
 
@@ -69,33 +74,36 @@ public class TestingParkingLotStatusInMemoryRepository {
 					ticketStatus.getStatus().setTarifaSemDesconto(nextPrice);
 					LOG.debug("Updating prices for testing ticket={} from {} to {}", ticketNumber, priceBefore, nextPrice);
 				}
+
 			});
 		}
 	}
 
 	@PostConstruct
-    private void bootstrap() throws InterruptedException {
+    public void bootstrap() throws InterruptedException {
     	// Remove all
     	statusCache.clear();
+    	queryResultsCache.clear();
+    	paymentsCache.clear();
 
     	// Create the free ticket
     	saveTicketStatusRetrieval(
     			createTicketRetrieval(ALWAYS_FREE_TICKET_NUMBER, 0),
-				SupercashTicketStatus.FREE
+				TicketState.FREE
 		);
     	Thread.sleep(5000);
 
     	// Create the ticket to be paid
 		saveTicketStatusRetrieval(
 				createTicketRetrieval(NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER, 400),
-				SupercashTicketStatus.GRACE_PERIOD
+				TicketState.GRACE_PERIOD
 		);
     	Thread.sleep(3500);
 
     	// Create the ticket that needs extra payments
 		saveTicketStatusRetrieval(
 				createTicketRetrieval(ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER, 700),
-				SupercashTicketStatus.GRACE_PERIOD
+				TicketState.GRACE_PERIOD
 		);
 
 		LOG.debug("The current size of the cache is {}", statusCache.size());
@@ -105,10 +113,12 @@ public class TestingParkingLotStatusInMemoryRepository {
 		timer.schedule(new PriceUpdaterTask(), threeMinutes, threeMinutes);//3 Min
     }
 
+    // https://stackoverflow.com/questions/23944370/how-to-get-milliseconds-from-localdatetime-in-java-8/23945792#23945792
 	private static long getMillis(LocalDateTime dateTime) {
 		return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 	}
 
+	// https://stackoverflow.com/questions/23944370/how-to-get-milliseconds-from-localdatetime-in-java-8/23945792#23945792
 	private static LocalDateTime fromMillisecondsToDateTime(long time) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId());
 	}
@@ -153,11 +163,13 @@ public class TestingParkingLotStatusInMemoryRepository {
     	return statusRetrieval;
     }
     
-    private void saveTicketStatusRetrieval(RetornoConsulta statusRetrieval, SupercashTicketStatus state) {
+    private void saveTicketStatusRetrieval(RetornoConsulta statusRetrieval, TicketState state) {
     	LOG.debug("Saving testing sticket {}", statusRetrieval.getNumeroTicket());
 		queryResultsCache.put(statusRetrieval.getNumeroTicket(), statusRetrieval);
 
-    	ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state);
+		LocalDateTime gracePeriodMaxTime = ParkingTicketStatus.calculateGracePeriod(statusRetrieval, properties.getGracePeriodInMinutes(), null);
+		long gracePeriodMills = getMillis(gracePeriodMaxTime);
+    	ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state, gracePeriodMills);
 		statusCache.put(statusRetrieval.getNumeroTicket(), status);
     }
 
@@ -194,10 +206,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 * Updates the current status with the supercash status computed
 	 *
 	 * @param ticketNumber
-	 * @param supercashTicketStatus
 	 * @return an instance of the ticket status.
 	 */
-	public ParkingTicketStatus updateStatus(String ticketNumber, SupercashTicketStatus supercashTicketStatus) {
+	public ParkingTicketStatus updateStatus(String ticketNumber) {
 		ParkingTicketStatus testingTicketStatus = this.getStatus(ticketNumber);
 
 		// The ticket status is always free, testing weekends, holidays, etc
@@ -219,18 +230,23 @@ public class TestingParkingLotStatusInMemoryRepository {
 		}
 
 		// Update the value from grace period earlier than what's needed in 3 minutes
-		if (SupercashTicketStatus.GRACE_PERIOD == testingTicketStatus.getSupercashTicketStatus()) {
+		if (TicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
 			LocalDateTime entranceDateTime = fromMillisecondsToDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
 			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(3);
 			LOG.debug("The testing ticket {} is in grace period: entrance={} testingGracePeriod={}",
 					ticketNumber, entranceDateTime, testingGracePeriod);
+
+			// The the value of the grace period for the ticket
+			if (testingTicketStatus.getGracePeriodMaxTime() == 0) {
+				testingTicketStatus.setGracePeriodMaxTime(getMillis(testingGracePeriod));
+			}
 
 			// We can now update if the current time is greater than the grace period
 			LocalDateTime now = LocalDateTime.now();
 			if (now.isAfter(testingGracePeriod)) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
 						ticketNumber, entranceDateTime, testingGracePeriod, now);
-				testingTicketStatus.setSupercashTicketStatus(SupercashTicketStatus.NOT_PAID);
+				testingTicketStatus.setState(TicketState.NOT_PAID);
 			}
 		}
 		return testingTicketStatus;
@@ -260,7 +276,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		ticketStatus.getStatus().setTarifaSemDesconto((int)paidAmount);
 
 		// Update the state with the paid
-		ticketStatus.setSupercashTicketStatus(SupercashTicketStatus.PAID);
+		ticketStatus.setState(TicketState.PAID);
 
 		// Create the fake payment done
 		RetornoPagamento paymentDone = new RetornoPagamento();
