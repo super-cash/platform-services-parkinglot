@@ -2,12 +2,10 @@ package cash.super_.platform.service.parkinglot.model;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 /**
@@ -23,7 +21,7 @@ public class ParkingTicketStatus {
    * The interpretation of what the ticket state is for supercash based on the status of the ticket with WPS.
    */
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private TicketState state;
+  private ParkingTicketState state;
   /**
    * The interpretation of the grace period max time for supercash based on the status of the ticket.
    */
@@ -46,7 +44,7 @@ public class ParkingTicketStatus {
    * @param status the status of the ticket in WPS
    * @param state the state based on the state of the ticket
    */
-  public ParkingTicketStatus(RetornoConsulta status, TicketState state, long gracePeriodMaxTime) {
+  public ParkingTicketStatus(RetornoConsulta status, ParkingTicketState state, long gracePeriodMaxTime) {
     this.status = status;
     this.state = state;
     this.gracePeriodMaxTime = gracePeriodMaxTime;
@@ -60,11 +58,11 @@ public class ParkingTicketStatus {
     this.status = status;
   }
 
-  public TicketState getState() {
+  public ParkingTicketState getState() {
     return state;
   }
 
-  public void setState(TicketState state) {
+  public void setState(ParkingTicketState state) {
     this.state = state;
   }
 

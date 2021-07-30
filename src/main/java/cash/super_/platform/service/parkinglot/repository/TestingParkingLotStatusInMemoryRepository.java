@@ -12,7 +12,7 @@ import cash.super_.platform.autoconfig.ParkingPlusProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
-import cash.super_.platform.service.parkinglot.model.TicketState;
+import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,21 +91,21 @@ public class TestingParkingLotStatusInMemoryRepository {
     	// Create the free ticket
     	saveTicketStatusRetrieval(
     			createTicketRetrieval(ALWAYS_FREE_TICKET_NUMBER, 0),
-				TicketState.FREE
+				ParkingTicketState.FREE
 		);
     	Thread.sleep(5000);
 
     	// Create the ticket to be paid
 		saveTicketStatusRetrieval(
 				createTicketRetrieval(NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER, 400),
-				TicketState.GRACE_PERIOD
+				ParkingTicketState.GRACE_PERIOD
 		);
     	Thread.sleep(3500);
 
     	// Create the ticket that needs extra payments
 		saveTicketStatusRetrieval(
 				createTicketRetrieval(ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER, 700),
-				TicketState.GRACE_PERIOD
+				ParkingTicketState.GRACE_PERIOD
 		);
 
 		LOG.debug("The current size of the cache is {}", statusCache.size());
@@ -165,7 +165,7 @@ public class TestingParkingLotStatusInMemoryRepository {
     	return statusRetrieval;
     }
     
-    private void saveTicketStatusRetrieval(RetornoConsulta statusRetrieval, TicketState state) {
+    private void saveTicketStatusRetrieval(RetornoConsulta statusRetrieval, ParkingTicketState state) {
     	LOG.debug("Saving testing sticket {}", statusRetrieval.getNumeroTicket());
 		queryResultsCache.put(statusRetrieval.getNumeroTicket(), statusRetrieval);
 
@@ -232,7 +232,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		}
 
 		// Update the value from grace period earlier than what's needed in 3 minutes
-		if (TicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
+		if (ParkingTicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
 			LocalDateTime entranceDateTime = fromMillisecondsToDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
 			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(3);
 			LOG.debug("The testing ticket {} is in grace period: entrance={} testingGracePeriod={}",
@@ -248,7 +248,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 			if (now.isAfter(testingGracePeriod)) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
 						ticketNumber, entranceDateTime, testingGracePeriod, now);
-				testingTicketStatus.setState(TicketState.NOT_PAID);
+				testingTicketStatus.setState(ParkingTicketState.NOT_PAID);
 			}
 		}
 		return testingTicketStatus;
@@ -278,7 +278,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		ticketStatus.getStatus().setTarifaSemDesconto((int)paidAmount);
 
 		// Update the state with the paid
-		ticketStatus.setState(TicketState.PAID);
+		ticketStatus.setState(ParkingTicketState.PAID);
 
 		// Create the fake payment done
 		RetornoPagamento paymentDone = new RetornoPagamento();

@@ -4,14 +4,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
 import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.TicketState;
+import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
@@ -76,7 +74,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // The ticket is not a test one... We need to retrieve it from WPS
     long allowedExitEpoch = ParkingTicketStatus.calculateAllowedExitDateTime(ticketStatus);
-    TicketState ticketState = calculateTicketStatus(throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
+    ParkingTicketState parkingTicketState = calculateTicketStatus(throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
 
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
@@ -89,18 +87,18 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     //    }
 
     LocalDateTime gracePeriodTime = ParkingTicketStatus.calculateGracePeriod(ticketStatus, properties.getGracePeriodInMinutes(), TIMEZONE_AMERICA_SAO_PAULO);
-    return new ParkingTicketStatus(ticketStatus, ticketState, getMillis(gracePeriodTime));
+    return new ParkingTicketStatus(ticketStatus, parkingTicketState, getMillis(gracePeriodTime));
   }
 
   private static long getMillis(LocalDateTime dateTime) {
     return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
   }
 
-  private TicketState calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus, long allowedExitEpoch) {
+  private ParkingTicketState calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus, long allowedExitEpoch) {
     int ticketFee = ticketStatus.getTarifa();
     int ticketFeePaid = ticketStatus.getTarifaPaga();
     String message = "";
-    TicketState ticketState = TicketState.NOT_PAID;
+    ParkingTicketState parkingTicketState = ParkingTicketState.NOT_PAID;
 
     long queryEpoch = ticketStatus.getDataConsulta();
     long entryEpoch = ticketStatus.getDataDeEntrada();
@@ -120,14 +118,14 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.debug("The ticket queryTimeStamp={} is before gracePeriodTimeStamp={} so setting state to grace period",
               formatter.format(queryDateTime), formatter.format(gracePeriodTime));
               message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-      ticketState = TicketState.GRACE_PERIOD;
+      parkingTicketState = ParkingTicketState.GRACE_PERIOD;
     }
 
     // we should not charge the user if the fee is 0
     if (ticketFee == 0) {
       if (allowedExitEpoch - entryEpoch < 0) {
         message += "Today is free.";
-        ticketState = TicketState.FREE;
+        parkingTicketState = ParkingTicketState.FREE;
       }
 
       // Status message
@@ -144,11 +142,11 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
         message = "The ticket is already paid and the user is still in the parking lot (since the ststus is still != 404)";
         LOG.debug(message);
-        ticketState = TicketState.PAID;
+        parkingTicketState = ParkingTicketState.PAID;
         if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
       }
     }
-    return ticketState;
+    return parkingTicketState;
   }
 
   /**
