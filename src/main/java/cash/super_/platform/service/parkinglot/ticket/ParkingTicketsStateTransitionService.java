@@ -140,8 +140,9 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ticketStatus.setDataConsulta(getMillis(LocalDateTime.now()));
     ticketStatus.dataDeEntrada(
             parkinglotTicket.getStates().stream()
-                    // sort by date ASC
-            .sorted((before, after) -> Long.compare(before.getAt(), after.getAt()))
+                    // https://www.geeksforgeeks.org/collections-reverseorder-java-examples/
+                    // https://stackoverflow.com/questions/32995559/reverse-a-comparator-in-java-8/54525172#54525172
+            .sorted(Comparator.comparing(ParkingTicketStateTransition::getAt))
             .findFirst()
             .get()
             .getAt()
@@ -163,7 +164,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     // Just a hack to save the last state in the ticket message to capture it on the return
     ticketStatus.setMensagem(parkinglotTicket.getStates().stream()
             // SORTED BY AT DESC
-            .sorted((before, after) -> Long.compare(after.getAt(), before.getAt()))
+            .sorted(Comparator.comparing(ParkingTicketStateTransition::getAt, Collections.reverseOrder()))
             .findFirst()
             .get()
             .getState()
