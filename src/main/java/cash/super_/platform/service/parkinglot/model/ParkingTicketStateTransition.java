@@ -15,6 +15,7 @@ public class ParkingTicketStateTransition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     private Long id;
 
     @JsonIgnore

@@ -29,13 +29,11 @@ public class ParkinglotTicket {
 //    @OnDelete(action = OnDeleteAction.CASCADE)
 //    private Marketplace marketplace;
 
-    @JsonIgnore
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
             mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ParkinglotTicketPayment> payments = new ArrayList<>();
 
-    @JsonIgnore
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
             mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
