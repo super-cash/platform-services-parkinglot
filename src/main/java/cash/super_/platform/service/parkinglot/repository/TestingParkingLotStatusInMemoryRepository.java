@@ -13,6 +13,7 @@ import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
+import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -245,7 +246,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 			// We can now update if the current time is greater than the grace period
 			LocalDateTime now = LocalDateTime.now();
-			if (now.isAfter(testingGracePeriod)) {
+			if (now.isAfter(testingGracePeriod.minusSeconds(ParkingTicketsStateTransitionService.GRACE_PERIOD_MINUS_SECONDS_OFFSET))) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
 						ticketNumber, entranceDateTime, testingGracePeriod, now);
 				testingTicketStatus.setState(ParkingTicketState.NOT_PAID);
