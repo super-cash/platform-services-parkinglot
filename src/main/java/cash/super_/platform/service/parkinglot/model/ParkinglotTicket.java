@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -30,6 +31,12 @@ public class ParkinglotTicket {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ParkinglotTicketPayment> payments = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+            mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<ParkingTicketStateTransition> states = new LinkedList<>();
+
     public Long getTicketNumber() {
         return ticketNumber;
     }
@@ -48,5 +55,18 @@ public class ParkinglotTicket {
 
     public void addPayment(ParkinglotTicketPayment parkinglotTicketPayment) {
         this.payments.add(parkinglotTicketPayment);
+    }
+
+    public List<ParkingTicketStateTransition> getStates() {
+        return states;
+    }
+
+    public void setStates(List<ParkingTicketStateTransition> states) {
+        this.states = states;
+    }
+
+    public void addTicketStateTransition(ParkingTicketState state, long time) {
+        ParkingTicketStateTransition transition = ParkingTicketStateTransition.makeNew(this, state, time);
+        this.states.add(transition);
     }
 }
