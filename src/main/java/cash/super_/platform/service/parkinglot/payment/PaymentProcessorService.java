@@ -182,7 +182,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     LOG.debug("Anonymous payment captured successfully and will be stored: {}", chargeResponse);
     // Cache the payment in our storage so the user can view them
-    cacheAnonymousAuthorizationPayment(ticketStatus, chargeResponse, marketplaceId, storeId, paymentStatus);
+    cacheAnonymousAuthorizationPayment(ticketStatus, chargeResponse, marketplaceId, storeId, userId, paymentStatus);
     return paymentStatus;
   }
 
@@ -195,7 +195,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param parkingTicketAuthorizedPaymentStatus
    */
   private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
-                                                  String marketplaceId, String storeId,
+                                                  String marketplaceId, String storeId, String userId,
                                                   ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
     /* Saving payment request into the database */
     Long paidParkingTicketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
@@ -218,9 +218,12 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(paidParkingTicketNumber);
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
+
     } else {
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(paidParkingTicketNumber);
+      parkinglotTicket.setUserId(Long.valueOf(userId));
+      parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }
 
     /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
@@ -231,11 +234,10 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicket.addPayment(parkinglotTicketPayment);
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
-    for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
-      parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
-      if (parkinglotTicketPayment.getDate() == -1) {
-        /* Set the dataPagamento for future use, since this information is returned by the WPS. */
-        parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
+    // Set the dataPagamento for future use, since this information is returned by the WPS.
+    for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
+      if (payment.getDate() == -1) {
+        payment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
         break;
       }
     }
@@ -405,8 +407,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     // Save the value in our storage for the user's status
-    cacheParkingTicketPayment(ticketStatus, chargeResponse, serviceFeeItem, marketplaceId,
-            storeId, paymentResponse, paymentStatus);
+    cacheParkingTicketPayment(ticketStatus, chargeResponse, serviceFeeItem, marketplaceId, storeId, userId, paymentResponse, paymentStatus);
 
     return paymentStatus;
   }
@@ -422,7 +423,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param paymentStatus
    */
   private void cacheParkingTicketPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse, Item serviceFeeItem,
-                                         String marketplaceId, String storeId, PaymentOrderResponse paymentResponse,
+                                         String marketplaceId, String storeId, String userId, PaymentOrderResponse paymentResponse,
                                          ParkingTicketAuthorizedPaymentStatus paymentStatus) {
 
     // prepare the ticket payment information
@@ -448,6 +449,8 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     } else {
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(ticketNumber);
+      parkinglotTicket.setUserId(Long.valueOf(userId));
+      parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }
 
     /*
@@ -457,13 +460,14 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
+
+    // Save the parkinglot ticket
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
-    for (int i = 0; i < parkinglotTicket.getPayments().size(); i++) {
-      parkinglotTicketPayment = parkinglotTicket.getPayments().get(i);
-      if (parkinglotTicketPayment.getDate() == -1) {
-        /* Set the dataPagamento for future use, since this information is returned by the WPS. */
-        parkinglotTicketPayment.setDate(paymentStatus.getStatus().getDataPagamento());
+    // Set the dataPagamento for future use, since this information is returned by the WPS.
+    for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
+      if (payment.getDate() == -1) {
+        payment.setDate(paymentStatus.getStatus().getDataPagamento());
         break;
       }
     }

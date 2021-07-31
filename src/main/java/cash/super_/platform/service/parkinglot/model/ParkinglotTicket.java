@@ -5,25 +5,29 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 @Entity
 public class ParkinglotTicket {
+
     @Id
     private Long ticketNumber;
 
-    // TODO: link the user here
-//    private User user;
+    // TODO: Map to the User bean after we do the shared libraries
+    @NotNull
+    private Long userId;
 
-    // TODO: link the marketplace here
-//    @OneToOne
-//    @JoinColumn(name = "id")
+    @NotNull
+    private Long createdAt;
+
+//    @JsonIgnore
+//    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+//            mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
+//    @OnDelete(action = OnDeleteAction.CASCADE)
 //    private Marketplace marketplace;
-
-    // TODO: link the store here
-//    private Store store;
 
     @JsonIgnore
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
@@ -37,17 +41,25 @@ public class ParkinglotTicket {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ParkingTicketStateTransition> states = new LinkedList<>();
 
-    public Long getTicketNumber() {
-        return ticketNumber;
-    }
+    public Long getUserId() { return userId; }
+
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public Long getTicketNumber() { return ticketNumber; }
 
     public void setTicketNumber(Long ticketNumber) {
         this.ticketNumber = ticketNumber;
     }
 
-    public List<ParkinglotTicketPayment> getPayments() {
-        return payments;
+    public Long getCreatedAt() {
+        return createdAt;
     }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<ParkinglotTicketPayment> getPayments() { return payments; }
 
     public void setPayments(List<ParkinglotTicketPayment> payments) {
         this.payments = payments;
