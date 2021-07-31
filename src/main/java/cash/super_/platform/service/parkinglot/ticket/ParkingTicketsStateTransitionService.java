@@ -49,6 +49,13 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
   }
 
+  private static LocalDateTime getLocalDateTime(long milliseconds) {
+    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds), TimeZone.getDefault().toZoneId());
+    return dateTime.atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO))
+            .toLocalDateTime();
+  }
+
   /**
    * Store the ticket state transition asynchronoysly
    * @param ticketStatus
@@ -103,7 +110,22 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     }
 
     // the ticket exists and so it loads all needed
+    // TODO: This is to quickly fix tickets that were created before the state transitions
     ParkinglotTicket ticket = ticketSearch.get();
+    if (ticket.getStates() == null || ticket.getStates().isEmpty()) {
+      ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, ticket.getCreatedAt());
+      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, getMillis(LocalDateTime.now()));
+      LocalDateTime creationTime = getLocalDateTime(ticket.getCreatedAt());
+      ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, getMillis(creationTime.plusMinutes(20)));
+
+      // The date of the last payment made
+      long lastPaymentDateMillis = ticket.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
+      LocalDateTime lastPaymentTime = getLocalDateTime(lastPaymentDateMillis);
+      ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(lastPaymentTime));
+
+      // Save the ticket states
+      parkinglotTicketRepository.save(ticket);
+    }
 
     Deque<ParkingTicketStateTransition> sortedTicketStates = new LinkedList<>(ticket.getStates());
     ParkingTicketStateTransition lastStateRecorded = sortedTicketStates.getLast();
