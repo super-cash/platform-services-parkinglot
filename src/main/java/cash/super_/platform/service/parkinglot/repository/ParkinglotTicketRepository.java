@@ -16,7 +16,7 @@ public interface ParkinglotTicketRepository extends JpaRepository<ParkinglotTick
     Optional<List<ParkinglotTicket>> findByUserId(Long userId);
 
     // https://www.baeldung.com/spring-data-derived-queries
-    List<ParkinglotTicket> findByUserIdInAndCreatedAtIn(List<Long> userId, List<Long> createdAt);
+    Optional<List<ParkinglotTicket>> findByUserIdAndCreatedAt(Long userId, Long createdAt);
 
     Optional<List<ParkinglotTicket>> findByUserIdAndCreatedAtIsGreaterThanEqualAndCreatedAtIsLessThanEqual(Long userId, Long createdAt, Long createdAtOffset);
 }

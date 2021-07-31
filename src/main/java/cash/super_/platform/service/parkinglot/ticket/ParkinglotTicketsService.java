@@ -48,10 +48,10 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
     } else if (createdAt.isPresent()) {
       long createdAtValue = createdAt.get();
       LOG.debug("Retrieving the tickets for the userId={} at createdAt={}", userId, createdAt.get());
-      List<ParkinglotTicket> ticketsByUserAndDateSearch = parkinglotTicketRepository.findByUserIdInAndCreatedAtIn(
-              Arrays.asList(validUserId), Arrays.asList(createdAtValue));
-      if (ticketsByUserAndDateSearch.size() > 0) {
-        userParkingTickets.addAll(ticketsByUserAndDateSearch);
+      Optional<List<ParkinglotTicket>> ticketsByUserAndDateSearch = parkinglotTicketRepository.findByUserIdAndCreatedAt(
+              validUserId, createdAtValue);
+      if (ticketsByUserAndDateSearch.isPresent() && ticketsByUserAndDateSearch.get().size() > 0) {
+        userParkingTickets.addAll(ticketsByUserAndDateSearch.get());
       }
 
     } else {
