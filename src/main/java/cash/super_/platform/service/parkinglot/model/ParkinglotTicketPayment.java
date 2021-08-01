@@ -2,6 +2,7 @@ package cash.super_.platform.service.parkinglot.model;
 
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
+@JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
 
     @Id

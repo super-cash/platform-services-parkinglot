@@ -1,11 +1,13 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import cash.super_.platform.service.parkinglot.model.*;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
+import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,33 +34,30 @@ public class ParkingPlusTicketsController extends AbstractController {
   protected ParkingPlusTicketStatusProxyService statusService;
 
   @Autowired
-  protected ParkingPlusTicketPaymentsProxyService paymentsService;
+  protected ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
   @Autowired
-  protected ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
+  protected ParkinglotTicketsService parkinglotTicketsService;
 
   /**
    * Gets the current list of tickets for a given user
    * @param transactionId
    * @param userId
-   * @param paginationStart
-   * @param paginationLimit
+   * @param createdAt
+   * @param createdAtOffset
    * @return ParkingTicketPaymentsMadeStatus
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<ParkingTicketPaymentsMadeStatus> getParkingTicketPaymentsStatus(
+  public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
       @RequestHeader("X-Supercash-Tid") String transactionId, 
       @RequestHeader("X-Supercash-Uid") String userId,
       @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestHeader("X-Supercash-StoreId") String storeId,
-      @RequestParam("page_start") Optional<Integer> paginationStart,
-      @RequestParam("page_limit") Optional<Integer> paginationLimit) {
+      @RequestParam("page_start") Optional<Long> createdAt,
+      @RequestParam("page_limit") Optional<Long> createdAtOffset) {
 
-    // TODO: define the userId inside the service
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-    ParkingTicketPaymentsMadeStatus parkingTicketStatus = paymentsService.getPaymentsMade(userId, marketplaceId,
-            storeId, paginationStart, paginationLimit);
+    List<ParkinglotTicket> parkingTicketStatus = parkinglotTicketsService.retrieveTickets(
+            marketplaceId, userId, createdAt, createdAtOffset);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
