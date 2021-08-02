@@ -118,9 +118,6 @@ dependencies {
      README FIRST - Instructions for adding new dependencies:
        - In all projects dependency (please, keep alphabetic order)
     */
-    implementation("com.eclipsesource.j2v8:j2v8:6.2.0")
-    //implementation("com.eclipsesource.j2v8:j2v8_linux_x86_64:4.8.0")
-    implementation("com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0")
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson_version")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jackson_version")
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jackson_version")
@@ -153,7 +150,7 @@ dependencies {
     // Parking Plus
     implementation group: "cash.super_.platform.client", name: "parking-plus-client-feign", version: "1.0.0-SNAPSHOT"
     testImplementation("org.hsqldb:hsqldb:2.5.1")
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
 }
 
 /*

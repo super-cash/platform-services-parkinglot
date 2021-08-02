@@ -1,7 +1,8 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import cash.super_.platform.service.payment.model.pagarme.TransactionResponse;
+import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
+@JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
 
     @Id
@@ -30,12 +32,12 @@ public class ParkinglotTicketPayment {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "transaction_id")
-    private TransactionResponse transactionResponse;
+    @JoinColumn(name = "payment_id", foreignKey = @ForeignKey(name = "parking_ticket_payment_order_response_fk"))
+    private PaymentOrderResponse payment;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="ticket_number", nullable = false)
+    @JoinColumn(name="ticket_number", nullable = false, foreignKey = @ForeignKey(name = "parking_ticket_parking_ticket_payment_fk"))
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {
@@ -102,11 +104,11 @@ public class ParkinglotTicketPayment {
         this.parkinglotTicket = parkinglotTicket;
     }
 
-    public TransactionResponse getTransactionResponse() {
-        return transactionResponse;
+    public PaymentOrderResponse getPayment() {
+        return payment;
     }
 
-    public void setTransactionResponse(TransactionResponse transactionResponse) {
-        this.transactionResponse = transactionResponse;
+    public void setPayment(PaymentOrderResponse paymentOrderResponse) {
+        this.payment = paymentOrderResponse;
     }
 }

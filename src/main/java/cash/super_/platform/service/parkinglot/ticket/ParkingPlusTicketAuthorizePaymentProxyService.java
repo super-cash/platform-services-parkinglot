@@ -4,13 +4,14 @@ import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
-import cash.super_.platform.service.payment.model.TransactionResponseSummary;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketPayment;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.payment.PagarmePaymentProcessorService;
+import cash.super_.platform.service.parkinglot.payment.PaymentProcessorService;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
+import cash.super_.platform.service.payment.model.supercash.PaymentResponseSummary;
+import cash.super_.platform.service.payment.model.supercash.types.charge.AnonymousPaymentChargeRequest;
 import cash.super_.platform.utils.IsNumber;
 import cash.super_.platform.utils.SecretsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ import java.util.Optional;
 public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParkingLotProxyService {
 
   @Autowired
-  PagarmePaymentProcessorService pagarmePaymentProcessorService;
+  PaymentProcessorService paymentProcessorService;
 
   @Autowired
   private ParkingPlusTicketStatusProxyService statusService;
@@ -47,22 +48,16 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
 
-  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, TransactionRequest payRequest,
-                                                               TransactionResponseSummary payResponse) {
-    LOG.debug("Payment auth request after Supercash payment request/response: {} {}", payRequest, payResponse);
+  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, String ticketNumber, Long ticketPrice,
+                                                               PaymentResponseSummary payResponse) {
+    LOG.debug("Payment auth request after Supercash payment request/response: {} {}", ticketNumber, payResponse);
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
-
-//    String saleIdStr = payResponse.getMetadata().get("sale_id");
-//    if (saleIdStr != null) {
-//      wpsAuthorizedPaymentRequest.setIdPromocao(Long.parseLong(saleIdStr));
-//    }
     long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
       wpsAuthorizedPaymentRequest.setIdPromocao(saleIdProperty);
     }
 
-    String ticketNumber = payRequest.getItems().get(0).getId();
     wpsAuthorizedPaymentRequest.setBandeira(properties.getUdidPrefix());
     wpsAuthorizedPaymentRequest.setNumeroTicket(ticketNumber);
     wpsAuthorizedPaymentRequest.setFaturado(true);
@@ -70,7 +65,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     wpsAuthorizedPaymentRequest.setPermitirValorExcedente(true);
     wpsAuthorizedPaymentRequest.setPermitirValorParcial(false);
     wpsAuthorizedPaymentRequest.setUdid(userId);
-    wpsAuthorizedPaymentRequest.setValor(payRequest.getItems().get(0).getUnitPrice().intValue());
+    wpsAuthorizedPaymentRequest.setValor(ticketPrice.intValue());
     wpsAuthorizedPaymentRequest.setIdTransacao(this.generateTransactionId(ticketNumber));
 
     return this.authorizedPaidTicket(wpsAuthorizedPaymentRequest);
@@ -188,51 +183,64 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
   public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String userId,
                                                       String ticketNumber, String marketplaceId, String storeId) {
-
     if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
 
-//    List<Item> items = paymentRequest.getPayTicketRequest().getItems();
-//    if (items != null && items.size() == 0) {
-//      throw new SupercashInvalidValueException("You have to provide at least one item in this request.");
-//    }
-
-    Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
-
-    if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
-      throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
-      throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
-    }
-
-    if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
-      throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
-    }
-
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     if (paymentRequest.getPayTicketRequest() != null) {
+      Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
+
+      if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
+        throw new SupercashInvalidValueException("The key/value device_id field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
+        throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("private_ip"))) {
+        throw new SupercashInvalidValueException("The key/value private_ip field must be provided in the metadata.");
+      }
+
+      // pay ticket request (format version of pagarme to be parsed to pagseguro)
       TransactionRequest request = paymentRequest.getPayTicketRequest();
-//      List<Item> items = request.getItems();
-//      if (items == null || items.size() == 0) {
-//        throw new SupercashInvalidValueException("At least one item must be provided.");
-//      }
 
       RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
-      paymentStatus = pagarmePaymentProcessorService.processPayment(paymentRequest.getPayTicketRequest(), ticketStatus,
-              userId, marketplaceId, storeId);
+      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
+
+    } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
+      Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
+
+      if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
+        throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("user_agent"))) {
+        throw new SupercashInvalidValueException("The key/value user_agent field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("lapsed_time"))) {
+        throw new SupercashInvalidValueException("The key/value lapsed_time field must be provided in the metadata.");
+      }
+
+      if (Strings.isNullOrEmpty(metadata.get("credit_card_issuer"))) {
+        throw new SupercashInvalidValueException("The key/value credit_card_issuer field must be provided in the metadata.");
+      }
+      // anonymous ticket payment request (supercash format for anonymous payment request
+      AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount().getValue());
+      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
 
     } else if (paymentRequest.getAuthorizedRequest() != null) {
-      throw new SupercashSimpleException("Direct request for WPS is payment gateway currently disabled.");
+      throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
       /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
 //      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
 //      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());
 //      paymentStatus = authorizePayment(userId, request);
 
     } else if (paymentRequest.getRequest() != null) {
-      throw new SupercashSimpleException("Direct request for WPS is payment gateway currently disabled.");
+      throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
       /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
 //      PagamentoRequest request = paymentRequest.getRequest();
 //      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());
@@ -247,27 +255,37 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   }
 
   protected RetornoConsulta isTicketAndAmountValid(String userId, String ticketNumber, long amount) {
-
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided");
     }
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, amount, true, true,
             Optional.of(properties.getSaleId()));
+
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
+    int ticketFee = ticketStatus.getTarifa();
+    int ticketPaidCharge = ticketStatus.getTarifaPaga();
+
+    // When the user pays the ticket multiple times, the value of ticketFee will always increase while the paid charge is the lumpsum of all payments
+    int valueToBePaid = ticketFee - ticketPaidCharge;
+    if (valueToBePaid != amount) {
+        String message = "The amount has to be equal to ticket fee less the paid charge. amount=" + amount + " valueToBePaid=" + valueToBePaid;
+        LOG.debug(message);
+        throw new SupercashInvalidValueException(message);
+    }
 
     LOG.debug("Ticket status for {}: {}", ticketNumber, ticketStatus);
-
     return ticketStatus;
   }
 
   private String generateTransactionId(String ticketNumber) {
     Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(IsNumber
             .stringIsLongWithException(ticketNumber, "Número Ticket"));
-    String transactionId = "0";
+    String transactionId = ticketNumber + "-0";
     if (parkinglotTicketOpt.isPresent()) {
-      transactionId = String.valueOf(parkinglotTicketOpt.get().getPayments().size());
+      transactionId = ticketNumber + "-" + parkinglotTicketOpt.get().getPayments().size();
     }
+    LOG.debug("Transaction ID for ticket '{}': {}", ticketNumber, transactionId);
     return transactionId;
   }
 }

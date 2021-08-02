@@ -1,0 +1,115 @@
+## Requisição de uma cobrança:
+
+Os dados do cartão de crédito é enviado para o nosso servidor com criptografia RSA de 4096-bits (campo encryptedCard).
+
+A chave pública está disponível em https://app.super.cash/security/supercash-services-api-pub.key. Ao chegar no nosso servidor,
+decriptamos o conteúdo e então realizamos a requisição de pagamento conforme o manual da Charge.
+
+POST https://api.super.cash/v2/payments/transactions/pay
+Content-Type: application/json
+
+{
+    "charge_request": {
+      "reference_id": "272565298908",
+      "description": "Pagamento de estacionamento do Maceió Shopping",
+      "amount": {
+        "value": 500,
+        "currency": "BRL"
+      },
+      "payment_method": {
+        "type": "CREDIT_CARD",
+        "installments": 1,
+        "capture": true,
+        "soft_descriptor": "Supercash",
+        "encryptedCard": "Vj1BOTog/ARyUSQRhnqdle7wNT6KNBue7p6G2V4WGkuMuDdPkEhgGrvWPlmhJTXpTahBwj+Se4CD7mGmKw1PdpXxCLycq7Xyu3+7mn1JTwk9veEuwkhimLstXUtSke0ndNayx323hR9v+gHBxY/DvY6AsjQioArVLPo/PUZ2haNRJ/yfbut9S2wvAl3D6jzBgogXFvcijKXYo4q67/chw44fv7errRrLrBC1tT7uqdHexK34KSCZzHqgqdUryWJZS/vYf0fHFqkFzFyT/5ScQ8CinsEdkPZ6HCx5UtQ1/A4k1ARrVE8aeX3HeypXGvJzFSQRFJAk9kvX3Sg4xOIfEg5PTqLxpl+R/ab0BGdWKJENdH4Tf2+g+4qQIE6uqnV/HKxYRGT/QEiMohVr2vEYCyWFxJYICTU0lU8N0kf1r0nLxkYK8eI8kjaRy6VX+KIaEb8+CIAKwH3Y3wh310UQGbhQ6czaWJynC3Vd3aQpL8MjKIRLB2vkbruquuPdecFb0zH29Wh+jRQp5cdVjkGJZMGzYnahJhHT8tOFCt6ly6z0mzt6TNd0tOe4+whJro/0raMYAWCOMW1eWfmAmXXmPjYDN0oCRPovRHbYV/nWdbGb+iNGLRv4Ec1lwttL+TEQfR0fBLSd2wHfTlDXtPRrzDuDaQXm5IKPZ3mc/vRmrCE="
+      },
+      "notification_urls": [
+        "https://api.super.cash/v2/payments/pagseguro/notifications"
+      ],
+      "metadata": {
+        "ticket_number": "272565298908",
+        "marketplace_id": "6115",
+        "user_id": "1200",
+        "store_id": "1"
+      }
+    }
+}
+
+## Resposta de uma cobrança:
+
+POST https://api.super.cash/v2/payments/transactions/pay
+
+HTTP/1.1 200
+X-B3-TraceId: c865a107306ed790
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 07 May 2021 18:53:39 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+{
+  "charge_response": {
+    "description": "Pagamento de estacionamento do Maceió Shopping",
+    "amount": {
+      "value": 500,
+      "currency": "BRL",
+      "summary": {
+        "total": 500,
+        "paid": 500,
+        "refunded": 0
+      }
+    },
+    "metadata": {
+      "ticket_number": "272565298908",
+      "marketplace_id": "6115",
+      "user_id": "1200",
+      "store_id": "1"
+    },
+    "id": "CHAR_28CAEA24-65BA-45B4-B3E7-E09928E4D8F3",
+    "status": "PAID",
+    "links": [
+      {
+        "rel": "SELF",
+        "href": "https://sandbox.api.pagseguro.com/charges/CHAR_28CAEA24-65BA-45B4-B3E7-E09928E4D8F3",
+        "media": "application/json",
+        "type": "GET"
+      },
+      {
+        "rel": "CHARGE.CANCEL",
+        "href": "https://sandbox.api.pagseguro.com/charges/CHAR_28CAEA24-65BA-45B4-B3E7-E09928E4D8F3/cancel",
+        "media": "application/json",
+        "type": "POST"
+      }
+    ],
+    "reference_id": "272565298908",
+    "notification_urls": [],
+    "created_at": "2021-05-07T15:53:38.111-03:00",
+    "paid_at": "2021-05-07T15:53:38.586-03:00",
+    "payment_response": {
+      "code": 20000,
+      "message": "SUCESSO",
+      "reference": "1620413618586"
+    },
+    "payment_method": {
+      "type": "CREDIT_CARD",
+      "installments": 1,
+      "capture": true,
+      "card": {
+        "brand": "visa",
+        "holder": {
+          "name": "leandro test"
+        },
+        "first_digits": 411111,
+        "last_digits": 1111,
+        "exp_month": 3,
+        "exp_year": 2026
+      },
+      "soft_descriptor": "sellervirtual"
+    }
+  }
+}
+
+Response code: 200; Time: 2431ms; Content length: 1116 bytes

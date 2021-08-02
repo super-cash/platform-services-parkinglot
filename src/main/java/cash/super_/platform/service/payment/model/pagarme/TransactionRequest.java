@@ -1,7 +1,13 @@
 package cash.super_.platform.service.payment.model.pagarme;
 
-import cash.super_.platform.service.payment.model.pagseguro.*;
-import cash.super_.platform.service.payment.model.pagseguro.Customer;
+import cash.super_.platform.service.payment.model.supercash.amount.Amount;
+import cash.super_.platform.service.payment.model.supercash.amount.AmountCurrency;
+import cash.super_.platform.service.payment.model.supercash.card.CardHolder;
+import cash.super_.platform.service.payment.model.supercash.card.CardRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodRequest;
+import cash.super_.platform.service.payment.model.supercash.types.charge.ChargePaymentMethodType;
+import cash.super_.platform.service.payment.model.supercash.types.charge.PaymentChargeRequest;
+import cash.super_.platform.service.payment.model.supercash.types.order.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -247,14 +253,11 @@ public class TransactionRequest extends Transaction {
         this.documents = documents;
     }
 
-    public cash.super_.platform.service.payment.model.pagseguro.TransactionRequest toPagseguroTransactionRequest() {
-        cash.super_.platform.service.payment.model.pagseguro.TransactionRequest transactionRequest =
-                new cash.super_.platform.service.payment.model.pagseguro.TransactionRequest();
-        OrderRequest orderRequest = new OrderRequest();
-        Customer customer = new Customer();
-
+    public PaymentOrderRequest toSupercashPaymentOrderRequest() {
+        PaymentOrderRequest orderRequest = new PaymentOrderRequest();
         orderRequest.setReferenceId(this.getReferenceKey());
 
+        OrderCustomer customer = new OrderCustomer();
         customer.setName(this.getCustomer().getName());
         customer.setEmail(this.getCustomer().getEmail());
         customer.setTaxId(this.getCustomer().getDocuments().get(0).getNumber());
@@ -262,14 +265,28 @@ public class TransactionRequest extends Transaction {
             String pn = phoneNumber.substring(phoneNumber.length() - 9);
             String code = phoneNumber.substring(phoneNumber.length() - 11, phoneNumber.length() - 9);
             String country = phoneNumber.replace(pn, "").replace(code, ""   );
-            customer.addPhoneNumber(country, code, pn, "MOBILE");
+            customer.addPhone(country, code, pn, "MOBILE");
         }
         orderRequest.setCustomer(customer);
 
+        OrderShipping shipping = new OrderShipping();
+        OrderAddress address = new OrderAddress();
+        Address requestAddress = this.getBilling().getAddress();
+        address.setCity(requestAddress.getCity());
+        address.setNumber(requestAddress.getStreetNumber());
+//        address.setCountry(requestAddress.getCountry());
+        address.setCountry("BRA");
+        address.setState(OrderAddressState.valueOf(requestAddress.getState()));
+        address.setComplement(requestAddress.getComplementary());
+        address.setLocality(requestAddress.getNeighborhood());
+        address.setPostalCode(requestAddress.getZipcode());
+        address.setStreet(requestAddress.getStreet());
+        shipping.setAddress(address);
+        orderRequest.setShipping(shipping);
+
         for (Item item : this.getItems()) {
-            cash.super_.platform.service.payment.model.pagseguro.Item psItem =
-                    new cash.super_.platform.service.payment.model.pagseguro.Item();
-            psItem.setItemId(item.getId());
+            OrderItem psItem = new OrderItem();
+            psItem.setReferenceId(item.getId());
             psItem.setQuantity(item.getQuantity());
             psItem.setName(item.getTitle());
             psItem.setReferenceId(item.getId());
@@ -277,32 +294,28 @@ public class TransactionRequest extends Transaction {
             orderRequest.addItem(psItem);
         }
 
-        orderRequest.clearChargeRequest();
-        orderRequest.clearNotificationUrls();
-
-        ChargeRequest chargeRequest = new ChargeRequest();
-//        chargeRequest.setDescription("");
-        PaymentMethodRequest paymentMethodRequest = new PaymentMethodRequest();
-        paymentMethodRequest.setCapture(true);
+        PaymentChargeRequest chargeRequest = new PaymentChargeRequest();
+        chargeRequest.setDescription("Estacionamento");
+        ChargePaymentMethodRequest paymentMethodRequest = new ChargePaymentMethodRequest();
+        paymentMethodRequest.setCapture(this.capture);
         CardRequest cardRequest = new CardRequest();
         cardRequest.setNumber(this.cardNumber);
-        cardRequest.setHolder(new Holder(this.cardHolderName));
-        cardRequest.setExpMonth(Integer.parseInt(this.cardExpirationDate.substring(0, 1)));
+        cardRequest.setHolder(new CardHolder(this.cardHolderName));
+        cardRequest.setExpMonth(Integer.parseInt(this.cardExpirationDate.substring(0, 2)));
         cardRequest.setExpYear(Integer.parseInt(this.cardExpirationDate.substring(2)));
         paymentMethodRequest.setCard(cardRequest);
         paymentMethodRequest.setInstallments(this.getInstallments());
-        paymentMethodRequest.setType(PaymentMethodType.CREDIT_CARD);
+        paymentMethodRequest.setType(ChargePaymentMethodType.CREDIT_CARD);
         paymentMethodRequest.setSoftDescriptor(this.getSoftDescriptor());
         chargeRequest.setPaymentMethod(paymentMethodRequest);
 
         Amount amount = new Amount();
-        amount.setCurrency(Currency.BRL);
+        amount.setCurrency(AmountCurrency.BRL);
         amount.setValue(this.getAmount());
         chargeRequest.setAmount(amount);
         chargeRequest.setMetadata(this.getMetadata());
         orderRequest.addChargeRequest(chargeRequest);
-        transactionRequest.setOrderRequest(orderRequest);
-        return transactionRequest;
+        return orderRequest;
     }
 
     @Override

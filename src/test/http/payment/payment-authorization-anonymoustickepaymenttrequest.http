@@ -1,0 +1,36 @@
+POST {{host}}:{{port}}/v2/parking_lot/tickets/327244522594/pay
+accept: application/json
+X-Supercash-Uid: 1200
+X-Supercash-Tid: new-transaction202
+X-Supercash-MarketplaceId: 6115
+X-Supercash-StoreId: 1
+X-Supercash-App-Version: 1.0
+Content-Type: application/json
+Accept-Encoding: application/json
+
+{
+  "anonymousTicketPaymentRequest": {
+    "reference_id": "327244522594",
+    "amount": {
+      "value": 700,
+      "currency": "BRL"
+    },
+    "payment_method": {
+      "card": {
+        "number": "2234440450303040",
+        "exp_month": 4,
+        "exp_year": 2043,
+        "security_code": 334,
+        "holderName": {
+          "name": "Marcello de Sales"
+        }
+      }
+    },
+    "metadata": {
+      "public_ip":"23.125.120.55",
+      "user_agent":"Chrome 1.1",
+      "lapsed_time":6735,
+      "credit_card_issuer":"Cartão"
+    }
+  }
+}

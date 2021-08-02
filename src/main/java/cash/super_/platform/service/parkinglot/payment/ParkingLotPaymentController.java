@@ -51,7 +51,7 @@ public class ParkingLotPaymentController extends AbstractController {
           @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
           @RequestHeader("X-Supercash-StoreId") String storeId) {
 
-    ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(properties.getGracePeriod());
+    ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(properties.getGracePeriodInMinutes());
 
     return new ResponseEntity<>(pppgp,
             makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);

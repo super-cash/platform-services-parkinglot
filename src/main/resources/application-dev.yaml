@@ -27,7 +27,7 @@ cash:
       service:
         payment:
 
-          baseUrl: http://pagarme-service:8120/v2/payments
+          baseUrl: http://payment-service:8120/v2/payments
 
         parkinglot:
 
@@ -38,4 +38,4 @@ cash:
           retryableDestinationHosts:
             - maceio.parkingplus.com.br
             - demonstracao.parkingplus.com.br
-            - localhost
+            - payment-service

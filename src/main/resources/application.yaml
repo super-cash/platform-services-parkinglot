@@ -18,6 +18,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate.temp.use_jdbc_metadata_defaults: false
+      hibernate.format_sql: true
 
   # Zipkin is the destination environment for the traces and it's disabled in development
   # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
@@ -57,8 +58,11 @@ logging:
     #org.apache.tomcat: DEBUG
     #org.apache.catalina: DEBUG
     #cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api: DEBUG
-    cash.super_.platform.service.configuration: DEBUG
-    cash.super_.platform.service.parkinglot: DEBUG
+    cash.super_.platform: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.springframework.jdbc.core.StatementCreatorUtils: TRACE
 
 feign:
   client:
@@ -172,13 +176,12 @@ cash:
           # {prefix}-{marketplaceId}-{storeId}-{userId}. This field is also used as the "bandeira" for WPS transactions.
           udidPrefix: supercash
 
-          # Time, in seconds, the user can leave the parking lot without paying the ticket
-          gracePeriod: 1200
+          # Time, in minutes, the user can leave the parking lot without paying the ticket
+          gracePeriodInMinutes: 20
 
           # Hosts and/or ports to retry (e.g localhost, 8080, localhost:8080)
           retryableDestinationHosts:
             - demonstracao.parkingplus.com.br
-            - localhost
 
           # When we have http outgoing connections that returns HTTP Status 5xx, we will retry 'retryMaxAttempt'
           # before stop. If 0 value is defined, we will retry indefinitely.
@@ -194,10 +197,10 @@ cash:
       configuration:
 
         # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        apiUrl: http://localhost:8501
+        apiUrl: http://orchestrator:8501
 
         # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        orchestratorUrl: http://localhost:8501
+        orchestratorUrl: http://orchestrator:8501
 
         # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
         defaultHeathCheckPort: 443
