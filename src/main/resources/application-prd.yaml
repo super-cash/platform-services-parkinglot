@@ -6,9 +6,9 @@ spring:
     enabled: false
 
   datasource:
-    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+    url: jdbc:postgresql://supercash-db-prd.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
     username: supercash
-    password: _#super#_123
+    password: .S%etfG=RpJ7A]VH
 
   jpa:
     hibernate:
