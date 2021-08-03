@@ -34,6 +34,7 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
    * Where the call will come through
    */
   public static final String BASE_ENDPOINT = "/parking_lot";
+  protected static final String TICKETS_ENDPOINT = BASE_ENDPOINT + "/tickets";
 
   @Autowired
   protected ParkingPlusProperties properties;

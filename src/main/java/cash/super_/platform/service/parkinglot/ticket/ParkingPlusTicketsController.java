@@ -40,29 +40,6 @@ public class ParkingPlusTicketsController extends AbstractController {
   protected ParkinglotTicketsService parkinglotTicketsService;
 
   /**
-   * Gets the current list of tickets for a given user
-   * @param transactionId
-   * @param userId
-   * @param createdAt
-   * @param createdAtOffset
-   * @return ParkingTicketPaymentsMadeStatus
-   */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
-  @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
-      @RequestHeader("X-Supercash-Tid") String transactionId, 
-      @RequestHeader("X-Supercash-Uid") String userId,
-      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestParam("page_start") Optional<Long> createdAt,
-      @RequestParam("page_limit") Optional<Long> createdAtOffset) {
-
-    List<ParkinglotTicket> parkingTicketStatus = parkinglotTicketsService.retrieveTickets(
-            marketplaceId, userId, createdAt, createdAtOffset);
-
-    return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
-  }
-
-  /**
    * Retrieve the status of a given ticket for of a given user
    * @param transactionId
    * @param userId
