@@ -131,6 +131,8 @@ dependencies {
     implementation("io.github.openfeign:feign-slf4j:$feign_version")
     implementation("io.github.openfeign.form:feign-form:$feign_form_version")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation ("org.apache.commons:commons-lang3:3.0")
 
     implementation("org.openjdk.nashorn:nashorn-core:15.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

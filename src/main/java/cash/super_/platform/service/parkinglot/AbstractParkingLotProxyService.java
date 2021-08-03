@@ -1,7 +1,9 @@
 package cash.super_.platform.service.parkinglot;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
+import cash.super_.platform.service.configuration.http.SupercashRequestContext;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,9 @@ import cash.super_.platform.utils.SecretsUtil;
 public abstract class AbstractParkingLotProxyService {
 
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractParkingLotProxyService.class);
+
+  @Resource(name = "supercashRequestContextInstance")
+  protected SupercashRequestContext supercashRequestContext;
 
   @Autowired
   protected ParkingPlusProperties properties;
