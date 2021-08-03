@@ -7,7 +7,7 @@ build/
 /gradle
 gradlew
 gradlew.bat
-
+httpRequests/
 .idea/
 out/
 
