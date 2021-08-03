@@ -1,6 +1,8 @@
 package cash.super_.platform.service.parkinglot;
 
 import javax.annotation.PostConstruct;
+
+import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,11 @@ public abstract class AbstractParkingLotProxyService {
 
   @Autowired
   protected ServicoPagamentoTicket2Api parkingTicketPaymentsApi;
+
+  // Since it's only loaded in certain profiles, autowire is optional
+  // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
+  @Autowired(required = false)
+  protected TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
 
   @PostConstruct
   public void postConstruct() {

@@ -7,6 +7,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -78,5 +79,15 @@ public class ParkinglotTicket {
     public void addTicketStateTransition(ParkingTicketState state, long time) {
         ParkingTicketStateTransition transition = ParkingTicketStateTransition.makeNew(this, state, time);
         this.states.add(transition);
+    }
+
+    public ParkingTicketStateTransition getLastStateRecorded() {
+        Deque<ParkingTicketStateTransition> sortedTicketStates = new LinkedList<>(this.getStates());
+        ParkingTicketStateTransition lastStateRecorded = sortedTicketStates.getLast();
+        return lastStateRecorded;
+    }
+
+    public long getLastPaymentDateTimeMillis() {
+        return this.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
     }
 }

@@ -120,7 +120,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // The date of the last payment made
       if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
-        long lastPaymentDateMillis = ticket.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
+        long lastPaymentDateMillis = ticket.getLastPaymentDateTimeMillis();
         LocalDateTime lastPaymentTime = getLocalDateTime(lastPaymentDateMillis);
         ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(lastPaymentTime));
 
@@ -131,8 +131,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       parkinglotTicketRepository.save(ticket);
     }
 
-    Deque<ParkingTicketStateTransition> sortedTicketStates = new LinkedList<>(ticket.getStates());
-    ParkingTicketStateTransition lastStateRecorded = sortedTicketStates.getLast();
+    ParkingTicketStateTransition lastStateRecorded = ticket.getLastStateRecorded();
 
     // Verify if the last recorded state was an exit, if so, return it
     if (!TICKET_EXIT_STATES.contains(lastStateRecorded.getState())) {

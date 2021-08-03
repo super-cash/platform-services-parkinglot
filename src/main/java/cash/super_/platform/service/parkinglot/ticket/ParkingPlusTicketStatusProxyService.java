@@ -56,11 +56,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   ParkingTicketsStateTransitionService parkingTicketsStateTransitionService;
 
-  // Since it's only loaded in certain profiles, autowire is optional
-  // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
-  @Autowired(required = false)
-  private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
-
   public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
     return getStatus(userId, ticketNumber, -1, true, false, saleId);
   }

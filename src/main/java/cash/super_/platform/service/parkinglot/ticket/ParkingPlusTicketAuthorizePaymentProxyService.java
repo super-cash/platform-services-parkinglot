@@ -2,12 +2,12 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashPaymentAlreadyPaidException;
+import cash.super_.platform.error.supercash.SupercashPaymentCantPayInNonNotPaidStateException;
 import cash.super_.platform.error.supercash.SupercashSimpleException;
+import cash.super_.platform.service.parkinglot.model.*;
 import cash.super_.platform.service.payment.model.pagarme.TransactionRequest;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketPayment;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.payment.PaymentProcessorService;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.payment.model.supercash.PaymentResponseSummary;
@@ -22,8 +22,8 @@ import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -257,6 +257,31 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   protected RetornoConsulta isTicketAndAmountValid(String userId, String ticketNumber, long amount) {
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided");
+    }
+
+    // Return the testing ticket
+    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+      LOG.debug("LOADING Query TESTING TICKET STATUS VALID: {}", ticketNumber);
+      ParkingTicketStatus ticketStatus = testingParkinglotTicketRepository.getStatus(ticketNumber);
+      if (!ticketStatus.canBePaid()) {
+        throw new SupercashPaymentCantPayInNonNotPaidStateException("Can't pay ticket state " + ticketStatus.getState());
+      }
+      if (ParkingTicketState.PAID == ticketStatus.getState()) {
+        throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
+      }
+      return testingParkinglotTicketRepository.getQueryResult(ticketNumber);
+    }
+
+    Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumber(Long.valueOf(ticketNumber));
+    if (ticket.isPresent()) {
+
+      ParkingTicketState lastRecordedState = ticket.get().getLastStateRecorded().getState();
+      if (!EnumSet.of(ParkingTicketState.NOT_PAID, ParkingTicketState.PAID).contains(lastRecordedState)) {
+        throw new SupercashPaymentCantPayInNonNotPaidStateException("Can't pay ticket state " + lastRecordedState);
+      }
+      if (ParkingTicketState.PAID == lastRecordedState) {
+        throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
+      }
     }
 
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, amount, true, true,

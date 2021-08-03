@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.EnumSet;
 import java.util.TimeZone;
 
 /**
@@ -101,6 +102,10 @@ public class ParkingTicketStatus {
       }
     }
     return allowedExitEpoch;
+  }
+
+  public boolean canBePaid() {
+    return ParkingTicketState.NOT_PAID == this.getState();
   }
 
   @Override
