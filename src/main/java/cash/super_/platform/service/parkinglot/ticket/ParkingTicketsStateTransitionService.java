@@ -119,10 +119,14 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, getMillis(creationTime.plusMinutes(20)));
 
       // The date of the last payment made
-      long lastPaymentDateMillis = ticket.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
-      LocalDateTime lastPaymentTime = getLocalDateTime(lastPaymentDateMillis);
-      ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(lastPaymentTime));
+      if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
+        long lastPaymentDateMillis = ticket.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
+        LocalDateTime lastPaymentTime = getLocalDateTime(lastPaymentDateMillis);
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(lastPaymentTime));
 
+      } else {
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(LocalDateTime.now()));
+      }
       // Save the ticket states
       parkinglotTicketRepository.save(ticket);
     }

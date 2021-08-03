@@ -89,6 +89,9 @@ public class ParkingTicketStatus {
 
   public static long calculateAllowedExitDateTime(RetornoConsulta queryResult) {
     // Adjust the exit times depending on the payment
+    if (queryResult.getDataPermitidaSaida() == null) {
+      return System.currentTimeMillis();
+    }
     long allowedExitEpoch = queryResult.getDataPermitidaSaida();
     Long allowedExitEpochAfterLastPaymentObj = queryResult.getDataPermitidaSaidaUltimoPagamento();
     if (allowedExitEpochAfterLastPaymentObj != null) {

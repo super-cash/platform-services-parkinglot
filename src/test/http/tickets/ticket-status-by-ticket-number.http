@@ -1,23 +1,5 @@
-# 029466843584 (paid), 030255713239 (paid), 030255745055, 030255720142,
-# Produção em 20/03/2021 (gratuitos):
-#   272469547724
-#   272469545440
-#   299313087695
-#   272469549608
-#   326156621678
-#   326156623452
-#   326156625936
-#   299313086008
-#   326156626823
-#   299313084224
-#   272565298908
-# You can pass ?sale_id={a_sale_id} for generate status based on the sale id.
-
-# 326295307723
-# 326478403994
-# 246085290240
-
-GET {{host}}:{{port}}/v2/parking_lot/tickets/327177825665
+# Regular ticket status
+GET {{host}}:{{port}}/v2/parking_lot/tickets/327274927710
 Accept: application/json
 X-Supercash-Uid: 1200
 X-Supercash-Tid: new-transaction20303042
