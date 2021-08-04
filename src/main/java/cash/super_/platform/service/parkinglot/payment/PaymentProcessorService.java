@@ -76,6 +76,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
               ticketNumber, amountToPay);
 
       LOG.debug("LOADED TESTING Authorized Payment STATUS for Anonymous Payments: {}: {}", ticketNumber, paymentStatus);
+      testingParkinglotTicketRepository.updateStatus(ticketNumber, ParkingTicketState.PAID);
       return paymentStatus;
     }
 

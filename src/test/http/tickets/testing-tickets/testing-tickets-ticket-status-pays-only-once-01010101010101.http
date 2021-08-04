@@ -2,7 +2,7 @@
 # when getting status for ticket 010101010101, we should see a regular ticket that can be paid
 GET {{host}}:{{port}}/v2/parking_lot/tickets/010101010101
 Accept: application/json
-X-Supercash-Uid: 1200
+X-Supercash-Uid: 99999
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-MarketplaceId: 6115
 X-Supercash-StoreId: 51

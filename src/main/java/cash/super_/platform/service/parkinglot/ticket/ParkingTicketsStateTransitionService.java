@@ -6,6 +6,7 @@ import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStateTransition;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
+import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.IsNumber;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,7 +225,6 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public ParkingTicketState calculateTicketStatus(RetornoConsulta ticketStatus, long allowedExitMillis) {
     int ticketFee = ticketStatus.getTarifa();
-    int ticketFeePaid = ticketStatus.getTarifaPaga();
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)
     if (!ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketFee == -1) {
@@ -243,7 +243,9 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(entryDateTimeMillis);
 
     // Make the grace period valud based on the entry date time
-    LocalDateTime gracePeriodTime = entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
+    LocalDateTime gracePeriodTime = testingParkinglotTicketRepository.containsTicket(ticketStatus.getNumeroTicket())
+            ? entryDateTime.plusMinutes(TestingParkingLotStatusInMemoryRepository.GRACE_PERIOD_DURING_TESTING)
+            : entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
     LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);
 
     // decrease a couple of seconds because of client clocks and delay

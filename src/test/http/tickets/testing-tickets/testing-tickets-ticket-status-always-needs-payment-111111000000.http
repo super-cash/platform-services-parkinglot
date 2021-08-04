@@ -2,7 +2,7 @@
 # When getting status for ticket 111111000000, we should see a ticket that can be paid, but the user will never leave the parking lot
 GET {{host}}:{{port}}/v2/parking_lot/tickets/111111000000
 Accept: application/json
-X-Supercash-Uid: 1200
+X-Supercash-Uid: 99999
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-MarketplaceId: 6115
 X-Supercash-StoreId: 51

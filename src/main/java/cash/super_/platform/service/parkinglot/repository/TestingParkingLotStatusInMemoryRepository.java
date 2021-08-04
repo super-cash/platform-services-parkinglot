@@ -38,15 +38,15 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * The cache of the ticket status
 	 */
-	private static final Map<String, ParkingTicketStatus> statusCache = new ConcurrentHashMap<>();
+	private Map<String, ParkingTicketStatus> statusCache = new ConcurrentHashMap<>();
 	/**
 	 * The cache of the queries per ticket
 	 */
-	private static final Map<String, RetornoConsulta> queryResultsCache = new ConcurrentHashMap<>();
+	private Map<String, RetornoConsulta> queryResultsCache = new ConcurrentHashMap<>();
 	/**
 	 * The cache of the list of payments per ticket
 	 */
-	private static final Map<String, List<RetornoPagamento>> paymentsCache = new ConcurrentHashMap<>();
+	private Map<String, List<RetornoPagamento>> paymentsCache = new ConcurrentHashMap<>();
 	/**
 	 * The ticket number that never changes its state. It's always free!
 	 */
@@ -81,6 +81,22 @@ public class TestingParkingLotStatusInMemoryRepository {
 					LOG.debug("Updating prices for testing ticket={} from {} to {}", ticketNumber, priceBefore, nextPrice);
 				}
 
+				// let's update the status if it hasn't changed get status
+				if (ticketStatus.getState() == ParkingTicketState.GRACE_PERIOD) {
+					updateStatus(ticketNumber, ParkingTicketState.NOT_PAID);
+				}
+
+				// The ticket just left the parking lot... set the values similar to ticketExitedParkingLot
+				if (ticketStatus.getState() == ParkingTicketState.PAID && NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER.equals(ticketNumber)) {
+					LOG.debug("Updating ticket={} state as exit {}", ticketNumber);
+					ticketStatus.setState(ParkingTicketState.EXITED_ON_PAID);
+					ticketStatus.getStatus().setTicketValido(false);
+					ticketStatus.getStatus().setTarifa(-1);
+					// set the message with the ticket exit status as a hack
+					// See the transition for details
+					ticketStatus.getStatus().setMensagem(ticketStatus.getState().toString());
+					// no need to set tarifaPaga because it was paid
+				}
 			});
 		}
 	}
@@ -115,8 +131,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
 		Timer timer = new Timer();
-		long threeMinutes = 1000 * 60 * 5;
-		timer.schedule(new PriceUpdaterTask(), threeMinutes, threeMinutes);//3 Min
+		long fiveMimutes = 1000 * 60 * 5;
+		timer.schedule(new PriceUpdaterTask(), fiveMimutes, fiveMimutes);//5 Min
     }
 
     private RetornoConsulta createTicketRetrieval(String ticketNumber, int price) {
@@ -134,7 +150,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		} else {
 			// Set the max time to leave to 4 hours from now
-			LocalDateTime fourHoursAhead = LocalDateTime.now().plusHours(4);
+			LocalDateTime fourHoursAhead = DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow()).plusHours(4);
 			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.getMillis(fourHoursAhead));
 		}
 
@@ -165,7 +181,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		// Calculate the grace period
 		LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(statusRetrieval.getDataDeEntrada());
-		LocalDateTime gracePeriodMaxTime =  entryDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
+		LocalDateTime gracePeriodMaxTime = entryDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
 		long gracePeriodMillis = DateTimeUtil.getMillis(gracePeriodMaxTime);
 
 		// Save the status
@@ -206,10 +222,12 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 * Updates the current status with the supercash status computed
 	 *
 	 * @param ticketNumber
+	 * @param parkingTicketState
 	 * @return an instance of the ticket status.
 	 */
-	public ParkingTicketStatus updateStatus(String ticketNumber) {
+	public ParkingTicketStatus updateStatus(String ticketNumber, ParkingTicketState parkingTicketState) {
 		ParkingTicketStatus testingTicketStatus = this.getStatus(ticketNumber);
+		testingTicketStatus.setState(parkingTicketState);
 
 		// The ticket status is always free, testing weekends, holidays, etc
 		// Make the whole transition of the status based on the type
@@ -230,6 +248,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		}
 
 		// Update the value from grace period earlier than what's needed in 3 minutes
+		// The calculate method used the production grace period, so no we just update it
 		if (ParkingTicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
 			LocalDateTime entranceDateTime = DateTimeUtil.getLocalDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
 			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
@@ -242,8 +261,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 			}
 
 			// We can now update if the current time is greater than the grace period
-			LocalDateTime now = LocalDateTime.now();
-			if (now.isAfter(testingGracePeriod.minusSeconds(ParkingTicketsStateTransitionService.GRACE_PERIOD_MINUS_SECONDS_OFFSET))) {
+			LocalDateTime now = DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow());
+			LocalDateTime gracePeriodMax = testingGracePeriod.minusSeconds(ParkingTicketsStateTransitionService.GRACE_PERIOD_MINUS_SECONDS_OFFSET);
+			if (now.isAfter(gracePeriodMax)) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
 						ticketNumber, entranceDateTime, testingGracePeriod, now);
 				testingTicketStatus.setState(ParkingTicketState.NOT_PAID);

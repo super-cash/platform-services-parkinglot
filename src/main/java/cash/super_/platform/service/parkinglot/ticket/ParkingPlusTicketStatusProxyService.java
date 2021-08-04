@@ -62,7 +62,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
-      return testingParkinglotTicketRepository.updateStatus(ticketNumber);
+      return testingParkinglotTicketRepository.updateStatus(ticketNumber, parkingTicketState);
     }
 
     // Store the ticket state transition
