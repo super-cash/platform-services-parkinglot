@@ -6,10 +6,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 // Adding indexes https://www.baeldung.com/jpa-indexes#5-multiple-index-on-a-single-entity
 @Entity
@@ -39,12 +36,17 @@ public class ParkinglotTicket {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
             mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<ParkinglotTicketPayment> payments = new ArrayList<>();
+    private Set<ParkinglotTicketPayment> payments = new HashSet<>();
 
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY,
+    // Just one element as EAGER or else it returns a multiple bags exception
+    // https://vladmihalcea.com/hibernate-multiplebagfetchexception/
+    // Also, using Set instead of List for queries is appropriate model
+    // since they are unique based on their IDs
+    // https://vladmihalcea.com/hibernate-multiplebagfetchexception/
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER,
             mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<ParkingTicketStateTransition> states = new LinkedList<>();
+    private Set<ParkingTicketStateTransition> states = new HashSet<>();
 
     public Long getUserId() { return userId; }
 
@@ -72,9 +74,9 @@ public class ParkinglotTicket {
         this.storeId = storeId;
     }
 
-    public List<ParkinglotTicketPayment> getPayments() { return payments; }
+    public Set<ParkinglotTicketPayment> getPayments() { return payments; }
 
-    public void setPayments(List<ParkinglotTicketPayment> payments) {
+    public void setPayments(Set<ParkinglotTicketPayment> payments) {
         this.payments = payments;
     }
 
@@ -82,11 +84,11 @@ public class ParkinglotTicket {
         this.payments.add(parkinglotTicketPayment);
     }
 
-    public List<ParkingTicketStateTransition> getStates() {
+    public Set<ParkingTicketStateTransition> getStates() {
         return states;
     }
 
-    public void setStates(List<ParkingTicketStateTransition> states) {
+    public void setStates(Set<ParkingTicketStateTransition> states) {
         this.states = states;
     }
 

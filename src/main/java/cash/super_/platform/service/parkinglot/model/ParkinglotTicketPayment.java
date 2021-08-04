@@ -4,6 +4,7 @@ import cash.super_.platform.service.payment.model.supercash.types.order.PaymentO
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -110,5 +111,20 @@ public class ParkinglotTicketPayment {
 
     public void setPayment(PaymentOrderResponse paymentOrderResponse) {
         this.payment = paymentOrderResponse;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final ParkinglotTicketPayment other = (ParkinglotTicketPayment) obj;
+        return Objects.equal(this.id, other.id)
+                && Objects.equal(this.marketplaceId, other.marketplaceId)
+                && Objects.equal(this.storeId, other.storeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id, marketplaceId, storeId);
     }
 }
