@@ -86,9 +86,6 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(parkinglotTicket);
-
-      List<ParkingTicketStateTransition> savedTransitions = ticketStateTransitionsRepository.findAllByParkinglotTicketOrderByAtAsc(parkinglotTicket);
-      int currentSize = savedTransitions.size();
     };
   }
 
