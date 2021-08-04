@@ -14,6 +14,7 @@ import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
+import cash.super_.platform.utils.DateTimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 * The ticket number whose price will always increase and the user can pay it multiple times without leaving the parking lot
 	 */
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
+
+	public static final int GRACE_PERIOD_DURING_TESTING = 3;
 
 	@Autowired
 	protected ParkinglotServiceProperties properties;
@@ -116,22 +119,12 @@ public class TestingParkingLotStatusInMemoryRepository {
 		timer.schedule(new PriceUpdaterTask(), threeMinutes, threeMinutes);//3 Min
     }
 
-    // https://stackoverflow.com/questions/23944370/how-to-get-milliseconds-from-localdatetime-in-java-8/23945792#23945792
-	private static long getMillis(LocalDateTime dateTime) {
-		return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-	}
-
-	// https://stackoverflow.com/questions/23944370/how-to-get-milliseconds-from-localdatetime-in-java-8/23945792#23945792
-	private static LocalDateTime fromMillisecondsToDateTime(long time) {
-		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), TimeZone.getDefault().toZoneId());
-	}
-
     private RetornoConsulta createTicketRetrieval(String ticketNumber, int price) {
     	LOG.debug("Creating ticket {} with price {}", ticketNumber, price);
     	// Create a free ticket
     	RetornoConsulta statusRetrieval = new RetornoConsulta();
     	statusRetrieval.setCnpjGaragem("12.200.135/0001-80");
-    	statusRetrieval.setDataDeEntrada(getMillis(LocalDateTime.now()));
+    	statusRetrieval.setDataDeEntrada(DateTimeUtil.getMillis(LocalDateTime.now()));
 
     	// set data saida to 4 hrs after
     	// https://stackoverflow.com/questions/4348525/get-date-as-of-4-hours-ago/4348542#4348542
@@ -142,7 +135,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		} else {
 			// Set the max time to leave to 4 hours from now
 			LocalDateTime fourHoursAhead = LocalDateTime.now().plusHours(4);
-			statusRetrieval.setDataPermitidaSaida(getMillis(fourHoursAhead));
+			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.getMillis(fourHoursAhead));
 		}
 
     	//freeTicket.setDataPermitidaSaidaUltimoPagamento(null);
@@ -170,9 +163,13 @@ public class TestingParkingLotStatusInMemoryRepository {
     	LOG.debug("Saving testing sticket {}", statusRetrieval.getNumeroTicket());
 		queryResultsCache.put(statusRetrieval.getNumeroTicket(), statusRetrieval);
 
-		LocalDateTime gracePeriodMaxTime = ParkingTicketStatus.calculateGracePeriod(statusRetrieval, properties.getGracePeriodInMinutes(), null);
-		long gracePeriodMills = getMillis(gracePeriodMaxTime);
-        ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state, gracePeriodMills);
+		// Calculate the grace period
+		LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(statusRetrieval.getDataDeEntrada());
+		LocalDateTime gracePeriodMaxTime =  entryDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
+		long gracePeriodMillis = DateTimeUtil.getMillis(gracePeriodMaxTime);
+
+		// Save the status
+        ParkingTicketStatus status = new ParkingTicketStatus(statusRetrieval, state, gracePeriodMillis);
 		statusCache.put(statusRetrieval.getNumeroTicket(), status);
     }
 
@@ -185,7 +182,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 			ParkingTicketStatus status = statusCache.get(ticketNumber);
 
 			// The time that the client API bases the calculations
-			status.getStatus().setDataConsulta(getMillis(LocalDateTime.now()));
+			status.getStatus().setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()));
 			return status;
 		}
 		return null;
@@ -200,7 +197,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		RetornoConsulta queryResult = queryResultsCache.get(ticketNumber);
 
 		// The time that the client API bases the calculations
-		queryResult.setDataConsulta(getMillis(LocalDateTime.now()));
+		queryResult.setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()));
 
 		return queryResult;
 	}
@@ -234,14 +231,14 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		// Update the value from grace period earlier than what's needed in 3 minutes
 		if (ParkingTicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
-			LocalDateTime entranceDateTime = fromMillisecondsToDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
-			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(3);
+			LocalDateTime entranceDateTime = DateTimeUtil.getLocalDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
+			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
 			LOG.debug("The testing ticket {} is in grace period: entrance={} testingGracePeriod={}",
 					ticketNumber, entranceDateTime, testingGracePeriod);
 
 			// The the value of the grace period for the ticket
 			if (testingTicketStatus.getGracePeriodMaxTime() == 0) {
-				testingTicketStatus.setGracePeriodMaxTime(getMillis(testingGracePeriod));
+				testingTicketStatus.setGracePeriodMaxTime(DateTimeUtil.getMillis(testingGracePeriod));
 			}
 
 			// We can now update if the current time is greater than the grace period
@@ -271,7 +268,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		// record the payment on the ticket status and the exit time being 3 minutes later for testing
 		LocalDateTime exitDateTimeAfterPayment = LocalDateTime.now().plusMinutes(3);
-		ticketStatus.getStatus().setDataPermitidaSaidaUltimoPagamento(getMillis(exitDateTimeAfterPayment));
+		ticketStatus.getStatus().setDataPermitidaSaidaUltimoPagamento(DateTimeUtil.getMillis(exitDateTimeAfterPayment));
 
 		// just a hack to make the prices to be the same to what it was submitted
 		ticketStatus.getStatus().setTarifaPaga((int)paidAmount);
@@ -284,7 +281,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		// Create the fake payment done
 		RetornoPagamento paymentDone = new RetornoPagamento();
 		paymentDone.setDataHoraSaida(ticketStatus.getStatus().getDataPermitidaSaidaUltimoPagamento());
-		paymentDone.setDataPagamento(getMillis(LocalDateTime.now()));
+		paymentDone.setDataPagamento(DateTimeUtil.getMillis(LocalDateTime.now()));
 		paymentDone.setErrorCode(0);
 		paymentDone.setMensagem("Pagamento efetuado com sucesso (ticket test)");
 		paymentDone.setNumeroTicket(ticketNumber);
