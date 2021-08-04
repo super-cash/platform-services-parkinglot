@@ -1,6 +1,6 @@
-package cash.super_.platform.clients;
+package cash.super_.platform.client;
 
-import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
+import cash.super_.platform.autoconfig.ClientProperties;
 import cash.super_.platform.service.configuration.json.datatime.LocalDateTimeConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -45,23 +44,24 @@ import java.util.TimeZone;
 public class DefaultObjectMapper extends ObjectMapper {
 
   @Autowired
-  private PlatformConfigurationProperties platformConfigurationProperties;
+  private ClientProperties clientProperties;
 
   @PostConstruct
   public void setupObjectMapper() {
-    if (platformConfigurationProperties != null) {
-      this.setTimeZone(TimeZone.getTimeZone(platformConfigurationProperties.getTimeZone()));
+    // In order to serialize the date time properly
+    if (clientProperties != null) {
+      this.setTimeZone(TimeZone.getTimeZone(clientProperties.getTimeZone()));
     }
     this.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
     this.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//    this.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+    // this.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
     this.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     this.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, true);
     this.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, true);
     this.addMixIn(Exception.class, ExceptionMixIn.class);
     this.addMixIn(Throwable.class, ThrowableMixIn.class);
-//    this.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+    // this.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 
     JavaTimeModule jtm = new JavaTimeModule();
     jtm.addSerializer(LocalTime.class, new

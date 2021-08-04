@@ -18,8 +18,8 @@ cash:
   super:
     platform:
       client:
-        # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
-        clientLogLevel: FULL
+        # Show full HTTP status, body, etc https://www.baeldung.com/java-feign-logging#logging-configuration
+        logLevel: HEADERS
 
       service:
         payment:

@@ -15,7 +15,7 @@ import java.net.URL;
 @Validated
 @Component
 @ConfigurationProperties(prefix = "cash.super.platform.configuration")
-public class PlatformConfigurationProperties extends PlatformProperties {
+public class PlatformConfigurationProperties {
 
     @NotBlank
     private String apiUrl;
@@ -29,9 +29,6 @@ public class PlatformConfigurationProperties extends PlatformProperties {
 
     @NotNull
     private KubernetesProbeProperties healthProbe;
-
-    @NotNull
-    private String timeZone;
 
     @PostConstruct
         private void validateURLs() {
@@ -74,14 +71,6 @@ public class PlatformConfigurationProperties extends PlatformProperties {
         this.healthProbe = healthProbe;
     }
 
-    public String getTimeZone() {
-        return timeZone;
-    }
-
-    public void setTimeZone(String timeZone) {
-        this.timeZone = timeZone;
-    }
-
     @Override
     public String toString() {
         return "ConfigurationProperties{" +
@@ -89,7 +78,6 @@ public class PlatformConfigurationProperties extends PlatformProperties {
                 ", orchestratorUrl='" + orchestratorUrl + '\'' +
                 ", orchestratorPort=" + defaultHeathCheckPort +
                 ", healthProbe=" + healthProbe +
-                ", timeZone='" + timeZone + '\'' +
                 '}';
     }
 }

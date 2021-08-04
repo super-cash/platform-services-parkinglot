@@ -1,7 +1,6 @@
 package cash.super_;
 
-import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +21,12 @@ public class Application {
   private static final Logger LOG = LoggerFactory.getLogger(Application.class);
 
   @Autowired
-  private PlatformConfigurationProperties properties;
+  private ClientProperties clientProperties;
 
   @PostConstruct
   public void init(){
-    // Setting Spring Boot SetTimeZone
-    TimeZone.setDefault(TimeZone.getTimeZone(properties.getTimeZone()));
+    // Setting Spring Boot SetTimeZone configured according to the client settings
+    TimeZone.setDefault(TimeZone.getTimeZone(clientProperties.getTimeZone()));
   }
 
   public static void main(String args[]) {

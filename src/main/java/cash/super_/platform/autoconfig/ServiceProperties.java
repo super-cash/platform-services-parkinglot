@@ -1,7 +1,6 @@
 package cash.super_.platform.autoconfig;
 
 import cash.super_.platform.utils.URLUtils;
-import feign.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,17 +24,6 @@ public class ServiceProperties {
 
     @NotBlank
     private String baseUrl;
-
-    private Logger.Level clientLogLevel = Logger.Level.BASIC;
-
-    @NotNull
-    private int retryMaxAttempt;
-
-    @NotNull
-    private long retryInterval;
-
-    @NotNull
-    private long retryMaxPeriod;
 
     @NotNull
     private List<String> retryableDestinationHosts = new ArrayList<String>();
@@ -65,14 +53,6 @@ public class ServiceProperties {
         this.baseUrl = url.toString();
     }
 
-    public Logger.Level getClientLogLevel() {
-        return clientLogLevel;
-    }
-
-    public void setClientLogLevel(Logger.Level clientLogLevel) {
-        this.clientLogLevel = clientLogLevel;
-    }
-
     public List<String> getRetryableDestinationHosts() {
         return retryableDestinationHosts;
     }
@@ -85,40 +65,12 @@ public class ServiceProperties {
         this.retryableDestinationHosts.add(retryableDestinationHost);
     }
 
-    public int getRetryMaxAttempt() {
-        return retryMaxAttempt;
-    }
-
-    public void setRetryMaxAttempt(int retryMaxAttempt) {
-        this.retryMaxAttempt = retryMaxAttempt;
-    }
-
-    public long getRetryInterval() {
-        return retryInterval;
-    }
-
-    public void setRetryInterval(long retryInterval) {
-        this.retryInterval = retryInterval;
-    }
-
-    public long getRetryMaxPeriod() {
-        return retryMaxPeriod;
-    }
-
-    public void setRetryMaxPeriod(long retryMaxPeriod) {
-        this.retryMaxPeriod = retryMaxPeriod;
-    }
-
     @Override
     public String toString() {
         return "ServiceProperties{" +
                 "platformConfigurationProperties=" + platformConfigurationProperties +
                 ", apiVersion='" + apiVersion + '\'' +
                 ", baseUrl='" + baseUrl + '\'' +
-                ", clientLogLevel=" + clientLogLevel +
-                ", retryMaxAttempt=" + retryMaxAttempt +
-                ", retryInterval=" + retryInterval +
-                ", retryMaxPeriod=" + retryMaxPeriod +
                 ", retryableDestinationHosts=" + retryableDestinationHosts +
                 '}';
     }
