@@ -57,6 +57,11 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         // the ticket has been created before
         parkinglotTicket = parkinglotTicketSearch.get();
 
+        // When the status is requested with scanned, it means the user scanned the ticket again or in anyther device
+        if (scanned) {
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, DateTimeUtil.getMillis(LocalDateTime.now()));
+        }
+
       } else {
         // The user just scanned the ticket for the first time, store the initial states
         parkinglotTicket = new ParkinglotTicket();

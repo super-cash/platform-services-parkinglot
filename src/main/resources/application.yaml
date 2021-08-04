@@ -18,7 +18,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate.temp.use_jdbc_metadata_defaults: false
-      hibernate.format_sql: true
+     # hibernate.format_sql: true
 
   # Zipkin is the destination environment for the traces and it's disabled in development
   # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683

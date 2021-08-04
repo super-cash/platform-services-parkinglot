@@ -3,12 +3,15 @@ package cash.super_.platform.service.parkinglot.payment;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.payment.PaymentServiceApiClient;
 import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
+import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashPaymentErrorException;
 import cash.super_.platform.error.supercash.SupercashUnknownHostException;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
+import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
+import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.PaymentRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
@@ -18,7 +21,9 @@ import cash.super_.platform.service.payment.model.supercash.amount.Amount;
 import cash.super_.platform.service.payment.model.supercash.card.CardRequest;
 import cash.super_.platform.service.payment.model.supercash.types.charge.*;
 import cash.super_.platform.service.payment.model.supercash.types.order.PaymentOrderResponse;
-import cash.super_.platform.utils.IsNumber;
+import cash.super_.platform.utils.DateTimeUtil;
+import cash.super_.platform.utils.NumberUtil;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -190,8 +195,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * Store the payment in our database
    * @param ticketStatus
    * @param chargeResponse
-   * @param marketplaceId
-   * @param storeId
    * @param parkingTicketAuthorizedPaymentStatus
    */
   private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
