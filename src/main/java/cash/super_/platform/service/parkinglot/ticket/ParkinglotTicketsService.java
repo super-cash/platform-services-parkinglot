@@ -11,9 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Retrieve the list of tickets for a given user from our local cache
@@ -36,18 +36,23 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
     Long userId = supercashRequestContext.getUserId();
     Long storeId = supercashRequestContext.getStoreId();
 
-    List<ParkinglotTicket> userParkingTickets = new ArrayList<>();
+    AtomicReference<List<ParkinglotTicket>> userParkingTickets = new AtomicReference<>();
     if (pageOffset.isPresent() || pageLimit.isPresent()) {
+      // Define the paging
       int offset = pageOffset.isPresent() ? pageOffset.get() : 0;
       int limit = pageLimit.isPresent() ? pageLimit.get() : 10;
+
+      // Query for the tickets
       PageRequest pageRequest = JpaUtil.makePageRequest(offset, limit, Sort.by("createdAt").descending());
       LOG.debug("Retrieving the tickets for the userId={} storeId={} from pageStart={} with pageLimit={}",
-              userId, storeId, pageOffset.get(), pageLimit.get());
+              userId, storeId, offset, limit);
       Optional<Page<ParkinglotTicket>> allTickets = parkinglotTicketRepository.findAllByUserIdAndStoreId(
               userId, storeId, pageRequest);
-      if (allTickets.isPresent()) {
-        userParkingTickets.addAll(allTickets.get().toList());
-      }
+
+      // If present, add them to the result
+      allTickets.ifPresent( ticketPages -> {
+        userParkingTickets.set(ticketPages.getContent());
+      });
 
     } else if (createdAt.isPresent()) {
       long createdAtDateTime = createdAt.get();
@@ -64,20 +69,22 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
 
       // If there's anything, just return them all
       if (ticketsByUserAndDateSearch.isPresent() && ticketsByUserAndDateSearch.get().size() > 0) {
-        userParkingTickets.addAll(ticketsByUserAndDateSearch.get());
+        userParkingTickets.set(ticketsByUserAndDateSearch.get());
       }
 
     } else {
-      LOG.debug("Retrieving the latest 10 tickets for the userId={} storeId={}", userId);
+      LOG.debug("Retrieving the latest 10 tickets for the userId={} storeId={}", userId, storeId);
       // Just a list of all tickets based on the userId
       Optional<List<ParkinglotTicket>> last10Tickets = parkinglotTicketRepository.findFirst10ByUserIdAndStoreIdOrderByCreatedAtDesc(
-              Long.valueOf(userId), Long.valueOf(storeId));
-      if (last10Tickets.isPresent()) {
-        userParkingTickets.addAll(last10Tickets.get());
-      }
+              userId, storeId);
+
+      // Add them to the result if anything was returned
+      last10Tickets.ifPresent( latest10Tickets -> {
+        userParkingTickets.set(latest10Tickets);
+      });
     }
 
     // Ticket already has the exit transition recorded
-    return userParkingTickets;
+    return userParkingTickets.get();
   }
 }
