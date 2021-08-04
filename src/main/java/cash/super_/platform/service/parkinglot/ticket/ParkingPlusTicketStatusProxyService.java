@@ -1,19 +1,11 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.TimeZone;
-
 import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketStateTransitionsRepository;
-import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
+import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +17,6 @@ import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
-import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
 import cash.super_.platform.utils.JsonUtil;
 
 /**
@@ -39,33 +30,16 @@ import cash.super_.platform.utils.JsonUtil;
 @Service
 public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxyService {
 
-  public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
-
-  @Autowired
-  private ParkingPlusParkingSalesCachedProxyService parkingSalesService;
-
-  @Autowired
-  private ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
-
-  @Autowired
-  private ParkinglotTicketRepository parkinglotTicketRepository;
-
-  @Autowired
-  private ParkinglotTicketStateTransitionsRepository ticketStateTransitionsRepository;
-
   @Autowired
   ParkingTicketsStateTransitionService parkingTicketsStateTransitionService;
 
-  public ParkingTicketStatus getStatus(String userId, String ticketNumber, Optional<Long> saleId) {
-    return getStatus(userId, ticketNumber, -1, true, false, saleId);
-  }
-
-  public ParkingTicketStatus getStatus(String userId, String ticketNumber, long amount, boolean validate,
-                                       boolean throwExceptionWhileValidating, Optional<Long> saleId) {
+  public ParkingTicketStatus getStatus(String ticketNumber, boolean scanned) {
     LOG.debug("Looking for the status of ticket: {}", ticketNumber);
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided.");
     }
+
+    Long userId = supercashRequestContext.getUserId();
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;
@@ -76,7 +50,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     } else {
       LOG.debug("Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
-      ticketStatus = retrieveFromWPS(ticketNumber, userId);
+      ticketStatus = retrieveFromWPS(ticketNumber);
     }
 
     // The ticket is not a test one... We need to retrieve it from WPS
@@ -84,7 +58,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
             ? ParkingTicketStatus.calculateAllowedExitDateTime(ticketStatus)
             : 0;
     ParkingTicketState parkingTicketState = parkingTicketsStateTransitionService.calculateTicketStatus(
-            throwExceptionWhileValidating, ticketStatus, allowedExitEpoch);
+            ticketStatus, allowedExitEpoch);
 
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
@@ -93,9 +67,10 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // Store the ticket state transition
     if (!ticketExitedParkingLot(ticketStatus)) {
-      parkingTicketsStateTransitionService.saveTicketTransitionStateWhileUserInLot(ticketStatus, parkingTicketState);
-      LocalDateTime gracePeriodTime = ParkingTicketStatus.calculateGracePeriod(ticketStatus, properties.getGracePeriodInMinutes(), TIMEZONE_AMERICA_SAO_PAULO);
-      return new ParkingTicketStatus(ticketStatus, parkingTicketState, getMillis(gracePeriodTime));
+      parkingTicketsStateTransitionService.saveTicketTransitionStateWhileUserInLot(ticketStatus, parkingTicketState, scanned);
+      LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(ticketStatus.getDataDeEntrada());
+      LocalDateTime gracePeriodTime = entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
+      return new ParkingTicketStatus(ticketStatus, parkingTicketState, DateTimeUtil.getMillis(gracePeriodTime));
     }
 
     // ticket exited parking lot
@@ -106,21 +81,16 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     return !ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketStatus.getTarifa() == -1;
   }
 
-  private static long getMillis(LocalDateTime dateTime) {
-    return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
-  }
-
   /**
    * Fetches the ticket status from WPS
    * @param ticketNumber is the ticket number
-   * @param userId is the userId
    * @return The query result
    */
-  private RetornoConsulta retrieveFromWPS(String ticketNumber, String userId) {
+  private RetornoConsulta retrieveFromWPS(String ticketNumber) {
     TicketRequest request = new TicketRequest();
     request.setIdGaragem(properties.getParkingLotId());
     request.setNumeroTicket(ticketNumber);
-    request.setUdid(userId);
+    request.setUdid(makeWpsUniqueUserId());
 
     long saleIdProperty = properties.getSaleId();
     if (saleIdProperty >= 0) {
@@ -143,7 +113,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
                 "Error in JsonUtil.toJson.");
       }
 
-      String apiKey = SecretsUtil.makeApiKey(userId, properties.getUserKey());
+      String apiKey = SecretsUtil.makeApiKey(makeWpsUniqueUserId(), properties.getUserKey());
 
       LOG.debug("Request User ApiKey is: {}", properties.getUserKey());
       LOG.debug("Request ApiKey is: {}", apiKey);
@@ -198,7 +168,12 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   /**
    * Reset the testing tickets starte back to how they are bootstrapped
    */
-  public void resetTestTickets(String transactionId, String marketplaceId, String userId) {
+  public void resetTestTickets() {
+    String transactionId = supercashRequestContext.getTransactionId();
+    Long marketplaceId = supercashRequestContext.getMarketplaceId();
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
     LOG.info("Resetting testing tickets requested transactionId={} marketplaceId={} userId={}", transactionId, marketplaceId, userId);
 
     try {

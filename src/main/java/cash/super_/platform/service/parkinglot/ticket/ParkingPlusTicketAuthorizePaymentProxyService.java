@@ -48,8 +48,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
 
-  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String userId, String ticketNumber, Long ticketPrice,
-                                                               PaymentResponseSummary payResponse) {
+  public ParkingTicketAuthorizedPaymentStatus authorizePayment(String ticketNumber, Long ticketPrice, PaymentResponseSummary payResponse) {
     LOG.debug("Payment auth request after Supercash payment request/response: {} {}", ticketNumber, payResponse);
 
     PagamentoAutorizadoRequest wpsAuthorizedPaymentRequest = new PagamentoAutorizadoRequest();
@@ -64,15 +63,16 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     wpsAuthorizedPaymentRequest.setIdGaragem(properties.getParkingLotId());
     wpsAuthorizedPaymentRequest.setPermitirValorExcedente(true);
     wpsAuthorizedPaymentRequest.setPermitirValorParcial(false);
-    wpsAuthorizedPaymentRequest.setUdid(userId);
+
+    wpsAuthorizedPaymentRequest.setUdid(makeWpsUniqueUserId());
+
     wpsAuthorizedPaymentRequest.setValor(ticketPrice.intValue());
     wpsAuthorizedPaymentRequest.setIdTransacao(this.generateTransactionId(ticketNumber));
 
     return this.authorizedPaidTicket(wpsAuthorizedPaymentRequest);
   }
 
-  private ParkingTicketAuthorizedPaymentStatus authorizedPaidTicket(PagamentoAutorizadoRequest
-                                                                           pagamentoAutorizadoRequest) {
+  private ParkingTicketAuthorizedPaymentStatus authorizedPaidTicket(PagamentoAutorizadoRequest pagamentoAutorizadoRequest) {
     RetornoPagamento authorizedPayment;
     Span newSpan = tracer.nextSpan().name("REST https://parkingplus.com.br/2/pagamentosEfetuados").start();
     try (SpanInScope spanScope = tracer.withSpanInScope(newSpan.start())) {
@@ -181,11 +181,14 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     return this.authorizedPaidTicket(payRequest);
   }
 
-  public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String userId,
-                                                      String ticketNumber, String marketplaceId, String storeId) {
+  public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String ticketNumber) {
     if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
+
+    // just defined as not scanned, as we are already making the payment
+    // This is to signal being scanned and it's not at this point
+    boolean scanned = false;
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     if (paymentRequest.getPayTicketRequest() != null) {
@@ -206,8 +209,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       // pay ticket request (format version of pagarme to be parsed to pagseguro)
       TransactionRequest request = paymentRequest.getPayTicketRequest();
 
-      RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount());
-      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
+      int paymentAmount = paymentRequest.getPayTicketRequest().getAmount().intValue();
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(ticketNumber, paymentAmount, scanned);
+      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus);
 
     } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
       Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
@@ -229,24 +233,20 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       }
       // anonymous ticket payment request (supercash format for anonymous payment request
       AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
-      RetornoConsulta ticketStatus = isTicketAndAmountValid(userId, ticketNumber, request.getAmount().getValue());
-      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus, userId, marketplaceId, storeId);
+      int payAmount =  request.getAmount().getValue().intValue();
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(ticketNumber, payAmount, scanned);
+      paymentStatus = paymentProcessorService.processPayment(request, ticketStatus);
 
     } else if (paymentRequest.getAuthorizedRequest() != null) {
+      LOG.error("Direct request for WPS is currently disabled.");
       throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
-      /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
-//      PagamentoAutorizadoRequest request = paymentRequest.getAuthorizedRequest();
-//      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());
-//      paymentStatus = authorizePayment(userId, request);
 
     } else if (paymentRequest.getRequest() != null) {
+      LOG.error("Direct request for WPS is currently disabled.");
       throw new SupercashSimpleException("Direct request for WPS is currently disabled.");
-      /* This is kept only for compatible reasons, since direct payment via WPS does not make sense anymore */
-//      PagamentoRequest request = paymentRequest.getRequest();
-//      isTicketAndAmountValid(userId, request.getNumeroTicket(), request.getValor());
-//      paymentStatus = authorizePayment(userId, request);
 
     } else {
+      LOG.error("You must provide a request, an authorizedRequest or a payTicketRequest");
       throw new SupercashInvalidValueException("You must provide a request, an authorizedRequest or a " +
               "payTicketRequest");
     }
@@ -254,7 +254,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     return paymentStatus;
   }
 
-  protected RetornoConsulta isTicketAndAmountValid(String userId, String ticketNumber, long amount) {
+  protected RetornoConsulta isTicketAndAmountValid(String ticketNumber, long amount, boolean scanned) {
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided");
     }
@@ -272,7 +272,11 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       return testingParkinglotTicketRepository.getQueryResult(ticketNumber);
     }
 
-    Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumber(Long.valueOf(ticketNumber));
+    // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
+    Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(Long.valueOf(ticketNumber), userId, storeId);
     if (ticket.isPresent()) {
 
       ParkingTicketState lastRecordedState = ticket.get().getLastStateRecorded().getState();
@@ -284,8 +288,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       }
     }
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, amount, true, true,
-            Optional.of(properties.getSaleId()));
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(ticketNumber, scanned);
 
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
     int ticketFee = ticketStatus.getTarifa();

@@ -1,22 +1,17 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStateTransition;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketStateTransitionsRepository;
+import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.IsNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -30,43 +25,32 @@ import java.util.*;
 @Service
 public class ParkingTicketsStateTransitionService extends AbstractParkingLotProxyService {
 
-  public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
-
   public static final EnumSet<ParkingTicketState> TICKET_EXIT_STATES = EnumSet.of(
           ParkingTicketState.EXITED_ON_FREE, ParkingTicketState.EXITED_ON_PAID, ParkingTicketState.EXITED_ON_GRACE_PERIOD);
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
 
-  @Autowired
-  private ParkinglotTicketStateTransitionsRepository ticketStateTransitionsRepository;
   /**
    * To define the grace period before its actual value for client counters
    */
   public static final int GRACE_PERIOD_MINUS_SECONDS_OFFSET = 15;
-
-  private static long getMillis(LocalDateTime dateTime) {
-    return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
-  }
-
-  private static LocalDateTime getLocalDateTime(long milliseconds) {
-    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds), TimeZone.getDefault().toZoneId());
-    return dateTime.atZone(ZoneId.of("UTC"))
-            .withZoneSameInstant(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO))
-            .toLocalDateTime();
-  }
 
   /**
    * Store the ticket state transition asynchronoysly
    * @param ticketStatus
    * @param state
    */
-  public void saveTicketTransitionStateWhileUserInLot(RetornoConsulta ticketStatus, final ParkingTicketState state) {
+  public void saveTicketTransitionStateWhileUserInLot(RetornoConsulta ticketStatus, final ParkingTicketState state, boolean scanned) {
     final String ticketNumber = ticketStatus.getNumeroTicket();
-    Runnable myRunnable = () -> {
+    final Long validTicketNumber = IsNumber.stringIsLongWithException(ticketNumber, "Número Ticket");
+
+    final Long storeId = supercashRequestContext.getStoreId();
+    final Long userId = supercashRequestContext.getUserId();
+
+//    Runnable ticketStatusUpdater = () -> {
       // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
-      Long validTicketNumber = IsNumber.stringIsLongWithException(ticketNumber, "Número Ticket");
-      Optional<ParkinglotTicket> parkinglotTicketSearch = parkinglotTicketRepository.findByTicketNumber(validTicketNumber);
+      Optional<ParkinglotTicket> parkinglotTicketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
 
       ParkinglotTicket parkinglotTicket = null;
       if (parkinglotTicketSearch.isPresent()) {
@@ -77,16 +61,26 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         // The user just scanned the ticket for the first time, store the initial states
         parkinglotTicket = new ParkinglotTicket();
         parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
+        parkinglotTicket.setUserId(userId);
+        parkinglotTicket.setStoreId(storeId);
+        parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
         parkinglotTicket.addTicketStateTransition(ParkingTicketState.PICKED_UP, ticketStatus.getDataDeEntrada());
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, getMillis(LocalDateTime.now()));
+        parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, DateTimeUtil.getMillis(LocalDateTime.now()));
       }
 
-      // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
-      parkinglotTicket.addTicketStateTransition(state, getMillis(LocalDateTime.now()));
+      ParkingTicketState lastRecordedState = parkinglotTicket.getLastStateRecorded().getState();
+      LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}", ticketNumber, lastRecordedState, state, state != lastRecordedState);
 
-      // Save the ticket and the transitions
-      parkinglotTicketRepository.save(parkinglotTicket);
-    };
+      boolean stillInPaid = lastRecordedState == ParkingTicketState.PAID && ticketStatus.getTarifa() == ticketStatus.getTarifaPaga();
+      if (state != lastRecordedState && !stillInPaid) {
+        // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
+        parkinglotTicket.addTicketStateTransition(state, DateTimeUtil.getMillis(LocalDateTime.now()));
+
+        LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
+        // Save the ticket and the transitions
+        parkinglotTicketRepository.save(parkinglotTicket);
+      }
+//    };
   }
 
   /**
@@ -100,7 +94,11 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ParkinglotTicket parkingTicket = new ParkinglotTicket();
     parkingTicket.setTicketNumber(validTicketNumber);
 
-    Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumber(validTicketNumber);
+    // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
+    Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
     if (!ticketSearch.isPresent()) {
       LOG.error("Can't save the exit transition: parking ticket {} does not exit in storage", ticketNumber);
       return null;
@@ -111,18 +109,19 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ParkinglotTicket ticket = ticketSearch.get();
     if (ticket.getStates() == null || ticket.getStates().isEmpty()) {
       ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, ticket.getCreatedAt());
-      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, getMillis(LocalDateTime.now()));
-      LocalDateTime creationTime = getLocalDateTime(ticket.getCreatedAt());
-      ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, getMillis(creationTime.plusMinutes(20)));
+      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, DateTimeUtil.getMillis(LocalDateTime.now()));
+      LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(ticket.getCreatedAt());
+      ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, DateTimeUtil.getMillis(creationTime.plusMinutes(20)));
 
       // The date of the last payment made
       if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
         long lastPaymentDateMillis = ticket.getLastPaymentDateTimeMillis();
-        LocalDateTime lastPaymentTime = getLocalDateTime(lastPaymentDateMillis);
-        ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(lastPaymentTime));
+        LocalDateTime lastPaymentTime = DateTimeUtil.getLocalDateTime(lastPaymentDateMillis);
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, DateTimeUtil.getMillis(lastPaymentTime));
 
       } else {
-        ticket.addTicketStateTransition(ParkingTicketState.PAID, getMillis(LocalDateTime.now()));
+        // solves the problem of when it's the first time scanning, during tests, or when the ticket has never been scanned
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, DateTimeUtil.getMillis(LocalDateTime.now()));
       }
       // Save the ticket states
       parkinglotTicketRepository.save(ticket);
@@ -140,7 +139,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       };
 
       // Save the ticket with the new state transition
-      ticket.addTicketStateTransition(exitState, getMillis(LocalDateTime.now()));
+      ticket.addTicketStateTransition(exitState, DateTimeUtil.getMillis(LocalDateTime.now()));
 
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(ticket);
@@ -159,7 +158,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     RetornoConsulta ticketStatus = new RetornoConsulta();
     ticketStatus.setNumeroTicket(parkinglotTicket.getTicketNumber().toString());
     ticketStatus.setErrorCode(0);
-    ticketStatus.setDataConsulta(getMillis(LocalDateTime.now()));
+    ticketStatus.setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()));
     ticketStatus.dataDeEntrada(
             parkinglotTicket.getStates().stream()
                     // https://www.geeksforgeeks.org/collections-reverseorder-java-examples/
@@ -197,15 +196,13 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
   /**
    * Calculates the ticket state
-   * @param throwExceptionWhileValidating
    * @param ticketStatus
-   * @param allowedExitEpoch
+   * @param allowedExitMillis
    * @return
    */
-  public ParkingTicketState calculateTicketStatus(boolean throwExceptionWhileValidating, RetornoConsulta ticketStatus, long allowedExitEpoch) {
+  public ParkingTicketState calculateTicketStatus(RetornoConsulta ticketStatus, long allowedExitMillis) {
     int ticketFee = ticketStatus.getTarifa();
     int ticketFeePaid = ticketStatus.getTarifaPaga();
-    String message = "";
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)
     if (!ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketFee == -1) {
@@ -216,51 +213,38 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
     ParkingTicketState parkingTicketState = ParkingTicketState.NOT_PAID;
 
-    long queryEpoch = ticketStatus.getDataConsulta();
-    long entryEpoch = ticketStatus.getDataDeEntrada();
+    long queryDateTimeMillis = ticketStatus.getDataConsulta();
+    long entryDateTimeMillis = ticketStatus.getDataDeEntrada();
 
-    // TODO Needs to be verified because it's local time
-    LocalDateTime queryDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(queryEpoch), TimeZone.getDefault().toZoneId());
-    LocalDateTime allowedExitDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(allowedExitEpoch), TimeZone.getDefault().toZoneId());
-    LocalDateTime gracePeriodTime = ParkingTicketStatus.calculateGracePeriod(ticketStatus, properties.getGracePeriodInMinutes(), TIMEZONE_AMERICA_SAO_PAULO);
+    LocalDateTime queryDateTime = DateTimeUtil.getLocalDateTime(queryDateTimeMillis);
+    LocalDateTime allowedExitDateTime = DateTimeUtil.getLocalDateTime(allowedExitMillis);
+    LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(entryDateTimeMillis);
 
+    // Make the grace period valud based on the entry date time
+    LocalDateTime gracePeriodTime = entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
     LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);
-
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    LOG.debug("The ticket queryTimeStamp={} allowedExitTimeStamp={} gracePeriodTimeStamp={}",
-            formatter.format(queryDateTime), formatter.format(allowedExitDateTime), formatter.format(gracePeriodTime));
 
     // decrease a couple of seconds because of client clocks and delay
     if (queryDateTime.isBefore(gracePeriodTime.minusSeconds(GRACE_PERIOD_MINUS_SECONDS_OFFSET))) {
       LOG.debug("The ticket queryTimeStamp={} is before gracePeriodTimeStamp={} so setting state to grace period",
-              formatter.format(queryDateTime), formatter.format(gracePeriodTime));
-      message += "You can leave the parking lot until " + allowedExitDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+              queryDateTime, gracePeriodTime);
       parkingTicketState = ParkingTicketState.GRACE_PERIOD;
     }
 
     // we should not charge the user if the fee is 0
     if (ticketFee == 0) {
-      if (allowedExitEpoch - entryEpoch < 0) {
-        message += "Today is free.";
+      if (allowedExitMillis - entryDateTimeMillis < 0) {
+        LOG.debug("The ticket is free because {}-{}={} < 0", allowedExitMillis, entryDateTimeMillis, allowedExitMillis - entryDateTimeMillis);
         parkingTicketState = ParkingTicketState.FREE;
       }
-
-      // Status message
-      LOG.debug(message);
-
-      SupercashAmountIsZeroException exception = new SupercashAmountIsZeroException(message);
-      exception.addField("entry_date", entryEpoch);
-      exception.addField("exit_allowed_date", allowedExitEpoch);
-      if (throwExceptionWhileValidating) throw exception;
 
     } else {
 
       // the user is still in the parking lot after making a payment
-      if (ticketFeePaid >= ticketFee && queryDateTime.isBefore(allowedExitDateTime)) {
-        message = "The ticket is already paid and the user is still in the parking lot (since the ststus is still != 404)";
-        LOG.debug(message);
+      if (ticketStatus.getTarifa().intValue() == ticketStatus.getTarifaPaga().intValue()) {
+        LOG.debug("The ticket {} is already paid and the user is still in the parking lot (since the ststus is still != 404)",
+                ticketStatus.getNumeroTicket());
         parkingTicketState = ParkingTicketState.PAID;
-        if (throwExceptionWhileValidating) throw new SupercashPaymentAlreadyPaidException(message);
       }
     }
     return parkingTicketState;

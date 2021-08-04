@@ -4,12 +4,6 @@ import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.EnumSet;
-import java.util.TimeZone;
-
 /**
  * The status of parking tickets wrapped.
  *
@@ -76,24 +70,10 @@ public class ParkingTicketStatus {
     this.gracePeriodMaxTime = gracePeriodMaxTime;
   }
 
-  public static LocalDateTime calculateGracePeriod(RetornoConsulta queryResult, int gracePeriodMinutes, String zoneId) {
-    long entryEpoch = queryResult.getDataDeEntrada();
-    LocalDateTime dateTime = DateTimeUtil.getLocalDateTime(entryEpoch);
-
-    // For the calls for WPS
-    // http://groovyconsole.appspot.com/script/5179630759706624
-    if (DateTimeUtil.TIMEZONE_AMERICA_SAO_PAULO.equals(zoneId)) {
-      return dateTime.plusMinutes(gracePeriodMinutes);
-    }
-
-    // For the calls for Testing (local time
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(entryEpoch), TimeZone.getDefault().toZoneId()).plusMinutes(gracePeriodMinutes);
-  }
-
   public static long calculateAllowedExitDateTime(RetornoConsulta queryResult) {
     // Adjust the exit times depending on the payment
     if (queryResult.getDataPermitidaSaida() == null) {
-      return System.currentTimeMillis();
+      return DateTimeUtil.getNow();
     }
     long allowedExitEpoch = queryResult.getDataPermitidaSaida();
     Long allowedExitEpochAfterLastPaymentObj = queryResult.getDataPermitidaSaidaUltimoPagamento();

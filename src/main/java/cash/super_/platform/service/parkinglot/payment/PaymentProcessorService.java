@@ -60,9 +60,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   private PaymentRepository paymentRepository;
 
   // TODO: Refactor this method (processPayment)
-  public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus,
-                                                             String userId, String marketplaceId, String storeId) {
-
+  public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus) {
     // load the ticket status or load a testing ticket
     final String ticketNumber = ticketStatus.getNumeroTicket();
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
@@ -82,7 +80,11 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     paymentMethodRequest.setType(ChargePaymentMethodType.CREDIT_CARD);
     CardRequest card = paymentMethodRequest.getCard();
     fieldName = "Card Number";
-    IsNumber.stringIsDoubleWithException(card.getNumber(), fieldName);
+    NumberUtil.stringIsLongWithException(card.getNumber(), fieldName);
+
+    if (Strings.isNullOrEmpty(card.getHolder().getName())) {
+      throw new SupercashInvalidValueException("Cart holder name must be provided");
+    }
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
@@ -111,11 +113,16 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     paymentMethodRequest.setInstallments(1);
     paymentMethodRequest.setCapture(false);
 
+    // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
+    Long marketplaceId = supercashRequestContext.getMarketplaceId();
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
     payRequest.addMetadata("ticket_number", ticketStatus.getNumeroTicket());
     payRequest.addMetadata("service_fee", properties.getServiceFeeItemTitle());
-    payRequest.addMetadata("marketplace_id", marketplaceId);
-    payRequest.addMetadata("store_id", storeId);
-    payRequest.addMetadata("user_id", userId);
+    payRequest.addMetadata("marketplace_id", String.valueOf(marketplaceId));
+    payRequest.addMetadata("store_id", String.valueOf(storeId));
+    payRequest.addMetadata("user_id", String.valueOf(userId));
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
 
     Long allowedExitDateTime = ticketStatus.getDataPermitidaSaidaUltimoPagamento();
@@ -146,8 +153,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
       throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
     }
 
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(userId,
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(
             ticketStatus.getNumeroTicket(), ticketPriceWithoutFee, chargeResponse.summary());
 
     if (!paymentStatus.getStatus().isTicketPago()) {
@@ -176,7 +182,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     LOG.debug("Anonymous payment captured successfully and will be stored: {}", chargeResponse);
     // Cache the payment in our storage so the user can view them
-    cacheAnonymousAuthorizationPayment(ticketStatus, chargeResponse, marketplaceId, storeId, userId, paymentStatus);
+    cacheAnonymousAuthorizationPayment(ticketStatus, chargeResponse, paymentStatus);
     return paymentStatus;
   }
 
@@ -189,27 +195,22 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param parkingTicketAuthorizedPaymentStatus
    */
   private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
-                                                  String marketplaceId, String storeId, String userId,
                                                   ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
-    /* Saving payment request into the database */
+    Long marketplaceId = supercashRequestContext.getMarketplaceId();
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
     Long paidParkingTicketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-    parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
+    parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getTotal() - properties.getOurFee());
     parkinglotTicketPayment.setServiceFee(properties.getOurFee());
     parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
-    // TODO: implement charge storage
-//          Optional<Payment> paymentOpt = paymentRepository.findById(chargeResponse.getId());
-//          if (paymentOpt.isPresent()) {
-//            chargeResponse = (PaymentChargeResponse) paymentOpt.get();
-//            parkinglotTicketPayment.setPayment(chargeResponse);
-//          }
-//      parkinglotTicketPayment.setPayment(paymentResponse);
-
+    Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
     ParkinglotTicket parkinglotTicket = null;
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(paidParkingTicketNumber);
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(ticketNumber, userId, storeId);
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
 
@@ -226,6 +227,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, DateTimeUtil.getNow());
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
@@ -241,9 +243,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   }
 
   // TODO: Refactor this method (processPayment)
-  public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus,
-                                                             String userId, String marketplaceId, String storeId) {
-
+  public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus) {
     // load the ticket status or load a testing ticket
     final String ticketNumberToProcess = ticketStatus.getNumeroTicket();
     if (testingParkinglotTicketRepository.containsTicket(ticketNumberToProcess)) {
@@ -264,19 +264,22 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     fieldName = "CPF or CNPJ";
-    IsNumber.stringIsDoubleWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+    NumberUtil.stringIsDoubleWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
 
     fieldName = "CEP";
-    IsNumber.stringIsDoubleWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+    NumberUtil.stringIsDoubleWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
 
     fieldName = "Card Number";
-    IsNumber.stringIsDoubleWithException(payRequest.getCardNumber(), fieldName);
+    NumberUtil.stringIsDoubleWithException(payRequest.getCardNumber(), fieldName);
+
+    fieldName = "Card Name";
+    NumberUtil.stringIsDoubleWithException(payRequest.getCardHolderName(), fieldName);
 
     fieldName = "Card CVV";
-    IsNumber.stringIsDoubleWithException(payRequest.getCardCvv(), fieldName);
+    NumberUtil.stringIsDoubleWithException(payRequest.getCardCvv(), fieldName);
 
     fieldName = "Card Expiration Date";
-    IsNumber.stringIsDoubleWithException(payRequest.getCardExpirationDate(), fieldName);
+    NumberUtil.stringIsDoubleWithException(payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
@@ -320,11 +323,15 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     payRequest.setSplitRules(splitRules);
     payRequest.setPaymentMethod(Transaction.PaymentMethod.CREDIT_CARD);
 
+    Long marketplaceId = supercashRequestContext.getMarketplaceId();
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
     payRequest.addMetadata("ticket_number", ticketItem.getId());
     payRequest.addMetadata("service_fee", serviceFeeItem.getUnitPrice().toString());
-    payRequest.addMetadata("marketplace_id", marketplaceId);
-    payRequest.addMetadata("store_id", storeId);
-    payRequest.addMetadata("user_id", userId);
+    payRequest.addMetadata("marketplace_id", String.valueOf(marketplaceId));
+    payRequest.addMetadata("store_id", String.valueOf(storeId));
+    payRequest.addMetadata("user_id", String.valueOf(userId));
     payRequest.addMetadata("requester_service", buildProperties.get("name"));
 
     // validate by the exit date
@@ -368,7 +375,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     LOG.debug("PAYMENT AUTHORIZATION SUCCEEDED: User IS authorized to make this payment!");
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
 
     // Now the verification if the gateway knows whether the user has credit or not
     // The value to show in the parking lot gate screen, to report to the user, etc
@@ -376,7 +382,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     // Execute the payment for WPS
     LOG.debug("Requesting payment with WPS with the payment request...");
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(userId,
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(
             ticketStatus.getNumeroTicket(), wpsPaidAmountReported, paymentResponse.summary());
 
     if (!paymentStatus.getStatus().isTicketPago()) {
@@ -417,11 +423,9 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param paymentStatus
    */
   private void cacheParkingTicketPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse, Item serviceFeeItem,
-                                         String marketplaceId, String storeId, String userId, PaymentOrderResponse paymentResponse,
+                                         Long marketplaceId, Long storeId, Long userId, PaymentOrderResponse paymentResponse,
                                          ParkingTicketAuthorizedPaymentStatus paymentStatus) {
-
     // prepare the ticket payment information
-    Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
     parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
@@ -435,14 +439,16 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
       parkinglotTicketPayment.setPayment(paymentResponse);
     }
 
+    Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(ticketNumber, userId, storeId);
+
     ParkinglotTicket parkinglotTicket = null;
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumber(ticketNumber);
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
 
     } else {
       parkinglotTicket = new ParkinglotTicket();
-      parkinglotTicket.setTicketNumber(ticketNumber);
+      parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
       parkinglotTicket.setUserId(Long.valueOf(userId));
       parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }

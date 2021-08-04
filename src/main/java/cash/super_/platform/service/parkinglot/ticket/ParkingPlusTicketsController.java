@@ -23,8 +23,6 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/${cash.super.platform.service.parkinglot.apiVersion}")
 public class ParkingPlusTicketsController extends AbstractController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusTicketsController.class);
-
   /**
    * The endpoint for the tickets status
    */
@@ -36,41 +34,31 @@ public class ParkingPlusTicketsController extends AbstractController {
   @Autowired
   protected ParkingPlusTicketAuthorizePaymentProxyService paymentAuthService;
 
-  @Autowired
-  protected ParkinglotTicketsService parkinglotTicketsService;
-
   /**
    * Retrieve the status of a given ticket for of a given user
-   * @param transactionId
-   * @param userId
-   * @param marketplaceId
-   * @param storeId
-   * @param ticketNumber
-   * @param saleId
+   * @param ticketNumber the ticket number
+   * @param scanned if the ticket was scanned
    * @return ParkingTicketStatus
    */
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_number}")
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}", method = RequestMethod.GET,
           produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<ParkingTicketStatus> getTicketStatus(
-          @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String userId,
-          @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-          @RequestHeader("X-Supercash-StoreId") String storeId,
-          @PathVariable("ticket_number") String ticketNumber,
-          @RequestParam("sale_id") Optional<Long> saleId) {
+  public ResponseEntity<ParkingTicketStatus> getTicketStatus(@PathVariable("ticket_number") String ticketNumber,
+          @RequestParam("scanned") Optional<Boolean> scanned) {
 
-    // TODO: define the userId inside the service
-    userId =  properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(userId, ticketNumber, saleId);
+    boolean wasScanned = scanned.isPresent() ? scanned.get() : false;
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(ticketNumber, wasScanned);
 
-    return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+    Map<String, String> headers = new HashMap<>();
+    if (statusService.isTicketForTesting(ticketNumber)) {
+      headers.put("X-Supercash-Test", "true");
+    }
+
+    return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);
   }
 
   /**
    * Pays a ticket for a given user using WPS infra
-   * @param transactionId
-   * @param userId
    * @param ticketNumber
    * @param paymentRequest
    * @return ParkingTicketAuthorizedPaymentStatus
@@ -79,17 +67,17 @@ public class ParkingPlusTicketsController extends AbstractController {
   @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}/pay", method = RequestMethod.POST,
       consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
-      @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String userId,
-      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestHeader("X-Supercash-StoreId") String storeId,
-      @PathVariable("ticket_number") String ticketNumber,
+          @PathVariable("ticket_number") String ticketNumber,
       @RequestBody ParkingTicketPayment paymentRequest) {
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, userId, ticketNumber,
-            marketplaceId, storeId);
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, ticketNumber);
 
-    return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+    Map<String, String> headers = new HashMap<>();
+    if (statusService.isTicketForTesting(ticketNumber)) {
+      headers.put("X-Supercash-Test", "true");
+    }
+
+    return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);
   }
 
 }
