@@ -3,7 +3,7 @@
 # Use the HTTP Response Header X-Supercash-Pagination-Total
 # To verify if you can make calls, remember to calculate page numbers
 # page = offset/limit + 1
-GET {{host}}:{{port}}/v2/parking_lot/tickets?created_at=1627433114788
+GET {{host}}:{{port}}/v2/parking_lot/tickets?created_at=1628036108000
 Accept: application/json
 X-Supercash-Uid: 99999
 X-Supercash-Tid: new-transaction20303040
