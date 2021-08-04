@@ -99,9 +99,13 @@ public class ParkinglotTicket {
 
     @JsonIgnore
     public ParkingTicketStateTransition getLastStateRecorded() {
-        Deque<ParkingTicketStateTransition> sortedTicketStates = new LinkedList<>(this.getStates());
-        ParkingTicketStateTransition lastStateRecorded = sortedTicketStates.getLast();
-        return lastStateRecorded;
+        return this.states.stream()
+                // https://stackoverflow.com/questions/26568555/sorting-by-property-in-java-8-stream/26568724#26568724
+                .sorted(Comparator.comparing(ParkingTicketStateTransition::getAt)
+                        // https://stackoverflow.com/questions/28607191/how-to-use-a-java8-lambda-to-sort-a-stream-in-reverse-order/62208724#62208724
+                        .reversed())
+                .findFirst()
+                .get();
     }
 
     @JsonIgnore

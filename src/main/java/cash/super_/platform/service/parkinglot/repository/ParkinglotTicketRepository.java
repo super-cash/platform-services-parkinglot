@@ -21,7 +21,7 @@ import java.util.Optional;
 @Repository
 public interface ParkinglotTicketRepository extends PagingAndSortingRepository<ParkinglotTicket, Long> {
 
-    Optional<ParkinglotTicket> findByTicketNumber(Long ticketNumber);
+    Optional<ParkinglotTicket> findByTicketNumberAndUserIdAndStoreId(Long ticketNumber, Long userId, Long storeId);
 
     /**
      * Adding EntityGraph to fetch all properties https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/#method1retrievingandloadingobjectswithquery

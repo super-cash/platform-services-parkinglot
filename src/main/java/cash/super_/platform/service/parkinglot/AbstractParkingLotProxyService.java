@@ -48,4 +48,20 @@ public abstract class AbstractParkingLotProxyService {
     LOG.info("Bootstrapping Parking Plus Service: userKey={} apiKeyId={}", SecretsUtil.obsfucate(userKey), apiKeyId);
   }
 
+  protected String makeWpsUniqueUserId() {
+    Long marketplaceId = supercashRequestContext.getMarketplaceId();
+    Long storeId = supercashRequestContext.getStoreId();
+    Long userId = supercashRequestContext.getUserId();
+
+    return properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+  }
+
+  /**
+   * @param ticketNumber
+   * @return Whether or not the ticket is for testing
+   */
+  public boolean isTicketForTesting(String ticketNumber) {
+    return testingParkinglotTicketRepository.containsTicket(ticketNumber);
+  }
+
 }

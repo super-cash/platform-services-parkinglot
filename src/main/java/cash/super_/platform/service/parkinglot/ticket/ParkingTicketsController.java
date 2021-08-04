@@ -33,13 +33,16 @@ public class ParkingTicketsController extends AbstractController {
   @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
   @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
+          @RequestParam("ticket_number") Optional<String> ticketNumber,
       @RequestParam("created_at") Optional<Long> createdAt,
       @RequestParam("page_offset") Optional<Integer> pageOffset,
       @RequestParam("page_limit") Optional<Integer> pageLimit) {
 
-    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(createdAt, pageOffset, pageLimit);
+    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(ticketNumber, createdAt, pageOffset, pageLimit);
     Map<String, String> paginationTotals = new HashMap<>();
-    paginationTotals.put("X-Supercash-Pagination-Total", String.valueOf(parkingTickets.size()));
+
+    int numberOfTickets = parkingTickets != null ? parkingTickets.size() : 0;
+    paginationTotals.put("X-Supercash-Pagination-Total", String.valueOf(numberOfTickets));
 
     return new ResponseEntity<>(parkingTickets, makeDefaultHttpHeaders(paginationTotals), HttpStatus.OK);
   }

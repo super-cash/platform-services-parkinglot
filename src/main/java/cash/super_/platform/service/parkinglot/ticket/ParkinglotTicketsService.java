@@ -5,12 +5,14 @@ import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.JpaUtil;
+import cash.super_.platform.utils.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,14 +32,23 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
   /**
    * Retrieves tickets for a given user
    */
-  public List<ParkinglotTicket> retrieveTickets(Optional<Long> createdAt,
+  public List<ParkinglotTicket> retrieveTickets(Optional<String> ticketNumber, Optional<Long> createdAt,
                                                 Optional<Integer> pageOffset, Optional<Integer> pageLimit) {
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long userId = supercashRequestContext.getUserId();
     Long storeId = supercashRequestContext.getStoreId();
 
     AtomicReference<List<ParkinglotTicket>> userParkingTickets = new AtomicReference<>();
-    if (pageOffset.isPresent() || pageLimit.isPresent()) {
+
+    // If the search is for a specific ticket number
+    if (ticketNumber.isPresent()) {
+      Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber.get(), "Numero Ticket");
+      Optional<ParkinglotTicket> currentTicketStatus = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
+      currentTicketStatus.ifPresent( ticketStatus -> {
+        userParkingTickets.set(Arrays.asList(ticketStatus));
+      });
+
+    } else if (pageOffset.isPresent() || pageLimit.isPresent()) {
       // Define the paging
       int offset = pageOffset.isPresent() ? pageOffset.get() : 0;
       int limit = pageLimit.isPresent() ? pageLimit.get() : 10;
