@@ -25,8 +25,16 @@ import java.util.*;
 @Service
 public class ParkingTicketsStateTransitionService extends AbstractParkingLotProxyService {
 
+  /**
+   * The list of exit states when the ticket exits the parking lot
+   */
   public static final EnumSet<ParkingTicketState> TICKET_EXIT_STATES = EnumSet.of(
           ParkingTicketState.EXITED_ON_FREE, ParkingTicketState.EXITED_ON_PAID, ParkingTicketState.EXITED_ON_GRACE_PERIOD);
+
+  /**
+   * The total number of states when the ticket is first scanned.
+   */
+  private static final int INITIAL_NUMBER_OF_STATES = 3;
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
@@ -48,6 +56,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     final Long storeId = supercashRequestContext.getStoreId();
     final Long userId = supercashRequestContext.getUserId();
 
+    // TODO: Try to run this in a separate thread, use SpringEvents to decouple from the Request thread?
 //    Runnable ticketStatusUpdater = () -> {
       // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
       Optional<ParkinglotTicket> parkinglotTicketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
@@ -57,8 +66,8 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         // the ticket has been created before
         parkinglotTicket = parkinglotTicketSearch.get();
 
-        // When the status is requested with scanned, it means the user scanned the ticket again or in anyther device
-        if (scanned) {
+        // When the status is requested with scanned, it means the user scanned the ticket again or in any other device
+        if (scanned && parkinglotTicket.getStates().size() >= INITIAL_NUMBER_OF_STATES) {
           ParkingTicketStateTransition lastStateRecorded = parkinglotTicket.getLastStateRecorded();
           parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, DateTimeUtil.getMillis(LocalDateTime.now()));
 
