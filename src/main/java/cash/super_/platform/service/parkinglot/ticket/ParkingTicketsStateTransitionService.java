@@ -59,7 +59,15 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
         // When the status is requested with scanned, it means the user scanned the ticket again or in anyther device
         if (scanned) {
+          ParkingTicketStateTransition lastStateRecorded = parkinglotTicket.getLastStateRecorded();
           parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, DateTimeUtil.getMillis(LocalDateTime.now()));
+
+          // only save a new state if it's different than scanned
+          // PAID -> SCANNED -> PAID, NOT_PAID -> SCANNED -> NOT_PAID
+          // This is to maintain the interface of states because it's based only on 2
+          if (lastStateRecorded.getState() != ParkingTicketState.SCANNED) {
+            parkinglotTicket.addTicketStateTransition(lastStateRecorded.getState(), DateTimeUtil.getMillis(LocalDateTime.now()));
+          }
         }
 
       } else {
