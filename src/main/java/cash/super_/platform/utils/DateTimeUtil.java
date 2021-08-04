@@ -6,6 +6,7 @@ import java.util.TimeZone;
 
 /**
  * The specific date and time calculations for the apps
+ * Verify at https://currentmillis.com/
  */
 public enum DateTimeUtil {
 
@@ -37,6 +38,7 @@ public enum DateTimeUtil {
      */
     public static Long[] getDateZeroHoraMidnightInterval(LocalDateTime dateTime) {
         // https://stackoverflow.com/questions/9629636/get-todays-date-in-java-at-midnight-time/31683549#31683549
+        // http://groovyconsole.appspot.com/script/5116630166142976
         LocalDateTime earlyMorning = dateTime.toLocalDate().atStartOfDay();
         LocalDateTime lateNight = earlyMorning.plusHours(23).plusMinutes(59);
         return Arrays.asList(getMillis(earlyMorning), getMillis(lateNight)).toArray(new Long[2]);

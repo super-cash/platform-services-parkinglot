@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot.model;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;
@@ -77,11 +78,12 @@ public class ParkingTicketStatus {
 
   public static LocalDateTime calculateGracePeriod(RetornoConsulta queryResult, int gracePeriodMinutes, String zoneId) {
     long entryEpoch = queryResult.getDataDeEntrada();
-    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(entryEpoch), TimeZone.getDefault().toZoneId());
+    LocalDateTime dateTime = DateTimeUtil.getLocalDateTime(entryEpoch);
 
     // For the calls for WPS
-    if ("America/Sao_Paulo".equals(zoneId)) {
-      return dateTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("America/Sao_Paulo")).toLocalDateTime().plusMinutes(gracePeriodMinutes);
+    // http://groovyconsole.appspot.com/script/5179630759706624
+    if (DateTimeUtil.TIMEZONE_AMERICA_SAO_PAULO.equals(zoneId)) {
+      return dateTime.plusMinutes(gracePeriodMinutes);
     }
 
     // For the calls for Testing (local time
