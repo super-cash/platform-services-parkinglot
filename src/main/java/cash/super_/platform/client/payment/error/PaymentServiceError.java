@@ -1,4 +1,4 @@
-package cash.super_.platform.clients.payment.errors;
+package cash.super_.platform.client.payment.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import cash.super_.platform.clients.DefaultObjectMapper;
+import cash.super_.platform.client.DefaultObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -60,7 +60,6 @@ public enum JsonUtil {
    * http://www.mkyong.com/java/how-to-convert-java-object-to-from-json-jackson/
    *
    * @param <T> is the type of the class to be deserialized.
-   * @param jsonObject the object in Json format.
    * @param clazz the class to convert.
    * @return The instance of the given class.
    */

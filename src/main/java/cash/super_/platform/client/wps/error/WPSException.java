@@ -1,9 +1,6 @@
-package cash.super_.platform.clients.wps.errors;
+package cash.super_.platform.client.wps.error;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import org.springframework.http.HttpStatus;
 
 import java.util.HashMap;
 import java.util.Map;

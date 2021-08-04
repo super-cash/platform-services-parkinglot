@@ -1,4 +1,4 @@
-package cash.super_.platform.clients;
+package cash.super_.platform.client;
 
 import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;

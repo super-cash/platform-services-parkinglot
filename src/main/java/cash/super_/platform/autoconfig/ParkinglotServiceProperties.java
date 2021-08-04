@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @Component
 @ConfigurationProperties("cash.super.platform.service.parkinglot")
-public class ParkingPlusProperties extends ServiceProperties {
+public class ParkinglotServiceProperties extends ServiceProperties {
 
   @Min(0)
   private long apiKeyId;

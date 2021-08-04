@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.utils.SecretsUtil;
 
 /**
@@ -27,7 +27,7 @@ public abstract class AbstractParkingLotProxyService {
   protected SupercashRequestContext supercashRequestContext;
 
   @Autowired
-  protected ParkingPlusProperties properties;
+  protected ParkinglotServiceProperties properties;
 
   @Autowired
   protected Tracer tracer;

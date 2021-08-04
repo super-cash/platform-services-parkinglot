@@ -1,4 +1,4 @@
-package cash.super_.platform.clients.payment.errors;
+package cash.super_.platform.client.payment.error;
 
 import java.util.List;
 

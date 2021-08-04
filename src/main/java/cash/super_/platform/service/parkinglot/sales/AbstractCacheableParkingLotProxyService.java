@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -16,7 +16,7 @@ import cash.super_.platform.autoconfig.ParkingPlusProperties;
 public abstract class AbstractCacheableParkingLotProxyService<K, V> extends CacheLoader<K, V> {
 
   @Autowired
-  protected ParkingPlusProperties properties;
+  protected ParkinglotServiceProperties properties;
 
   @Autowired
   protected Tracer tracer;

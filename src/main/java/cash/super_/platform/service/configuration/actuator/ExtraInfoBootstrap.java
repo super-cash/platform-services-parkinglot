@@ -1,6 +1,6 @@
 package cash.super_.platform.service.configuration.actuator;
 
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class ExtraInfoBootstrap implements InfoContributor {
 
     @Autowired
-    private ParkingPlusProperties parkingPlusProperties;
+    private ParkinglotServiceProperties parkingPlusProperties;
 
     @Override
     public void contribute(Info.Builder builder) {

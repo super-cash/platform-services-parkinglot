@@ -1,10 +1,9 @@
-package cash.super_.platform.clients.wps.errors;
+package cash.super_.platform.client.wps.error;
 
 import cash.super_.platform.error.supercash.SupercashSimpleException;
 import cash.super_.platform.error.supercash.SupercashThirdPartySystemException;
 import cash.super_.platform.error.supercash.feign.SupercashAbstractErrorHandler;
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
-import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.utils.JsonUtil;
 import feign.Response;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ public class WPSErrorHandler implements SupercashAbstractErrorHandler {
   private static final Logger LOG = LoggerFactory.getLogger(WPSErrorHandler.class);
 
   @Autowired
-  private ParkingPlusProperties properties;
+  private ParkinglotServiceProperties properties;
 
   @Override
   public SupercashSimpleException handle(Response response, String responseBody) {

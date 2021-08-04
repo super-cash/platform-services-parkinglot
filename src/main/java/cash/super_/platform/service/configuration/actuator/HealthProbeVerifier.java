@@ -12,10 +12,9 @@ import org.springframework.boot.availability.ApplicationAvailability;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
 
 /**
@@ -44,7 +43,7 @@ public class HealthProbeVerifier {
   private PlatformConfigurationProperties configurationProperties;
 
   @Autowired
-  private ParkingPlusProperties properties;
+  private ParkinglotServiceProperties properties;
 
   @Autowired
   private ApplicationContext appContext;

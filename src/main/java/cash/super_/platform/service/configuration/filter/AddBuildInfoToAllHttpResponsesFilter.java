@@ -1,6 +1,6 @@
 package cash.super_.platform.service.configuration.filter;
 
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class AddBuildInfoToAllHttpResponsesFilter implements Filter {
     BuildProperties buildProperties;
 
     @Autowired
-    ParkingPlusProperties parkingPlusProperties;
+    ParkinglotServiceProperties parkingPlusProperties;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,

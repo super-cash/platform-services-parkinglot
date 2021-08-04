@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.autoconfig.ParkingPlusProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
@@ -60,7 +60,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
 
 	@Autowired
-	protected ParkingPlusProperties properties;
+	protected ParkinglotServiceProperties properties;
 
 	// https://www.quora.com/How-do-I-create-a-thread-which-runs-every-one-minute-in-Java/answer/Anand-Dwivedi-4
 	class PriceUpdaterTask extends TimerTask {
