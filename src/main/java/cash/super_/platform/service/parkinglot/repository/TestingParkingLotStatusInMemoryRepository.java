@@ -59,8 +59,14 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 * The ticket number whose price will always increase and the user can pay it multiple times without leaving the parking lot
 	 */
 	public static final String ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER = "111111000000";
-
+	/**
+	 * When the grace period expires in minutes during tests
+	 */
 	public static final int GRACE_PERIOD_DURING_TESTING = 3;
+	/**
+	 * When the price expires during tests
+	 */
+	public static final int PRICE_CHANGE_IN_MINUTES = 5;
 
 	@Autowired
 	protected ParkinglotServiceProperties properties;
@@ -72,7 +78,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 			LOG.debug("Updating testing prices at specific schedule...");
 			statusCache.values().forEach(ticketStatus -> {
 				String ticketNumber = ticketStatus.getStatus().getNumeroTicket();
-				// Always increment the price of the non-free tickets that need payment at every 3 minutes for testing
+				// Always increment the price of the non-free tickets that need payment at every PRICE_CHANGE_IN_MINUTES minutes for testing
 				if (!ALWAYS_FREE_TICKET_NUMBER.equals(ticketNumber)) {
 					int priceBefore = ticketStatus.getStatus().getTarifa();
 					int nextPrice = priceBefore + 2;
@@ -113,14 +119,14 @@ public class TestingParkingLotStatusInMemoryRepository {
     			createTicketRetrieval(ALWAYS_FREE_TICKET_NUMBER, 0),
 				ParkingTicketState.FREE
 		);
-    	Thread.sleep(5000);
+    	Thread.sleep(250);
 
     	// Create the ticket to be paid
 		saveTicketStatusRetrieval(
 				createTicketRetrieval(NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER, 400),
 				ParkingTicketState.GRACE_PERIOD
 		);
-    	Thread.sleep(3500);
+    	Thread.sleep(300);
 
     	// Create the ticket that needs extra payments
 		saveTicketStatusRetrieval(
@@ -131,8 +137,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
 		Timer timer = new Timer();
-		long fiveMimutes = 1000 * 60 * 5;
-		timer.schedule(new PriceUpdaterTask(), fiveMimutes, fiveMimutes);//5 Min
+		long fiveMimutes = 1000 * 60 * PRICE_CHANGE_IN_MINUTES;
+		timer.schedule(new PriceUpdaterTask(), fiveMimutes, fiveMimutes);
     }
 
     private RetornoConsulta createTicketRetrieval(String ticketNumber, int price) {
