@@ -1,6 +1,7 @@
 package cash.super_.platform.utils;
 
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
@@ -37,7 +38,10 @@ public class NumberUtil {
 
     public static Double stringIsDoubleWithException(String numberStr, String fieldName) {
         Optional<Double> number = stringIsDouble(numberStr);
-        if (!number.isPresent()) {
+        if (number == null) {
+            throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
+
+        } else if (!number.isPresent()) {
             throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
         }
         return number.get();
@@ -45,7 +49,10 @@ public class NumberUtil {
 
     public static Long stringIsLongWithException(String numberStr, String fieldName) {
         Optional<Long> number = stringIsLong(numberStr);
-        if (!number.isPresent()) {
+        if (number == null) {
+            throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
+
+        } else  if (!number.isPresent()) {
             throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
         }
         return number.get();
