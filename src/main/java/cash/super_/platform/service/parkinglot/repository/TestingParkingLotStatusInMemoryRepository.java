@@ -94,7 +94,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 				// The ticket just left the parking lot... set the values similar to ticketExitedParkingLot
 				if (ticketStatus.getState() == ParkingTicketState.PAID && NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER.equals(ticketNumber)) {
-					LOG.debug("Updating ticket={} state as exit {}", ticketNumber);
+					LOG.debug("Updating ticket={} state as exit", ticketNumber);
 					ticketStatus.setState(ParkingTicketState.EXITED_ON_PAID);
 					ticketStatus.getStatus().setTicketValido(false);
 					ticketStatus.getStatus().setTarifa(-1);

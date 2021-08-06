@@ -229,7 +229,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     // ticket exited the parking lot, get the value from the message (hack from calculation)
     if (!ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketFee == -1) {
       ParkingTicketState exitParkingLotState = ParkingTicketState.valueOf(ticketStatus.getMensagem());
-      ticketStatus.setMensagem("Ticket exited the parking lot: " + exitParkingLotState);
+      ticketStatus.setMensagem(exitParkingLotState.toString());
       return exitParkingLotState;
     }
 
