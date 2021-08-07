@@ -140,7 +140,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
           ParkinglotTicket savedTicket = parkingTicketsStateTransitionService.saveTicketTransitionStateAfterUserExits(ticketNumber);
 
           // Make a new ticket status with the current status
-          ticketStatus = parkingTicketsStateTransitionService.makeNewTicketQueryAfterUserExits(savedTicket);
+          ticketStatus = parkingTicketsStateTransitionService.makeNewTicketTransitionAfterUserExits(savedTicket);
 
         } else {
           LOG.error("Ticket error from WPS error code for ticket={} errorCode={}", ticketNumber, thirdPartyErrorCode);
