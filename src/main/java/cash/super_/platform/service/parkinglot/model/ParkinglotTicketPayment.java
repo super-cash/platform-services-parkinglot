@@ -11,6 +11,15 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
+        @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
+        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
+        @Index(name = "parking_ticket_payment_ticket_number_idx", columnList = "ticket_number"),
+        @Index(name = "parking_ticket_payment_user_id_idx", columnList = "userId"),
+        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "storeId"),
+        @Index(name = "unique_ticket_payment_idx", columnList = "ticket_number, date, storeId, userId, amount", unique = true)
+})
 @JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
 
@@ -25,9 +34,9 @@ public class ParkinglotTicketPayment {
 
     private Long date;
 
-    private Long marketplaceId;
-
     private Long storeId;
+
+    private Long userId;
 
     private String requesterService;
 
@@ -47,6 +56,14 @@ public class ParkinglotTicketPayment {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Long getAmount() {
@@ -71,14 +88,6 @@ public class ParkinglotTicketPayment {
 
     public void setDate(Long date) {
         this.date = date;
-    }
-
-    public Long getMarketplaceId() {
-        return marketplaceId;
-    }
-
-    public void setMarketplaceId(Long marketplaceId) {
-        this.marketplaceId = marketplaceId;
     }
 
     public Long getStoreId() {
@@ -118,13 +127,15 @@ public class ParkinglotTicketPayment {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final ParkinglotTicketPayment other = (ParkinglotTicketPayment) obj;
-        return Objects.equal(this.id, other.id)
-                && Objects.equal(this.marketplaceId, other.marketplaceId)
-                && Objects.equal(this.storeId, other.storeId);
+        return Objects.equal(this.storeId, other.storeId)
+                && Objects.equal(this.userId, other.userId)
+                && Objects.equal(this.amount, other.amount)
+                && Objects.equal(this.date, other.date)
+                && Objects.equal(this.payment, other.payment);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, marketplaceId, storeId);
+        return Objects.hashCode(userId, storeId, amount, date, payment);
     }
 }

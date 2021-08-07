@@ -208,7 +208,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
     parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getTotal() - properties.getOurFee());
     parkinglotTicketPayment.setServiceFee(properties.getOurFee());
-    parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
+    parkinglotTicketPayment.setUserId(Long.valueOf(userId));
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
@@ -231,7 +231,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, DateTimeUtil.getNow());
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
@@ -411,7 +411,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     // Save the value in our storage for the user's status
-    cacheParkingTicketPayment(ticketStatus, chargeResponse, serviceFeeItem, marketplaceId, storeId, userId, paymentResponse, paymentStatus);
+    cacheParkingTicketPayment(ticketStatus, chargeResponse, serviceFeeItem, storeId, userId, paymentResponse, paymentStatus);
 
     return paymentStatus;
   }
@@ -421,19 +421,18 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param ticketStatus
    * @param chargeResponse
    * @param serviceFeeItem
-   * @param marketplaceId
    * @param storeId
    * @param paymentResponse
    * @param paymentStatus
    */
   private void cacheParkingTicketPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse, Item serviceFeeItem,
-                                         Long marketplaceId, Long storeId, Long userId, PaymentOrderResponse paymentResponse,
+                                         Long storeId, Long userId, PaymentOrderResponse paymentResponse,
                                          ParkingTicketAuthorizedPaymentStatus paymentStatus) {
     // prepare the ticket payment information
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
     parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
-    parkinglotTicketPayment.setMarketplaceId(Long.valueOf(marketplaceId));
+    parkinglotTicketPayment.setUserId(Long.valueOf(userId));
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 

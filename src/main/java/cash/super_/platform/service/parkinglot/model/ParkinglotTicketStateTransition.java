@@ -3,15 +3,21 @@ package cash.super_.platform.service.parkinglot.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
  * The relation of the parking ticket and a given state
  */
+// Adding indexes https://www.baeldung.com/jpa-indexes#5-multiple-index-on-a-single-entity
 @Entity
-public class ParkingTicketStateTransition {
+@Table(indexes = {
+        @Index(name = "parking_ticket_transition_idx", columnList = "ticket_number"),
+        @Index(name = "parking_ticket_transition_date_idx", columnList = "date"),
+        @Index(name = "parking_ticket_transition_state_idx", columnList = "state"),
+        @Index(name = "unique_ticket_state_transition_idx", columnList = "ticket_number, userId, date, state", unique = true)
+})
+public class ParkinglotTicketStateTransition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,13 +32,21 @@ public class ParkingTicketStateTransition {
     /**
      * The specific time the ticket assumed this state
      */
-    private Long at;
+    @NotNull
+    private Long userId;
+
+    /**
+     * The specific time the ticket assumed this state
+     */
+    @NotNull
+    private Long date;
 
     // https://www.baeldung.com/jpa-persisting-enums-in-jpa#string
     // Save the string value so we can reuse the value anywhere else
     /**
      * The state assumed by the ticket
      */
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ParkingTicketState state;
 
@@ -42,11 +56,12 @@ public class ParkingTicketStateTransition {
      * @param state
      * @return
      */
-    public static ParkingTicketStateTransition makeNew(ParkinglotTicket parkinglotTicket, ParkingTicketState state, long time) {
-        ParkingTicketStateTransition transition = new ParkingTicketStateTransition();
-        transition.at = time;
+    public static ParkinglotTicketStateTransition makeNew(ParkinglotTicket parkinglotTicket, Long userId, ParkingTicketState state, long dateTime) {
+        ParkinglotTicketStateTransition transition = new ParkinglotTicketStateTransition();
+        transition.date = dateTime;
         transition.parkinglotTicket = parkinglotTicket;
         transition.state = state;
+        transition.userId = userId;
         return transition;
     }
 
@@ -58,9 +73,13 @@ public class ParkingTicketStateTransition {
 
     public Long getId() { return id; }
 
-    public Long getAt() { return at; }
+    public Long getDate() { return date; }
 
-    public void setAt(Long at) { this.at = at; }
+    public void setDate(Long date) { this.date = date; }
+
+    public Long getUserId() { return userId; }
+
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public ParkinglotTicket getParkinglotTicket() { return parkinglotTicket; }
 
@@ -70,12 +89,15 @@ public class ParkingTicketStateTransition {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ParkingTicketStateTransition that = (ParkingTicketStateTransition) o;
-        return id.equals(that.id) && parkinglotTicket.equals(that.parkinglotTicket) && at.equals(that.at) && state == that.state;
+        ParkinglotTicketStateTransition that = (ParkinglotTicketStateTransition) o;
+        return parkinglotTicket.equals(that.parkinglotTicket)
+                && userId.equals(that.userId)
+                && date.equals(that.date)
+                && state == that.state;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, parkinglotTicket, at, state);
+        return Objects.hash(parkinglotTicket, userId, date, state);
     }
 }
