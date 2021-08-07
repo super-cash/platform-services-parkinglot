@@ -15,7 +15,8 @@ public enum DateTimeUtil {
     public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
 
     public static long getMillis(LocalDateTime dateTime) {
-        return dateTime.atZone(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO)).toInstant().toEpochMilli();
+        // TODO: fix the calculation here
+        return dateTime.atZone(TimeZone.getTimeZone(TIMEZONE_AMERICA_SAO_PAULO).toZoneId()).minusHours(3).toInstant().toEpochMilli();
     }
 
     public static LocalDateTime getLocalDateTime(long milliseconds) {
@@ -23,6 +24,14 @@ public enum DateTimeUtil {
         return dateTime.atZone(ZoneId.of("UTC"))
                 .withZoneSameInstant(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO))
                 .toLocalDateTime();
+    }
+
+    /**
+     * @return Get the local
+     */
+    public static LocalDateTime getNowLocalDateTime() {
+        long now = getNow();
+        return getLocalDateTime(now);
     }
 
     /**
