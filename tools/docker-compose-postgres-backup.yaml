@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+
+  pgbackups:
+    image: postgres
+    command: "PGPASSWORD=$${POSTGRES_PASSWORD} pg_dump --username ${POSTGRES_USER} ${POSTGRES_DB} > /backups/dump.sql"
+    volumes:
+      - ./backup:/backups
+    environment:
+      - POSTGRES_HOST=supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432
+      - POSTGRES_DB=supercash
+      - POSTGRES_USER=supercash
+      - POSTGRES_PASSWORD=_#super#_123
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs

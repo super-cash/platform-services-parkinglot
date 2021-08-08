@@ -11,7 +11,6 @@ import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaym
 import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
-import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.PaymentRepository;
 import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
@@ -231,7 +230,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getNow());
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
