@@ -307,8 +307,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   }
 
   private String generateTransactionId(String ticketNumber) {
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(IsNumber
-            .stringIsLongWithException(ticketNumber, "Número Ticket"));
+    ParkinglotTicketId ticketId = makeTicketId(Long.valueOf(ticketNumber));
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(ticketId);
     String transactionId = ticketNumber + "-0";
     if (parkinglotTicketOpt.isPresent()) {
       transactionId = ticketNumber + "-" + parkinglotTicketOpt.get().getPayments().size();

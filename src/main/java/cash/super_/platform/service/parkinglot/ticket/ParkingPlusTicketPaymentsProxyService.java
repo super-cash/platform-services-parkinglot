@@ -64,8 +64,8 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
       paymentsMade.forEach((pagamentoEfetuado) -> {
         ParkingPaidTicketStatus parkingPaidTicketStatus = new ParkingPaidTicketStatus(pagamentoEfetuado);
 
-        Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(IsNumber
-                .stringIsLongWithException(pagamentoEfetuado.getTicket(), "Número Ticket"));
+        ParkinglotTicketId ticketId = makeTicketId(Long.valueOf(pagamentoEfetuado.getTicket()));
+        Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(ticketId);
         if (parkinglotTicketOpt.isPresent()) {
           Optional<ParkinglotTicketPayment> parkinglotTicketPayment = parkinglotTicketPaymentsRepository
                   .findByDateAndParkinglotTicket(pagamentoEfetuado.getData(), parkinglotTicketOpt.get());

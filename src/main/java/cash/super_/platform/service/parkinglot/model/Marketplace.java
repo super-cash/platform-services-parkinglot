@@ -25,6 +25,15 @@ public class Marketplace {
 
     private String thumbnail = "";
 
+    public Marketplace() {}
+
+    public Marketplace(Long id, String name, String url, String codeName) {
+        this.id = id;
+        this.name = name;
+        this.url = url;
+        this.codeName = codeName;
+    }
+
     public Long getId() {
         return id;
     }

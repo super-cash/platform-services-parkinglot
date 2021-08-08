@@ -11,15 +11,13 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
-@Table(indexes = {
-        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
-        @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
-        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
-        @Index(name = "parking_ticket_payment_ticket_number_idx", columnList = "ticket_number"),
-        @Index(name = "parking_ticket_payment_user_id_idx", columnList = "userId"),
-        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "storeId"),
-        @Index(name = "unique_ticket_payment_idx", columnList = "ticket_number, date, storeId, userId, amount", unique = true)
-})
+//@Table(indexes = {
+//        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
+//        @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
+//        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
+//        @Index(name = "parking_ticket_payment_user_id_idx", columnList = "user_id"),
+//        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "store_id"),
+//})
 @JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
 
@@ -34,8 +32,13 @@ public class ParkinglotTicketPayment {
 
     private Long date;
 
+    // Need to annotate all columns
+    // Caused by: org.hibernate.DuplicateMappingException: Table [parkinglot_ticket_payment] contains physical column name [user_id] referred to by multiple logical column names: [user_id], [userId]
+    @Column(name = "store_id")
     private Long storeId;
 
+    // https://stackoverflow.com/questions/57691377/a-column-in-a-table-is-referred-to-by-multiple-physical-column-names
+    @Column(name = "user_id")
     private Long userId;
 
     private String requesterService;
@@ -47,7 +50,14 @@ public class ParkinglotTicketPayment {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="ticket_number", nullable = false, foreignKey = @ForeignKey(name = "parking_ticket_parking_ticket_payment_fk"))
+    @JoinColumns ({
+            // Caused by: org.hibernate.MappingException: Repeated column in mapping for entity:
+            // cash.super_.platform.service.parkinglot.model.ParkinglotTicketStateTransition column: store_id
+            // (should be mapped with insert="false" update="false")
+            @JoinColumn (name = "ticket_number", referencedColumnName = "ticket_number", updatable = false, insertable = false),
+            @JoinColumn (name = "user_id", referencedColumnName = "user_id", updatable = false, insertable = false),
+            @JoinColumn (name = "store_id", referencedColumnName = "store_id", updatable = false, insertable = false)
+    })
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {

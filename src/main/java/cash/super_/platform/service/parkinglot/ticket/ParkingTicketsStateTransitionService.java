@@ -6,6 +6,7 @@ import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicketStateTransition;
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
+import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketStateTransitionsRepository;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.IsNumber;
@@ -32,13 +33,11 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
   public static final EnumSet<ParkingTicketState> TICKET_EXIT_STATES = EnumSet.of(
           ParkingTicketState.EXITED_ON_FREE, ParkingTicketState.EXITED_ON_PAID, ParkingTicketState.EXITED_ON_GRACE_PERIOD);
 
-  /**
-   * The total number of states when the ticket is first scanned.
-   */
-  private static final int INITIAL_NUMBER_OF_STATES = 3;
-
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
+
+  @Autowired
+  private ParkinglotTicketStateTransitionsRepository parkinglotTicketStateTransitionsRepository;
 
   /**
    * To define the grace period before its actual value for client counters
@@ -60,59 +59,109 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     // TODO: Try to run this in a separate thread, use SpringEvents to decouple from the Request thread?
 //    Runnable ticketStatusUpdater = () -> {
       // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
-      Optional<ParkinglotTicket> parkinglotTicketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
+      // This is the current user in the session requesting
+      Optional<ParkinglotTicket> requestingUserTicketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
 
       ParkinglotTicket parkinglotTicket = null;
-      if (parkinglotTicketSearch.isPresent()) {
+      ParkingTicketState lastRecordedState = null;
+
+      // when the ticket is scanned by multiple people, just add one
+      boolean alreadyScannedBySomeoneElse = false;
+      if (requestingUserTicketSearch.isPresent()) {
         // the ticket has been created before
-        parkinglotTicket = parkinglotTicketSearch.get();
+        parkinglotTicket = requestingUserTicketSearch.get();
 
         // When the status is requested with scanned, it means the user scanned the ticket again or in any other device
         if (scanned) {
-          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
         }
 
+        lastRecordedState = parkinglotTicket.getLastStateRecorded().getState();
+        LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}", ticketNumber, lastRecordedState, state, state != lastRecordedState);
+
       } else {
+        // At this point the current user hasn't scanned this ticket, this might be a new user
+        // if so, copy the states of the other ticket
+
         // The user just scanned the ticket for the first time, store the initial states
         parkinglotTicket = new ParkinglotTicket();
         parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
         parkinglotTicket.setUserId(userId);
         parkinglotTicket.setStoreId(storeId);
-        parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, ticketStatus.getDataDeEntrada());
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
 
-        // Adding the grace period
-        LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(parkinglotTicket.getCreatedAt());
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId,
-                DateTimeUtil.getMillis(creationTime.plusMinutes(20)));
+        if (parkinglotTicketRepository.existsDistinctByTicketNumberAndStoreId(validTicketNumber, storeId)) {
+          // The ticket was picked up by someone else, so just add scanned
+
+          if (scanned) {
+            parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
+            alreadyScannedBySomeoneElse = true;
+
+
+            Set<ParkingTicketState> exclusionLast = ParkinglotTicket.lastRecordedExclusionType();
+            Optional<List<ParkinglotTicketStateTransition>> lastRecordByOther = parkinglotTicketStateTransitionsRepository
+                    .findFirst1ByParkinglotTicket_TicketNumberAndStateNotInOrderByDateDesc(validTicketNumber, exclusionLast);
+
+            // this might always be true at this point
+            if (lastRecordByOther.isPresent()) {
+              lastRecordedState = lastRecordByOther.get().iterator().next().getState();
+              LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}", ticketNumber, lastRecordedState, state, state != lastRecordedState);
+            }
+          }
+
+        } else {
+          // This current user scanned the ticket so it's the first time, let's set all the values
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, storeId, ticketStatus.getDataDeEntrada());
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
+          // Adding the grace period
+          LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(ticketStatus.getDataDeEntrada());
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId, storeId,
+                  DateTimeUtil.getMillis(creationTime.plusMinutes(20)));
+        }
+
+        parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
 
         // When saving the ticket for the first time while in the parking lot
-        if (ticketStatus.getDataPermitidaSaidaUltimoPagamento() != null && ticketStatus.getDataPermitidaSaidaUltimoPagamento() > 0
+        // Only applicable when not scanned by the same person so that it does't add the PAY for he/she
+        if (!alreadyScannedBySomeoneElse && ticketStatus.getDataPermitidaSaidaUltimoPagamento() != null && ticketStatus.getDataPermitidaSaidaUltimoPagamento() > 0
                 && ticketStatus.getTarifaPaga() != null && ticketStatus.getTarifaPaga() > 0) {
 
           final int MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT = 20;
           LocalDateTime lastPaymentDateTime = LocalDateTime.now().minusMinutes(MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT);
-          parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId,
-                  DateTimeUtil.getMillis(lastPaymentDateTime));
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentDateTime));
         }
       }
 
-      ParkingTicketState lastRecordedState = parkinglotTicket.getLastStateRecorded().getState();
-      LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}", ticketNumber, lastRecordedState, state, state != lastRecordedState);
+    boolean stillInPaid = lastRecordedState == ParkingTicketState.PAID && ticketStatus.getTarifa() == ticketStatus.getTarifaPaga();
+    if (alreadyScannedBySomeoneElse) {
 
-      // add repeated state only if it's scanned and if it was not paid twice
-      // NOT_PAID, SCANNED, SCANNED, PAID, NOT_PAID, SCANNED, PAID
-      boolean stillInPaid = lastRecordedState == ParkingTicketState.PAID && ticketStatus.getTarifa() == ticketStatus.getTarifaPaga();
-      if (state != lastRecordedState && !stillInPaid || (state == lastRecordedState && state == ParkingTicketState.SCANNED)) {
+      // Since someone else paid, we can't have the status in the list of the new user, only if it's not in paid
+      if (!stillInPaid) {
         // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
         // Add 100 in the timestamp so it will be a bit higher on the first save
-        parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
-
-        LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
-        // Save the ticket and the transitions
-        parkinglotTicketRepository.save(parkinglotTicket);
+        parkinglotTicket.addTicketStateTransition(state, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
       }
+
+      LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
+      // Save the ticket and the transitions
+      parkinglotTicketRepository.save(parkinglotTicket);
+
+      return;
+    }
+
+    // AT THIS POINT, THIS IS THE SAME USER
+
+    // add repeated state only if it's scanned and if it was not paid twice
+    // NOT_PAID, SCANNED, SCANNED, PAID, NOT_PAID, SCANNED, PAID
+    // If it's scanned, it must have been by someone else.
+    if (state != lastRecordedState && !stillInPaid || (state == lastRecordedState && state == ParkingTicketState.SCANNED)) {
+      // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
+      // Add 100 in the timestamp so it will be a bit higher on the first save
+      parkinglotTicket.addTicketStateTransition(state, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
+
+      LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
+      // Save the ticket and the transitions
+      parkinglotTicketRepository.save(parkinglotTicket);
+    }
 //    };
   }
 
@@ -134,26 +183,32 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
     if (!ticketSearch.isPresent()) {
       LOG.error("Can't save the exit transition: parking ticket {} does not exit in storage", ticketNumber);
-      return null;
+
+      ticketSearch = parkinglotTicketRepository.findByTicketNumberAndStoreId(validTicketNumber, storeId);
+      if (!ticketSearch.isPresent()) {
+        LOG.error("Can't find the ticket from another user");
+
+        return null;
+      }
     }
 
     // the ticket exists and so it loads all needed
     // TODO: This is to quickly fix tickets that were created before the state transitions
     ParkinglotTicket ticket = ticketSearch.get();
     if (ticket.getStates() == null || ticket.getStates().isEmpty()) {
-      ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, ticket.getCreatedAt());
-      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
+      ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, storeId, ticket.getCreatedAt());
+      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
 
       // Adding the grace period
       LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(ticket.getCreatedAt());
-      ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId,
+      ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId, storeId,
               DateTimeUtil.getMillis(creationTime.plusMinutes(20)));
 
       // The date of the last payment made
       if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
         long lastPaymentDateMillis = ticket.getLastPaymentDateTimeMillis();
         LocalDateTime lastPaymentTime = DateTimeUtil.getLocalDateTime(lastPaymentDateMillis);
-        ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getMillis(lastPaymentTime));
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentTime));
 
       } else {
         // setting a payment time
@@ -161,7 +216,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         LocalDateTime lastPaymentDateTime = DateTimeUtil.getLocalDateTime(DateTimeUtil.getMillis(LocalDateTime.now())).minusMinutes(MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT);
 
         // solves the problem of when it's the first time scanning, during tests, or when the ticket has never been scanned
-        ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getMillis(lastPaymentDateTime));
+        ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentDateTime));
       }
       // Save the ticket states
       parkinglotTicketRepository.save(ticket);
@@ -179,7 +234,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       };
 
       // Save the ticket with the new state transition
-      ticket.addTicketStateTransition(exitState, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
+      ticket.addTicketStateTransition(exitState, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
 
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(ticket);

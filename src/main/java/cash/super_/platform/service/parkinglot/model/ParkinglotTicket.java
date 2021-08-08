@@ -12,23 +12,31 @@ import java.util.Comparator;
 // Adding indexes https://www.baeldung.com/jpa-indexes#5-multiple-index-on-a-single-entity
 @Entity
 @Table(indexes = {
-        @Index(name = "user_id_idx", columnList = "userId"),
+        @Index(name = "ticket_number_idx", columnList = "ticket_number"),
+        @Index(name = "user_id_idx", columnList = "user_id"),
+        @Index(name = "store_id_idx", columnList = "store_id"),
         @Index(name = "created_at_idx", columnList = "createdAt"),
-        @Index(name = "store_id_idx", columnList = "storeId"),
-        @Index(name = "unique_ticket_idx", columnList = "ticketNumber, userId, storeId", unique = true)
+        @Index(name = "unique_ticket_idx", columnList = "ticket_number, user_id, store_id", unique = true)
 })
+
+// // https://www.baeldung.com/jpa-composite-primary-keys#idclass
+// Adding the id class
+@IdClass(ParkinglotTicketId.class)
 public class ParkinglotTicket {
 
     // TODO: Ticket numbers must change to String as they will differ from each parkinglot
     @Id
+    @Column(name = "ticket_number")
     private Long ticketNumber;
 
     // TODO: Map to the User bean after we do the shared libraries
-    @NotNull
+    @Id
+    @Column(name = "user_id")
     private Long userId;
 
     // TODO: Map to the User bean after we do the shared libraries
-    @NotNull
+    @Id
+    @Column(name = "store_id")
     private Long storeId;
 
     @NotNull
@@ -93,8 +101,8 @@ public class ParkinglotTicket {
         this.states = states;
     }
 
-    public void addTicketStateTransition(ParkingTicketState state, Long userId, long time) {
-        ParkinglotTicketStateTransition transition = ParkinglotTicketStateTransition.makeNew(this, userId, state, time);
+    public void addTicketStateTransition(ParkingTicketState state, Long userId, Long storeId, long time) {
+        ParkinglotTicketStateTransition transition = ParkinglotTicketStateTransition.makeNew(this, userId, storeId, state, time);
 
         // tickets can be only picked up and in grace period only once
         // Tickets can be scanned multiple times by the same or different users

@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import cash.super_.platform.service.configuration.http.SupercashRequestContext;
+import cash.super_.platform.service.parkinglot.model.ParkinglotTicketId;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,10 @@ public abstract class AbstractParkingLotProxyService {
    */
   public boolean isTicketForTesting(String ticketNumber) {
     return testingParkinglotTicketRepository.containsTicket(ticketNumber);
+  }
+
+  public ParkinglotTicketId makeTicketId(Long ticketNumber) {
+    return new ParkinglotTicketId(ticketNumber, supercashRequestContext.getUserId(), supercashRequestContext.getStoreId());
   }
 
 }

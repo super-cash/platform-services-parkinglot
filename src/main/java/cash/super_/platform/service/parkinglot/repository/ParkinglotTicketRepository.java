@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot.repository;
 
 import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
+import cash.super_.platform.service.parkinglot.model.ParkinglotTicketId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -19,9 +20,29 @@ import java.util.Optional;
  *  in the Entity.
  */
 @Repository
-public interface ParkinglotTicketRepository extends PagingAndSortingRepository<ParkinglotTicket, Long> {
+public interface ParkinglotTicketRepository extends PagingAndSortingRepository<ParkinglotTicket, ParkinglotTicketId> {
 
+    /**
+     * @param ticketNumber
+     * @param userId
+     * @param storeId
+     * @return The ticket for the current user in the current store
+     */
     Optional<ParkinglotTicket> findByTicketNumberAndUserIdAndStoreId(Long ticketNumber, Long userId, Long storeId);
+
+    /**
+     * @param ticketNumber
+     * @param storeId
+     * @return The ticket for the current user in the current store
+     */
+    Optional<ParkinglotTicket> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
+
+    /**
+     * @param ticketNumber
+     * @param storeId
+     * @return whether the storage contains the ticket from onother user in the same store
+     */
+    boolean existsDistinctByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
 
     /**
      * Adding EntityGraph to fetch all properties https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/#method1retrievingandloadingobjectswithquery
