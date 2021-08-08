@@ -139,6 +139,11 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
           // The ticket actually was just removed but existed before, so it can't fail
           ParkinglotTicket savedTicket = parkingTicketsStateTransitionService.saveTicketTransitionStateAfterUserExits(ticketNumber);
 
+          // Can't recover the ticket for some reason. It is not in the database
+          if (savedTicket == null) {
+            throw error;
+          }
+
           // Make a new ticket status with the current status
           ticketStatus = parkingTicketsStateTransitionService.makeNewTicketTransitionAfterUserExits(savedTicket);
 

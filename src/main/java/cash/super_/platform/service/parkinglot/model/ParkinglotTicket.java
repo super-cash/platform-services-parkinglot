@@ -119,11 +119,15 @@ public class ParkinglotTicket {
         return findResult.isPresent();
     }
 
+    public static Set<ParkingTicketState> lastRecordedExclusionType() {
+      return EnumSet.of(ParkingTicketState.PICKED_UP, ParkingTicketState.SCANNED);
+    }
+
     @JsonIgnore
     public ParkinglotTicketStateTransition getLastStateRecorded() {
         return this.states.stream()
                 // exclude the states that the ticket gets in the start when they are registered
-                .filter( transition -> !EnumSet.of(ParkingTicketState.PICKED_UP, ParkingTicketState.SCANNED).contains(transition.getState()))
+                .filter( transition -> !lastRecordedExclusionType().contains(transition.getState()))
                 // https://stackoverflow.com/questions/26568555/sorting-by-property-in-java-8-stream/26568724#26568724
                 .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate)
                         // https://stackoverflow.com/questions/28607191/how-to-use-a-java8-lambda-to-sort-a-stream-in-reverse-order/62208724#62208724
