@@ -76,8 +76,11 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
           parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
         }
 
-        lastRecordedState = parkinglotTicket.getLastStateRecorded().getState();
-        LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}", ticketNumber, lastRecordedState, state, state != lastRecordedState);
+        if (parkinglotTicket.getLastStateRecorded() != null) {
+          lastRecordedState = parkinglotTicket.getLastStateRecorded().getState();
+          LOG.debug("Verifying current ticket {}'s last recoded state {} and to be saved {}; needs different: {}",
+                  ticketNumber, lastRecordedState, state, state != lastRecordedState);
+        }
 
       } else {
         // At this point the current user hasn't scanned this ticket, this might be a new user
@@ -299,6 +302,10 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public ParkingTicketState calculateTicketStatus(RetornoConsulta ticketStatus, long allowedExitMillis) {
     int ticketFee = ticketStatus.getTarifa();
+
+    if (!ticketStatus.isTicketValido() && ticketStatus.getTarifa() == -1 && ticketStatus.getTarifaPaga() == 0) {
+      return ParkingTicketState.EXITED_ON_FREE;
+    }
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)
     if (!ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketFee == -1) {

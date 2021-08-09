@@ -279,12 +279,17 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(Long.valueOf(ticketNumber), userId, storeId);
     if (ticket.isPresent()) {
 
-      ParkingTicketState lastRecordedState = ticket.get().getLastStateRecorded().getState();
-      if (!EnumSet.of(ParkingTicketState.NOT_PAID, ParkingTicketState.PAID).contains(lastRecordedState)) {
-        throw new SupercashPaymentCantPayInNonNotPaidStateException("Can't pay ticket state " + lastRecordedState);
-      }
-      if (ParkingTicketState.PAID == lastRecordedState) {
-        throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
+      ParkingTicketState lastRecordedState = null;
+      if (ticket.get().getLastStateRecorded() != null) {
+        lastRecordedState = ticket.get().getLastStateRecorded().getState();
+
+        if (!EnumSet.of(ParkingTicketState.NOT_PAID, ParkingTicketState.PAID).contains(lastRecordedState)) {
+          throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
+        }
+
+        if (ParkingTicketState.PAID == lastRecordedState) {
+          throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
+        }
       }
     }
 

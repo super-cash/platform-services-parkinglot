@@ -57,11 +57,17 @@ public class ParkinglotTicket {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<ParkinglotTicketStateTransition> states = new HashSet<>();
 
-    public Long getUserId() { return userId; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public Long getTicketNumber() { return ticketNumber; }
+    public Long getTicketNumber() {
+        return ticketNumber;
+    }
 
     public void setTicketNumber(Long ticketNumber) {
         this.ticketNumber = ticketNumber;
@@ -83,7 +89,9 @@ public class ParkinglotTicket {
         this.storeId = storeId;
     }
 
-    public Set<ParkinglotTicketPayment> getPayments() { return payments; }
+    public Set<ParkinglotTicketPayment> getPayments() {
+        return payments;
+    }
 
     public void setPayments(Set<ParkinglotTicketPayment> payments) {
         this.payments = payments;
