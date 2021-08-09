@@ -39,6 +39,14 @@ public class ParkinglotTicketStateTransition {
      * The specific time the ticket assumed this state
      */
     @NotNull
+    @Column(name = "ticket_number")
+    @JsonIgnore
+    private Long ticketNumber;
+
+    /**
+     * The specific time the ticket assumed this state
+     */
+    @NotNull
     @Column(name = "user_id")
     private Long userId;
 
@@ -47,6 +55,7 @@ public class ParkinglotTicketStateTransition {
      */
     @NotNull
     @Column(name = "store_id")
+    @JsonIgnore
     private Long storeId;
 
     /**
@@ -76,6 +85,7 @@ public class ParkinglotTicketStateTransition {
         transition.parkinglotTicket = parkinglotTicket;
         transition.state = state;
         transition.userId = userId;
+        transition.setTicketNumber(parkinglotTicket.getTicketNumber());
 
         // I was getting https://stackoverflow.com/questions/35356742/cant-commit-jpa-transaction-rollbackexception-transaction-marked-as-rollback/35377970
         // It is a foreign key and it was null.
@@ -83,29 +93,61 @@ public class ParkinglotTicketStateTransition {
         return transition;
     }
 
-    public ParkingTicketState getState() { return state; }
+    public ParkingTicketState getState() {
+        return state;
+    }
 
-    public void setState(ParkingTicketState state) { this.state = state; }
+    public void setState(ParkingTicketState state) {
+        this.state = state;
+    }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getStoreId() { return storeId; }
+    public Long getStoreId() {
+        return storeId;
+    }
 
-    public void setStoreId(Long storeId) { this.storeId = storeId; }
+    public void setStoreId(Long storeId) {
+        this.storeId = storeId;
+    }
 
-    public Long getDate() { return date; }
+    public Long getDate() {
+        return date;
+    }
 
-    public void setDate(Long date) { this.date = date; }
+    public void setDate(Long date) {
+        this.date = date;
+    }
 
-    public Long getUserId() { return userId; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public ParkinglotTicket getParkinglotTicket() { return parkinglotTicket; }
+    public Long getTicketNumber() {
+        return ticketNumber;
+    }
 
-    public void setParkinglotTicket(ParkinglotTicket parkinglotTicket) { this.parkinglotTicket = parkinglotTicket; }
+    public void setTicketNumber(Long ticketNumber) {
+        this.ticketNumber = ticketNumber;
+    }
+
+    public ParkinglotTicket getParkinglotTicket() {
+        return parkinglotTicket;
+    }
+
+    public void setParkinglotTicket(ParkinglotTicket parkinglotTicket) {
+        this.parkinglotTicket = parkinglotTicket;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -113,13 +155,12 @@ public class ParkinglotTicketStateTransition {
         if (o == null || getClass() != o.getClass()) return false;
         ParkinglotTicketStateTransition that = (ParkinglotTicketStateTransition) o;
         return parkinglotTicket.equals(that.parkinglotTicket)
-                && userId.equals(that.userId)
                 && date.equals(that.date)
                 && state == that.state;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parkinglotTicket, userId, date, state);
+        return Objects.hash(parkinglotTicket, date, state);
     }
 }
