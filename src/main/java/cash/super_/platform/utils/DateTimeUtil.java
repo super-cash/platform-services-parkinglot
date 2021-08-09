@@ -31,6 +31,15 @@ public enum DateTimeUtil {
     }
 
     /**
+     * Correctly converts the time to Brazil time
+     * @param dateTime
+     * @return It converts correctly
+     */
+    public static LocalDateTime convertToTimezone(LocalDateTime dateTime) {
+        return dateTime.atZone(TimeZone.getTimeZone(TIMEZONE_AMERICA_SAO_PAULO).toZoneId()).toLocalDateTime();
+    }
+
+    /**
      * @return Get the local
      */
     public static LocalDateTime getNowLocalDateTime() {

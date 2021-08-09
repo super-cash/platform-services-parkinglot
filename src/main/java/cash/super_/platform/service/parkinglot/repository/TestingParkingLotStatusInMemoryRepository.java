@@ -144,8 +144,8 @@ public class TestingParkingLotStatusInMemoryRepository {
     	// Create a free ticket
     	RetornoConsulta statusRetrieval = new RetornoConsulta();
     	statusRetrieval.setCnpjGaragem("12.200.135/0001-80");
-    	statusRetrieval.setDataDeEntrada(DateTimeUtil.getMillis(LocalDateTime.now()));
-    	statusRetrieval.setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()) + 350);
+    	statusRetrieval.setDataDeEntrada(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(LocalDateTime.now())));
+    	statusRetrieval.setDataConsulta(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(LocalDateTime.now()) + 350));
 
     	// set data saida to 4 hrs after
     	// https://stackoverflow.com/questions/4348525/get-date-as-of-4-hours-ago/4348542#4348542
@@ -155,11 +155,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		} else {
 			// Set the max time to leave to 4 hours from now
-			LocalDateTime fourHoursAhead = DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow()).plusHours(4);
-			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.getMillis(fourHoursAhead));
+			LocalDateTime fourHoursAhead = DateTimeUtil.convertToTimezone(DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow()).plusHours(4));
+			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(fourHoursAhead)));
 		}
-
-    	//freeTicket.setDataPermitidaSaidaUltimoPagamento(null);
 
     	// When the ticket loads, set the time
     	statusRetrieval.setErrorCode(0);
@@ -195,7 +193,7 @@ public class TestingParkingLotStatusInMemoryRepository {
     }
 
     public boolean containsTicket(String ticketNumber) {
-    	return statusCache.containsKey(ticketNumber);
+		return statusCache.containsKey(ticketNumber);
 	}
 
 	public ParkingTicketStatus getStatus(String ticketNumber) {
@@ -247,7 +245,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 					break;
 
 				case ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER:
-					testingTicketStatus.getStatus().setMensagem("TESTING TICKET, NEEDS SINGLE PAYMENT!");
+					testingTicketStatus.getStatus().setMensagem("TESTING TICKET, NEEDS MULTIPLE PAYMENTS NEVER EXISTS THE LOT!");
 					break;
 			}
 		}
@@ -292,7 +290,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		ParkingTicketStatus ticketStatus = this.getStatus(ticketNumber);
 
 		// record the payment on the ticket status and the exit time being 3 minutes later for testing
-		LocalDateTime exitDateTimeAfterPayment = LocalDateTime.now().plusMinutes(3);
+		LocalDateTime exitDateTimeAfterPayment = DateTimeUtil.convertToTimezone(LocalDateTime.now().plusMinutes(3));
 		ticketStatus.getStatus().setDataPermitidaSaidaUltimoPagamento(DateTimeUtil.getMillis(exitDateTimeAfterPayment));
 
 		// just a hack to make the prices to be the same to what it was submitted
