@@ -1,4 +1,8 @@
 # SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+
+# TODO: Use Config Server in Kubernetes as it's growing
+# https://www.briansdevblog.com/2021/04/spring-cloud-config-server-on-kubernetes-part-1/
+
 spring:
   application:
     name: parking-plus-service
@@ -18,6 +22,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate.temp.use_jdbc_metadata_defaults: false
+      hibernate.jdbc.lob.non_contextual_creation: true
      # hibernate.format_sql: true
 
   # Zipkin is the destination environment for the traces and it's disabled in development

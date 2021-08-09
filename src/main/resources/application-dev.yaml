@@ -1,7 +1,6 @@
 spring:
-
   datasource:
-    url: jdbc:postgresql://supercash-db-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+    url: jdbc:postgresql://supercash-ppd-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
     username: supercash
     password: _#super#_123
 
@@ -18,6 +17,7 @@ cash:
           baseUrl: http://payment-service:8120/v2/payments
 
         parkinglot:
+          bootstrapData: true
           baseUrl: https://maceio.parkingplus.com.br/servicos
           userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
           retryableDestinationHosts:

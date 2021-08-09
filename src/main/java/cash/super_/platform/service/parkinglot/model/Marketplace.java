@@ -1,13 +1,19 @@
 package cash.super_.platform.service.parkinglot.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import cash.super_.platform.utils.StringUtil;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity(name = "marketplace")
+@Table(indexes = {
+        @Index(name = "marketplace_name_idx", columnList = "name", unique = true),
+        @Index(name = "marketplace_url_idx", columnList = "url", unique = true),
+        @Index(name = "marketplace_codeName_idx", columnList = "codeName", unique = true)
+})
 public class Marketplace {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -15,6 +21,7 @@ public class Marketplace {
     @NotNull
     private String name = "";
 
+    @NotNull
     private String url = "";
 
     @NotNull
@@ -27,11 +34,11 @@ public class Marketplace {
 
     public Marketplace() {}
 
-    public Marketplace(Long id, String name, String url, String codeName) {
+    public Marketplace(Long id, String name, String url) {
         this.id = id;
         this.name = name;
         this.url = url;
-        this.codeName = codeName;
+        this.codeName = String.format("cash.super.%s", StringUtil.stripAccents(name.toLowerCase().trim().replaceAll(" ", "")));
     }
 
     public Long getId() {
@@ -80,6 +87,19 @@ public class Marketplace {
 
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Marketplace that = (Marketplace) o;
+        return Objects.equals(codeName, that.codeName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(codeName);
     }
 
     @Override

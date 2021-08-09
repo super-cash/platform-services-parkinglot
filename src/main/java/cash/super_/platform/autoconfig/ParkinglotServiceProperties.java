@@ -12,8 +12,10 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @Component
-@ConfigurationProperties("cash.super.platform.service.parkinglot")
+@ConfigurationProperties(ParkinglotServiceProperties.PROPERTY_ROOT_PREFIX)
 public class ParkinglotServiceProperties extends ServiceProperties {
+
+  public static final String PROPERTY_ROOT_PREFIX = "cash.super.platform.service.parkinglot";
 
   @Min(0)
   private long apiKeyId;
@@ -63,6 +65,16 @@ public class ParkinglotServiceProperties extends ServiceProperties {
 
   @NotNull
   private String udidPrefix;
+
+  private Boolean bootstrapData;
+
+  public Boolean getBootstrapData() {
+    return bootstrapData;
+  }
+
+  public void setBootstrapData(Boolean bootstrapData) {
+    this.bootstrapData = bootstrapData;
+  }
 
   public String getUserKey() {
     return userKey;
