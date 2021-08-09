@@ -44,6 +44,20 @@ public class ParkingTicketStatus {
     this.status = status;
     this.state = state;
     this.gracePeriodMaxTime = gracePeriodMaxTime;
+
+    // Convert to the Brazil timeframe
+    if (status.getDataConsulta() != null && status.getDataConsulta() > 0) {
+      status.setDataConsulta(DateTimeUtil.convertToTimezone(status.getDataConsulta()));
+    }
+    if (status.getDataPermitidaSaida() != null && status.getDataPermitidaSaida() > 0) {
+      status.setDataPermitidaSaida(DateTimeUtil.convertToTimezone(status.getDataPermitidaSaida()));
+    }
+    if (status.getDataDeEntrada() != null && status.getDataDeEntrada() > 0) {
+      status.setDataDeEntrada(DateTimeUtil.convertToTimezone(status.getDataDeEntrada()));
+    }
+    if (status.getDataPermitidaSaidaUltimoPagamento() != null && status.getDataPermitidaSaidaUltimoPagamento() > 0) {
+      status.setDataPermitidaSaidaUltimoPagamento(DateTimeUtil.convertToTimezone(status.getDataPermitidaSaidaUltimoPagamento()));
+    }
   }
 
   public RetornoConsulta getStatus() {

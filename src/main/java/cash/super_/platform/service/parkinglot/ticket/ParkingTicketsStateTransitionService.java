@@ -233,7 +233,9 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       ParkingTicketState exitState = switch (lastStateRecorded.getState()) {
         case FREE -> ParkingTicketState.EXITED_ON_FREE;
         case PAID -> ParkingTicketState.EXITED_ON_PAID;
-        default -> ParkingTicketState.EXITED_ON_GRACE_PERIOD;
+        default -> {
+          yield ParkingTicketState.EXITED_ON_GRACE_PERIOD;
+        }
       };
 
       // Save the ticket with the new state transition
@@ -260,14 +262,12 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     long now = DateTimeUtil.getMillis(LocalDateTime.now());
     ticketStatus.setDataConsulta(now);
 
-    Optional<ParkinglotTicketStateTransition> transition = parkinglotTicket.getStates().stream()
-            // https://www.geeksforgeeks.org/collections-reverseorder-java-examples/
-            // https://stackoverflow.com/questions/32995559/reverse-a-comparator-in-java-8/54525172#54525172
-            .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate))
+    // The entrnce of the ticket
+    Optional<ParkinglotTicketStateTransition> entranceDate = parkinglotTicket.getStates().stream()
+            .filter( ticketTransision -> ticketTransision.getState() == ParkingTicketState.PICKED_UP)
             .findFirst();
-
     // let's consider the user got in and left 20min ago, most conservative
-    ticketStatus.dataDeEntrada(transition.isPresent() ? transition.get().getDate() : now - (1000 * 60 * 20));
+    ticketStatus.dataDeEntrada(entranceDate.isPresent() ? entranceDate.get().getDate() : now - (1000 * 60 * 20));
 
     // Total value paid the last time
     ticketStatus.setTarifaPaga(
@@ -282,14 +282,12 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ticketStatus.setTarifaSemDesconto(-1);
     ticketStatus.setValorDesconto(-1);
 
-    // Just a hack to save the last state in the ticket message to capture it on the return
-    ticketStatus.setMensagem(parkinglotTicket.getStates().stream()
+    Optional<ParkinglotTicketStateTransition> lastTransition = parkinglotTicket.getStates().stream()
             // SORTED BY AT DESC
             .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate, Collections.reverseOrder()))
-            .findFirst()
-            .get()
-            .getState()
-            .toString());
+            .findFirst();
+    // Just a hack to save the last state in the ticket message to capture it on the return
+    ticketStatus.setMensagem(lastTransition.get().getState().toString());
 
     return ticketStatus;
   }
@@ -304,7 +302,8 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     int ticketFee = ticketStatus.getTarifa();
 
     if (!ticketStatus.isTicketValido() && ticketStatus.getTarifa() == -1 && ticketStatus.getTarifaPaga() == 0) {
-      return ParkingTicketState.EXITED_ON_FREE;
+      // the value was added during the exit time
+      return ParkingTicketState.valueOf(ticketStatus.getMensagem());
     }
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)

@@ -1,8 +1,6 @@
 package cash.super_.platform.service.parkinglot.repository;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -147,6 +145,7 @@ public class TestingParkingLotStatusInMemoryRepository {
     	RetornoConsulta statusRetrieval = new RetornoConsulta();
     	statusRetrieval.setCnpjGaragem("12.200.135/0001-80");
     	statusRetrieval.setDataDeEntrada(DateTimeUtil.getMillis(LocalDateTime.now()));
+    	statusRetrieval.setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()) + 350);
 
     	// set data saida to 4 hrs after
     	// https://stackoverflow.com/questions/4348525/get-date-as-of-4-hours-ago/4348542#4348542
