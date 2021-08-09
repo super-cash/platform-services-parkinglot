@@ -78,7 +78,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   }
 
   private static boolean ticketExitedParkingLot(RetornoConsulta ticketStatus) {
-    return !ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketStatus.getTarifa() == -1;
+    return !ticketStatus.isTicketValido();
   }
 
   /**
