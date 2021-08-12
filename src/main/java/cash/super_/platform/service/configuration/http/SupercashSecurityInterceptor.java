@@ -2,20 +2,21 @@ package cash.super_.platform.service.configuration.http;
 
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashMarketplaceNotFoundException;
+import cash.super_.platform.service.parkinglot.AbstractController;
 import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.utils.NumberUtil;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -32,17 +33,22 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private MarketplaceRepository marketplaceRepository;
 
-    @Autowired
-    private ParkinglotTicketRepository parkinglotTicketRepository;
-
-    // Since it's only loaded in certain profiles, autowire is optional
-    // https://stackoverflow.com/questions/57656119/how-to-autowire-conditionally-in-spring-boot/57656242#57656242
-    @Autowired(required = false)
-    private TestingParkingLotStatusInMemoryRepository testingParkinglotTicketRepository;
+    @Value("/${cash.super.platform.service.parkinglot.apiVersion}")
+    private String apiVersion;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (request.getMethod().equals("OPTIONS")) return true;
+
+        // TODO: REPLACE WITH SPRING SECURITY!
+        // https://www.baeldung.com/spring-boot-security-autoconfiguration
+        // Verify if any of the requested urls are valid according to our supported URLs
+        String requestedPath = request.getRequestURI();
+        String protectedPaths = String.format("/%s/%s", apiVersion, AbstractController.BASE_ENDPOINT);
+        // If it is not in the controller, allow them because it can be actuator, swagger, etc
+        if (!requestedPath.contains(protectedPaths)) {
+            return true;
+        }
 
         /* Validating transaction id */
         String headerName = "X-Supercash-Tid";
