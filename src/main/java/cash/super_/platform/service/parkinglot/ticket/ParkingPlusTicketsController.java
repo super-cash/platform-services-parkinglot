@@ -1,15 +1,11 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import cash.super_.platform.service.parkinglot.model.*;
 import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
