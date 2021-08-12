@@ -90,19 +90,28 @@ server:
       # https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
       pattern: "[ACCESS] %h %t %{org.apache.catalina.AccessLog.RemoteAddr}r http_method=%m http_path=%U http_query=%q http_protocol=%H http_status=%s latency_total=%Dms latency_commit=%Fms response_size=%Bbytes %S %u tid=%{X-Supercash-Tid}i uid=%{X-Supercash-Uid}i x_b3_traceid=%{X-B3-TraceId}o"
 
-# SpringFox Swagger
+# SpringFox Swagger, DOCS at /swagger-ui/#/
 # https://stackoverflow.com/questions/39401010/why-is-v2-api-docs-the-default-url-when-using-springfox-and-swagger2/39453151#39453151
 springfox:
   documentation:
     swagger:
       v2:
+        # Added for Gloo Gatewayhttps://docs.solo.io/gloo-edge/latest/installation/advanced_configuration/fds_mode/
         path: /swagger/docs/v2
 
+# https://docs.spring.io/spring-boot/docs/2.1.11.RELEASE/reference/html/production-ready-monitoring.html
 management:
+#  server:
+#    port: 9090
+  # does not work
+  #context-path: /admin
   endpoints:
     web:
+      # When the server port is used, then the base path is this one
+      base-path: /actuator
       exposure:
         include: "*"
+        # https://github.com/springdoc/springdoc-openapi/issues/923#issuecomment-735443042
 
   # Liveness and Readiness probe endpoints only work with this setup
   # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes

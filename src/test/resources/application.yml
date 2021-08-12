@@ -1,0 +1,8 @@
+# https://stackoverflow.com/questions/39690094/spring-boot-default-profile-for-integration-tests/66324710#66324710
+spring:
+  profiles:
+    active: "test"
+
+  # and import the 'main' properties
+  config:
+    import: file:src/main/resources/application.yml

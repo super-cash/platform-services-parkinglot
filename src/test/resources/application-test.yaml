@@ -1,5 +1,6 @@
 spring:
 
+  # https://www.baeldung.com/spring-boot-hsqldb
   datasource:
     url: jdbc:hsqldb:mem:scratchdb
     username: sa
