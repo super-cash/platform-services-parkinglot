@@ -151,13 +151,5 @@ dependencies {
     
     // Parking Plus
     implementation group: "cash.super_.platform.client", name: "parking-plus-client-feign", version: "1.0.0-SNAPSHOT"
-    testImplementation("org.hsqldb:hsqldb:2.5.1")
     implementation("org.postgresql:postgresql")
 }
-
-/*
-test {
-
-	useJUnitPlatform()
-}
-*/

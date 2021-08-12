@@ -24,23 +24,25 @@ testlogger {
 
 dependencies {
     // Testing Frameworks
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation("org.hsqldb:hsqldb:2.6.0")
 
-    // Mockito
+    // Mockito + JUnit 5
+    //testImplementation('org.springframework.boot:spring-boot-starter-test') {
+    //    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    //}
     // https://www.infoworld.com/article/3543268/junit-5-tutorial-part-2-unit-testing-spring-mvc-with-junit-5.html
-    testImplementation('org.mockito:mockito-core:3.6.0')
-    testImplementation('org.mockito:mockito-junit-jupiter:3.6.0')
-    testImplementation('org.powermock:powermock-api-mockito2:2.0.9')
+    //testImplementation('org.mockito:mockito-core:3.6.0')
+    //testImplementation('org.mockito:mockito-junit-jupiter:3.6.0')
+    //testImplementation('org.powermock:powermock-api-mockito2:2.0.9')
 }
 
 test {
-  useJUnitPlatform()
+    useJUnitPlatform()
 
-  ignoreFailures = false
+    ignoreFailures = false
 
-  maxParallelForks = 1
+    maxParallelForks = 1
 
 //    debugOptions {
 //        enabled = true
@@ -49,4 +51,3 @@ test {
 //       suspend = true
 //    }
 }
-
