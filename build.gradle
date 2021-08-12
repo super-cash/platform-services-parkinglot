@@ -16,8 +16,8 @@ buildscript {
 		// For src/gradle/tests
 		classpath 'com.adarshr:gradle-test-logger-plugin:2.1.1'
 		// For src/gradle/jacoco
-        // JDK 15 not working yet https://github.com/emeraldpay/polkaj/commit/9f4baeb09baa95cbe25a223817378240aa4909b2
-		classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.2'
+        // Fixed for Gradle 7.* https://github.com/ksoichiro/gradle-console-reporter/issues/15
+        classpath 'com.github.ksoichiro:gradle-console-reporter:0.6.3'
 	}
 }
 
