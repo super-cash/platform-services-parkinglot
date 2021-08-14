@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.error.supercash.feign.SupercashRetryableException;
+import cash.super_.platform.client.feign.SupercashRetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

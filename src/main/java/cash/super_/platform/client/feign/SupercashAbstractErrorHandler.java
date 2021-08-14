@@ -1,4 +1,4 @@
-package cash.super_.platform.error.supercash.feign;
+package cash.super_.platform.client.feign;
 
 import feign.Response;
 import java.util.List;

@@ -3,7 +3,7 @@ package cash.super_.platform.service.parkinglot;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import cash.super_.platform.configuration.http.SupercashRequestContext;
+import cash.super_.platform.adapter.http.SupercashRequestContext;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketId;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package cash.super_.platform.error.model;
+package cash.super_.platform.error;
 
 import cash.super_.platform.error.supercash.SupercashErrorCode;
 import com.fasterxml.jackson.annotation.*;

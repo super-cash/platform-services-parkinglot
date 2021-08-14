@@ -1,4 +1,4 @@
-package cash.super_.platform.configuration.http;
+package cash.super_.platform.adapter.http;
 
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
 import cash.super_.platform.error.supercash.SupercashMarketplaceNotFoundException;

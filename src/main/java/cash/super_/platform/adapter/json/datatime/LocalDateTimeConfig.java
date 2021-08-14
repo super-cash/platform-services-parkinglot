@@ -1,4 +1,4 @@
-package cash.super_.platform.configuration.json.datatime;
+package cash.super_.platform.adapter.json.datatime;
 
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;

@@ -1,9 +1,9 @@
-package cash.super_.platform.configuration.http;
+package cash.super_.platform.adapter.http;
 
 import cash.super_.platform.autoconfig.ClientProperties;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.client.wps.error.WPSErrorHandler;
-import cash.super_.platform.error.supercash.feign.SupercashErrorDecoder;
+import cash.super_.platform.client.feign.SupercashErrorDecoder;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.Retryer;
 import org.springframework.beans.factory.annotation.Autowired;
