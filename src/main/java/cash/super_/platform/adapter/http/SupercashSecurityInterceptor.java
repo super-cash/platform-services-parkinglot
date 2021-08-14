@@ -1,7 +1,7 @@
 package cash.super_.platform.adapter.http;
 
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashMarketplaceNotFoundException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
+import cash.super_.platform.error.parkinglot.SupercashMarketplaceNotFoundException;
 import cash.super_.platform.service.parkinglot.AbstractController;
 import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
 import cash.super_.platform.utils.NumberUtil;

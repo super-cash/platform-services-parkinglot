@@ -1,10 +1,10 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashPaymentAlreadyPaidException;
-import cash.super_.platform.error.supercash.SupercashPaymentCantPayInNonNotPaidStateException;
-import cash.super_.platform.error.supercash.SupercashSimpleException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
+import cash.super_.platform.error.parkinglot.SupercashPaymentAlreadyPaidException;
+import cash.super_.platform.error.parkinglot.SupercashPaymentCantPayInNonNotPaidStateException;
+import cash.super_.platform.error.parkinglot.SupercashSimpleException;
 import cash.super_.platform.model.parkinglot.*;
 import cash.super_.platform.model.payment.pagarme.TransactionRequest;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;

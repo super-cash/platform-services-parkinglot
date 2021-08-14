@@ -2,10 +2,10 @@ package cash.super_.platform.service.parkinglot.payment;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.payment.PaymentServiceApiClient;
-import cash.super_.platform.error.ParkingPlusPaymentNotApprovedException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashPaymentErrorException;
-import cash.super_.platform.error.supercash.SupercashUnknownHostException;
+import cash.super_.platform.client.wps.error.ParkingPlusPaymentNotApprovedException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
+import cash.super_.platform.error.parkinglot.SupercashPaymentErrorException;
+import cash.super_.platform.error.parkinglot.SupercashUnknownHostException;
 import cash.super_.platform.model.supercash.Payment;
 import cash.super_.platform.model.supercash.PaymentChargeCaptureRequest;
 import cash.super_.platform.model.payment.pagarme.Item;

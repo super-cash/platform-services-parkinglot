@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;

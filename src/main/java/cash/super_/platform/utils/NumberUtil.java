@@ -1,7 +1,7 @@
 package cash.super_.platform.utils;
 
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
+import cash.super_.platform.error.parkinglot.SupercashMissingArgumentException;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 

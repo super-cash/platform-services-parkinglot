@@ -1,8 +1,8 @@
 package cash.super_.platform.client.payment.error;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.client.feign.SupercashAbstractErrorHandler;
+import cash.super_.platform.error.parkinglot.SupercashSimpleException;
+import cash.super_.platform.adapter.feign.SupercashAbstractErrorHandler;
 import cash.super_.platform.utils.JsonUtil;
 import feign.Response;
 import org.slf4j.Logger;

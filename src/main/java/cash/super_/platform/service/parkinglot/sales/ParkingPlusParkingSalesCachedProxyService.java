@@ -7,9 +7,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.error.ParkingPlusInvalidSalesException;
-import cash.super_.platform.error.ParkingPlusSalesNotFoundException;
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
+import cash.super_.platform.client.wps.error.ParkingPlusInvalidSalesException;
+import cash.super_.platform.client.wps.error.ParkingPlusSalesNotFoundException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;

@@ -3,7 +3,7 @@ package cash.super_.platform.client.payment;
 import cash.super_.platform.autoconfig.ClientProperties;
 import cash.super_.platform.client.DefaultObjectMapper;
 import cash.super_.platform.client.payment.error.PaymentErrorHandler;
-import cash.super_.platform.client.feign.SupercashErrorDecoder;
+import cash.super_.platform.adapter.feign.SupercashErrorDecoder;
 import cash.super_.platform.model.supercash.PaymentChargeCaptureRequest;
 import cash.super_.platform.model.supercash.types.charge.PaymentChargeResponse;
 import cash.super_.platform.model.supercash.types.charge.AnonymousPaymentChargeRequest;

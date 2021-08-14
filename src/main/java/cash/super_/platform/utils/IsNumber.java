@@ -1,7 +1,6 @@
 package cash.super_.platform.utils;
 
-import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.error.supercash.SupercashMissingArgumentException;
+import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 
 public class IsNumber {
 

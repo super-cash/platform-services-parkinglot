@@ -1,4 +1,4 @@
-package cash.super_.platform.error.supercash;
+package cash.super_.platform.error.parkinglot;
 
 import cash.super_.platform.error.SupercashExceptionModel;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,7 +1,7 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import java.time.LocalDateTime;
-import cash.super_.platform.error.supercash.*;
+import cash.super_.platform.error.parkinglot.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;

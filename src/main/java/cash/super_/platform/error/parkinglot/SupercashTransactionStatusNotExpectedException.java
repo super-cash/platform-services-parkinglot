@@ -1,4 +1,4 @@
-package cash.super_.platform.error.supercash;
+package cash.super_.platform.error.parkinglot;
 
 import cash.super_.platform.model.payment.pagarme.Transaction;
 import org.springframework.http.HttpStatus;

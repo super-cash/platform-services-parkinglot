@@ -1,7 +1,7 @@
-package cash.super_.platform.client.feign;
+package cash.super_.platform.adapter.feign;
 
-import cash.super_.platform.error.supercash.SupercashSimpleException;
-import cash.super_.platform.error.supercash.SupercashUnknownHostException;
+import cash.super_.platform.error.parkinglot.SupercashSimpleException;
+import cash.super_.platform.error.parkinglot.SupercashUnknownHostException;
 import feign.FeignException;
 import feign.Request;
 import feign.Response;
