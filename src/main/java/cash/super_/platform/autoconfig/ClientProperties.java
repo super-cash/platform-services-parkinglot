@@ -5,7 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
+import java.util.TimeZone;
 
 /**
  * The properties for Feign Clients used by Supercash in general.
@@ -31,6 +33,12 @@ public class ClientProperties {
 
     @NotNull
     private String timeZone;
+
+    @PostConstruct
+    public void init(){
+        // Setting Spring Boot SetTimeZone configured according to the client settings
+        TimeZone.setDefault(TimeZone.getTimeZone(getTimeZone()));
+    }
 
     public Logger.Level getLogLevel() {
         return logLevel;

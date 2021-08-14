@@ -7,23 +7,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import javax.annotation.PostConstruct;
-import java.util.TimeZone;
-
 @SpringBootApplication
 @EnableFeignClients()
-@EnableJpaRepositories(basePackages = {"cash.super_.platform.service.parkinglot.model",
+@EnableJpaRepositories(basePackages = {"cash.super_.platform.model.parkinglot",
         "cash.super_.platform.service.parkinglot.repository"})
 public class Application {
 
   @Autowired
   private ClientProperties clientProperties;
-
-  @PostConstruct
-  public void init(){
-    // Setting Spring Boot SetTimeZone configured according to the client settings
-    TimeZone.setDefault(TimeZone.getTimeZone(clientProperties.getTimeZone()));
-  }
 
   public static void main(String args[]) {
     SpringApplication.run(Application.class, args);
