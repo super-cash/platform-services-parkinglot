@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import cash.super_.platform.service.parkinglot.AbstractController;
-import cash.super_.platform.service.parkinglot.model.ParkingGarageSales;
+import cash.super_.platform.model.parkinglot.ParkingGarageSales;
 import io.swagger.annotations.ApiOperation;
 
 @Controller

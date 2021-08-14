@@ -1,7 +1,7 @@
 package cash.super_.platform.service.parkinglot.repository;
 
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicketId;
+import cash.super_.platform.model.parkinglot.ParkinglotTicket;
+import cash.super_.platform.model.parkinglot.ParkinglotTicketId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

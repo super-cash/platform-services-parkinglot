@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import cash.super_.platform.service.parkinglot.model.*;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
+import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
+import cash.super_.platform.model.parkinglot.ParkingTicketPayment;
+import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

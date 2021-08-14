@@ -9,8 +9,8 @@ import javax.annotation.PostConstruct;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.supercash.SupercashInvalidValueException;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketAuthorizedPaymentStatus;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
+import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
+import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
 import cash.super_.platform.utils.DateTimeUtil;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
+import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 
 /**
  * In-memory repository for testing tickets to be used by the app

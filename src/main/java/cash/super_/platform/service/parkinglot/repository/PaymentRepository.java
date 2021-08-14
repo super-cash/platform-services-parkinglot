@@ -1,6 +1,6 @@
 package cash.super_.platform.service.parkinglot.repository;
 
-import cash.super_.platform.service.payment.model.supercash.Payment;
+import cash.super_.platform.model.supercash.Payment;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

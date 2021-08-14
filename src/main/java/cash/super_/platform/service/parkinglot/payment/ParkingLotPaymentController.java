@@ -1,8 +1,8 @@
 package cash.super_.platform.service.parkinglot.payment;
 
 import cash.super_.platform.service.parkinglot.AbstractController;
-import cash.super_.platform.service.parkinglot.model.ParkingPlusPaymentGracePeriod;
-import cash.super_.platform.service.parkinglot.model.ParkingPlusPaymentServiceFee;
+import cash.super_.platform.model.parkinglot.ParkingPlusPaymentGracePeriod;
+import cash.super_.platform.model.parkinglot.ParkingPlusPaymentServiceFee;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

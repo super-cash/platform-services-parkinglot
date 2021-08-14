@@ -23,7 +23,7 @@ import brave.Tracer;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.Promocao;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.service.parkinglot.model.ParkingGarageSales;
+import cash.super_.platform.model.parkinglot.ParkingGarageSales;
 import cash.super_.platform.utils.JsonUtil;
 import cash.super_.platform.utils.SecretsUtil;
 

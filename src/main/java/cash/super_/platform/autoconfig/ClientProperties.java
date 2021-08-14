@@ -1,7 +1,6 @@
 package cash.super_.platform.autoconfig;
 
 import feign.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -17,8 +16,6 @@ import javax.validation.constraints.NotNull;
 @Component
 @ConfigurationProperties(prefix = "cash.super.platform.client")
 public class ClientProperties {
-
-    protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ClientProperties.class);
 
     @NotNull
     private Logger.Level logLevel;

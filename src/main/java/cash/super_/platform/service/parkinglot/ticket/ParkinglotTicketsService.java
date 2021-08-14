@@ -1,7 +1,7 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
+import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.JpaUtil;

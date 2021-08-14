@@ -1,7 +1,7 @@
 package cash.super_.platform.service.parkinglot.repository;
 
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicketPayment;
+import cash.super_.platform.model.parkinglot.ParkinglotTicket;
+import cash.super_.platform.model.parkinglot.ParkinglotTicketPayment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

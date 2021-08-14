@@ -3,8 +3,8 @@ package cash.super_.platform.service.parkinglot.ticket;
 import java.time.LocalDateTime;
 import cash.super_.platform.error.supercash.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
+import cash.super_.platform.model.parkinglot.ParkingTicketState;
+import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.utils.DateTimeUtil;
 import cash.super_.platform.utils.SecretsUtil;
 import com.google.common.base.Strings;
@@ -16,7 +16,7 @@ import brave.Span;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketStatus;
+import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import cash.super_.platform.utils.JsonUtil;
 
 /**
@@ -40,6 +40,13 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     }
 
     Long userId = supercashRequestContext.getUserId();
+
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
+    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;

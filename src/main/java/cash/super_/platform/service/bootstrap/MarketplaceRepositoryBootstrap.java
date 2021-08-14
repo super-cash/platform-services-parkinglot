@@ -1,7 +1,7 @@
 package cash.super_.platform.service.bootstrap;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.service.parkinglot.model.Marketplace;
+import cash.super_.platform.model.parkinglot.Marketplace;
 import cash.super_.platform.service.parkinglot.repository.MarketplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

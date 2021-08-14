@@ -2,9 +2,9 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
-import cash.super_.platform.service.parkinglot.model.ParkingTicketState;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicketStateTransition;
-import cash.super_.platform.service.parkinglot.model.ParkinglotTicket;
+import cash.super_.platform.model.parkinglot.ParkingTicketState;
+import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
+import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
 import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketStateTransitionsRepository;
 import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
