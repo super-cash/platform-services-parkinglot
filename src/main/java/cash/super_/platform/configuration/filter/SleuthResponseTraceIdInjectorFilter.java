@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration.filter;
+package cash.super_.platform.configuration.filter;
 
 import java.io.IOException;
 import javax.servlet.FilterChain;

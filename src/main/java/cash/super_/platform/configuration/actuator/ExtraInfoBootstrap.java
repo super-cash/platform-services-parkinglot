@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration.actuator;
+package cash.super_.platform.configuration.actuator;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;

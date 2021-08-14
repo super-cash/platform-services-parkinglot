@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration.filter;
+package cash.super_.platform.configuration.filter;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;

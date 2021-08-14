@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration.http;
+package cash.super_.platform.configuration.http;
 
 import cash.super_.platform.autoconfig.ClientProperties;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;

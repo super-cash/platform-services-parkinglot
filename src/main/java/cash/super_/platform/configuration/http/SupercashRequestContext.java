@@ -1,4 +1,4 @@
-package cash.super_.platform.service.configuration.http;
+package cash.super_.platform.configuration.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

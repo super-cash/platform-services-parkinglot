@@ -7,20 +7,6 @@ networks:
 
 services:
   
-  # Postgres db to use with the app
-  db:
-    image: postgres
-    container_name: postgres
-    restart: always
-    networks:
-      - supercash-data-network
-    environment:
-      POSTGRES_DB: supercash
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - 5432:5432
-  
   adminer:
     image: adminer
     restart: always
