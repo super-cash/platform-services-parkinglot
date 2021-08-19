@@ -1,7 +1,7 @@
 package cash.super_.platform.client.wps.error;
 
-import cash.super_.platform.error.parkinglot.SupercashErrorCode;
-import cash.super_.platform.error.parkinglot.SupercashSimpleException;
+import cash.super_.platform.adapter.feign.SupercashErrorCode;
+import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
 public class ParkingPlusSalesNotFoundException extends SupercashSimpleException {

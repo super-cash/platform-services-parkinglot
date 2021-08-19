@@ -1,6 +1,6 @@
 package cash.super_.platform.client;
 
-import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
+import cash.super_.platform.autoconfig.PlatformAdaptorProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ import java.util.List;
 public class ObjectMapperConfiguration implements WebMvcConfigurer {
 
     @Autowired
-    private PlatformConfigurationProperties platformConfigurationProperties;
+    private PlatformAdaptorProperties platformConfigurationProperties;
 
     @Autowired
     private DefaultObjectMapper defaultObjectMapper;

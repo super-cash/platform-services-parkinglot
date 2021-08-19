@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkinglot.repository;
+package cash.super_.platform.repository;
 
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketPayment;

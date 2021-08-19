@@ -127,6 +127,13 @@ management:
 cash:
   super:
     platform:
+      adaptor:
+        # kubernetes readiness probe, reusing the cache and updating it
+        # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
+        healthcheck:
+          readinessInterval: 1
+          readinessTimeUnit: HOURS
+
       client:
         # Show full HTTP status, body, etc https://www.baeldung.com/java-feign-logging#logging-configuration
         logLevel: FULL
@@ -149,9 +156,17 @@ cash:
         # Max time, in seconds, we accept to wait as  the retry interval increases due to exponential backoff
         retryMaxPeriod: 20
 
-      service:
         payment:
           baseUrl: http://localhost:8120/v2/payments
+
+        orchestrator:
+          # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+          apiUrl: http://orchestrator:8501
+
+          # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
+          defaultHeathCheckPort: 443
+
+      service:
 
         parkinglot:
           # Our API Version
@@ -208,20 +223,3 @@ cash:
 
           # Time, in minutes, the user can leave the parking lot without paying the ticket
           gracePeriodInMinutes: 20
-
-      configuration:
-
-        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        apiUrl: http://orchestrator:8501
-
-        # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-        orchestratorUrl: http://orchestrator:8501
-
-        # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
-        defaultHeathCheckPort: 443
-
-        # kubernetes readiness probe, reusing the cache and updating it
-        # https://www.baeldung.com/spring-boot-kubernetes-self-healing-apps#3-readiness-example
-        healthProbe:
-          readinessInterval: 1
-          readinessTimeUnit: HOURS

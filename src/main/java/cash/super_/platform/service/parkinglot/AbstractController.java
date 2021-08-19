@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import cash.super_.platform.error.parkinglot.SupercashSimpleException;
+import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.adapter.feign.SupercashRetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

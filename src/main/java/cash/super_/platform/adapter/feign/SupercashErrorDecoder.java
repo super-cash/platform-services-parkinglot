@@ -1,7 +1,5 @@
 package cash.super_.platform.adapter.feign;
 
-import cash.super_.platform.error.parkinglot.SupercashSimpleException;
-import cash.super_.platform.error.parkinglot.SupercashUnknownHostException;
 import feign.FeignException;
 import feign.Request;
 import feign.Response;
@@ -18,8 +16,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-// For more info: https://medium.com/swlh/how-to-customize-feigns-retry-mechanism-b472202be331
-
+// https://medium.com/swlh/how-to-customize-feigns-retry-mechanism-b472202be331
+/**
+ * Decoder for errors from feign clients
+ */
 public class SupercashErrorDecoder implements ErrorDecoder {
 
   protected static final Logger LOG = LoggerFactory.getLogger(SupercashErrorDecoder.class);

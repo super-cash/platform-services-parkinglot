@@ -1,4 +1,4 @@
-package cash.super_.platform.adapter.http;
+package cash.super_.platform.adapter.feign;
 
 import feign.Contract;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class FeignBootstrap {
+
     @Bean
     public Contract useFeignAnnotations() {
         return new Contract.Default();

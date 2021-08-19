@@ -4,7 +4,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.autoconfig.PlatformConfigurationProperties;
+import cash.super_.platform.autoconfig.PlatformAdaptorProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class HealthProbeVerifier {
   private ParkingPlusParkingSalesCachedProxyService salesCacheService;
 
   @Autowired
-  private PlatformConfigurationProperties configurationProperties;
+  private PlatformAdaptorProperties configurationProperties;
 
   @Autowired
   private ParkinglotServiceProperties properties;
@@ -61,8 +61,8 @@ public class HealthProbeVerifier {
 
     LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
         applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-            configurationProperties.getHealthProbe().getReadinessInterval(),
-            configurationProperties.getHealthProbe().getReadinessTimeUnit());
+            configurationProperties.getHealthcheck().getReadinessInterval(),
+            configurationProperties.getHealthcheck().getReadinessTimeUnit());
 
     LOG.debug("Bootstrapping the probes helper");
     checkReadiness();
@@ -103,12 +103,12 @@ public class HealthProbeVerifier {
 
         LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
             applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-                configurationProperties.getHealthProbe().getReadinessInterval(),
-                configurationProperties.getHealthProbe().getReadinessTimeUnit());
+                configurationProperties.getHealthcheck().getReadinessInterval(),
+                configurationProperties.getHealthcheck().getReadinessTimeUnit());
       }
 
-    }, 0L, configurationProperties.getHealthProbe().getReadinessInterval(),
-            configurationProperties.getHealthProbe().getReadinessTimeUnit());
+    }, 0L, configurationProperties.getHealthcheck().getReadinessInterval(),
+            configurationProperties.getHealthcheck().getReadinessTimeUnit());
   }
 
 }

@@ -1,6 +1,6 @@
 package cash.super_.platform.autoconfig;
 
-import cash.super_.platform.utils.URLUtils;
+import cash.super_.platform.util.URLUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ public class ServiceProperties {
     protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ServiceProperties.class);
 
     @Autowired
-    private PlatformConfigurationProperties platformConfigurationProperties;
+    private PlatformAdaptorProperties platformConfigurationProperties;
 
     @NotBlank
     private String apiVersion;
@@ -28,11 +28,11 @@ public class ServiceProperties {
     @NotNull
     private List<String> retryableDestinationHosts = new ArrayList<String>();
 
-    public PlatformConfigurationProperties getPlatformConfigurationProperties() {
+    public PlatformAdaptorProperties getPlatformConfigurationProperties() {
         return platformConfigurationProperties;
     }
 
-    public void setPlatformConfigurationProperties(PlatformConfigurationProperties platformConfigurationProperties) {
+    public void setPlatformConfigurationProperties(PlatformAdaptorProperties platformConfigurationProperties) {
         this.platformConfigurationProperties = platformConfigurationProperties;
     }
 
@@ -49,7 +49,7 @@ public class ServiceProperties {
     }
 
     public void setBaseUrl(String baseUrl) {
-        URL url = URLUtils.validateURL(baseUrl, platformConfigurationProperties.getDefaultHeathCheckPort());
+        URL url = URLUtils.validateURL(baseUrl);
         this.baseUrl = url.toString();
     }
 

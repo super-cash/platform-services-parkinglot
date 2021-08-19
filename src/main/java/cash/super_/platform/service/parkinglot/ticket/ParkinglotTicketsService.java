@@ -2,10 +2,10 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import cash.super_.platform.utils.DateTimeUtil;
-import cash.super_.platform.utils.JpaUtil;
-import cash.super_.platform.utils.NumberUtil;
+import cash.super_.platform.repository.ParkinglotTicketRepository;
+import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.JpaUtil;
+import cash.super_.platform.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

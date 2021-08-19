@@ -5,11 +5,11 @@ import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketRepository;
-import cash.super_.platform.service.parkinglot.repository.ParkinglotTicketStateTransitionsRepository;
-import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
-import cash.super_.platform.utils.DateTimeUtil;
-import cash.super_.platform.utils.IsNumber;
+import cash.super_.platform.repository.ParkinglotTicketRepository;
+import cash.super_.platform.repository.ParkinglotTicketStateTransitionsRepository;
+import cash.super_.platform.repository.TestingParkingLotStatusInMemoryRepository;
+import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +51,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public void saveTicketTransitionStateWhileUserInLot(RetornoConsulta ticketStatus, final ParkingTicketState state, boolean scanned) {
     final String ticketNumber = ticketStatus.getNumeroTicket();
-    final Long validTicketNumber = IsNumber.stringIsLongWithException(ticketNumber, "Número Ticket");
+    final Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber, "Número Ticket");
 
     final Long storeId = supercashRequestContext.getStoreId();
     final Long userId = supercashRequestContext.getUserId();
@@ -175,7 +175,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public ParkinglotTicket saveTicketTransitionStateAfterUserExits(String ticketNumber) {
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
-    Long validTicketNumber = IsNumber.stringIsLongWithException(ticketNumber, "Número Ticket");
+    Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber, "Número Ticket");
     ParkinglotTicket parkingTicket = new ParkinglotTicket();
     parkingTicket.setTicketNumber(validTicketNumber);
 

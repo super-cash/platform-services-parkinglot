@@ -1,6 +1,6 @@
 package cash.super_.platform.model.parkinglot;
 
-import cash.super_.platform.utils.StringUtil;
+import cash.super_.platform.util.StringUtil;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

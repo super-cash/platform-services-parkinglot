@@ -1,4 +1,4 @@
-package cash.super_.platform.utils;
+package cash.super_.platform.util;
 
 import java.io.File;
 import java.io.IOException;

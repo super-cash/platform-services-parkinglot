@@ -1,5 +1,7 @@
 package cash.super_.platform.error.parkinglot;
 
+import cash.super_.platform.adapter.feign.SupercashErrorCode;
+import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import org.springframework.http.HttpStatus;
 
 public class SupercashInvalidValueException extends SupercashSimpleException {

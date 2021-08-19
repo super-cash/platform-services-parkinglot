@@ -1,8 +1,6 @@
-package cash.super_.platform.utils;
+package cash.super_.platform.util;
 
 import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
-
 import com.google.common.hash.Hashing;
 
 public class SecretsUtil {

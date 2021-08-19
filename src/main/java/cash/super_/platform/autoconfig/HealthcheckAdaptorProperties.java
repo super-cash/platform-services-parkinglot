@@ -4,7 +4,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.TimeUnit;
 
-public class KubernetesProbeProperties {
+public class HealthcheckAdaptorProperties {
 
     @Min(1)
     private Long readinessInterval;
@@ -30,7 +30,7 @@ public class KubernetesProbeProperties {
 
     @Override
     public String toString() {
-        return "KubernetesProbeProperties{" +
+        return "HealthcheckAdaptorProperties{" +
                 "readinessInterval=" + readinessInterval +
                 ", readinessTimeUnit=" + readinessTimeUnit +
                 '}';

@@ -1,4 +1,4 @@
-package cash.super_.platform.utils;
+package cash.super_.platform.util;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

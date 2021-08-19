@@ -1,4 +1,4 @@
-package cash.super_.platform.error.parkinglot;
+package cash.super_.platform.adapter.feign;
 
 import org.springframework.http.HttpStatus;
 

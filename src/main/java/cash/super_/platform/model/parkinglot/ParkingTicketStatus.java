@@ -1,7 +1,7 @@
 package cash.super_.platform.model.parkinglot;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
-import cash.super_.platform.utils.DateTimeUtil;
+import cash.super_.platform.util.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**

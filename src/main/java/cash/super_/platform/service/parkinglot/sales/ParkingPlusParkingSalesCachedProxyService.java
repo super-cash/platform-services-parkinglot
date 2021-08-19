@@ -24,8 +24,8 @@ import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.Promocao;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import cash.super_.platform.model.parkinglot.ParkingGarageSales;
-import cash.super_.platform.utils.JsonUtil;
-import cash.super_.platform.utils.SecretsUtil;
+import cash.super_.platform.util.JsonUtil;
+import cash.super_.platform.util.SecretsUtil;
 
 /**
  * The Service is also a cache loader, as a separate class would not be different. Too little to be

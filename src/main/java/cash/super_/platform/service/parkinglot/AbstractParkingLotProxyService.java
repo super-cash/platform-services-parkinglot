@@ -5,14 +5,14 @@ import javax.annotation.Resource;
 
 import cash.super_.platform.adapter.http.SupercashRequestContext;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketId;
-import cash.super_.platform.service.parkinglot.repository.TestingParkingLotStatusInMemoryRepository;
+import cash.super_.platform.repository.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import brave.Tracer;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.utils.SecretsUtil;
+import cash.super_.platform.util.SecretsUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.

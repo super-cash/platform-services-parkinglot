@@ -1,7 +1,7 @@
 package cash.super_.platform.client;
 
 import cash.super_.platform.autoconfig.ClientProperties;
-import cash.super_.platform.adapter.json.datatime.LocalDateTimeConfig;
+import cash.super_.platform.adapter.json.LocalDateTimeConfig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

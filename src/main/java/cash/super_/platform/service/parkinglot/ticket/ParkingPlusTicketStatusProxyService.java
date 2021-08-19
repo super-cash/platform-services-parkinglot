@@ -1,12 +1,15 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
 import java.time.LocalDateTime;
+
+import cash.super_.platform.adapter.feign.SupercashErrorCode;
+import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.error.parkinglot.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
-import cash.super_.platform.utils.DateTimeUtil;
-import cash.super_.platform.utils.SecretsUtil;
+import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.SecretsUtil;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +20,7 @@ import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
-import cash.super_.platform.utils.JsonUtil;
+import cash.super_.platform.util.JsonUtil;
 
 /**
  * Retrieve the status of tickets, process payments, etc.

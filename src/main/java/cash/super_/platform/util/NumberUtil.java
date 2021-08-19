@@ -1,4 +1,4 @@
-package cash.super_.platform.utils;
+package cash.super_.platform.util;
 
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import cash.super_.platform.error.parkinglot.SupercashMissingArgumentException;

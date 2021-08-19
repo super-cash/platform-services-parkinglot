@@ -1,6 +1,5 @@
-package cash.super_.platform.error;
+package cash.super_.platform.adapter.feign;
 
-import cash.super_.platform.error.parkinglot.SupercashErrorCode;
 import com.fasterxml.jackson.annotation.*;
 import org.springframework.http.HttpStatus;
 

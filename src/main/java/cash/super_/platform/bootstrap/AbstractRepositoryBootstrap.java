@@ -1,4 +1,4 @@
-package cash.super_.platform.service.bootstrap;
+package cash.super_.platform.bootstrap;
 
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkinglot.repository;
+package cash.super_.platform.repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,7 +12,7 @@ import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
-import cash.super_.platform.utils.DateTimeUtil;
+import cash.super_.platform.util.DateTimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
