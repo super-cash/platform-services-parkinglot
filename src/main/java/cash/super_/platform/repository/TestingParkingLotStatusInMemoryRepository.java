@@ -60,11 +60,11 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * When the grace period expires in minutes during tests
 	 */
-	public static final int GRACE_PERIOD_DURING_TESTING = 3;
+	public static final int GRACE_PERIOD_DURING_TESTING = 1;
 	/**
 	 * When the price expires during tests
 	 */
-	public static final int PRICE_CHANGE_IN_MINUTES = 5;
+	public static final int PRICE_CHANGE_IN_MINUTES = 2;
 
 	@Autowired
 	protected ParkinglotServiceProperties properties;
@@ -135,7 +135,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
 		Timer timer = new Timer();
-		long fiveMimutes = 1000 * 60 * PRICE_CHANGE_IN_MINUTES;
+		long fiveMimutes = 1000 * 60 * GRACE_PERIOD_DURING_TESTING;
 		timer.schedule(new PriceUpdaterTask(), fiveMimutes, fiveMimutes);
     }
 
@@ -144,8 +144,8 @@ public class TestingParkingLotStatusInMemoryRepository {
     	// Create a free ticket
     	RetornoConsulta statusRetrieval = new RetornoConsulta();
     	statusRetrieval.setCnpjGaragem("12.200.135/0001-80");
-    	statusRetrieval.setDataDeEntrada(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(LocalDateTime.now())));
-    	statusRetrieval.setDataConsulta(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(LocalDateTime.now()) + 350));
+    	statusRetrieval.setDataDeEntrada(DateTimeUtil.getNow());
+    	statusRetrieval.setDataConsulta(DateTimeUtil.getNow());
 
     	// set data saida to 4 hrs after
     	// https://stackoverflow.com/questions/4348525/get-date-as-of-4-hours-ago/4348542#4348542
@@ -155,8 +155,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		} else {
 			// Set the max time to leave to 4 hours from now
-			LocalDateTime fourHoursAhead = DateTimeUtil.convertToTimezone(DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow()).plusHours(4));
-			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.convertToTimezone(DateTimeUtil.getMillis(fourHoursAhead)));
+			LocalDateTime fourHoursAhead = DateTimeUtil.getNowLocalDateTime().plusHours(4);
+			statusRetrieval.setDataPermitidaSaida(DateTimeUtil.getMillis(fourHoursAhead));
 		}
 
     	// When the ticket loads, set the time
@@ -201,7 +201,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 			ParkingTicketStatus status = statusCache.get(ticketNumber);
 
 			// The time that the client API bases the calculations
-			status.getStatus().setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()));
+			status.getStatus().setDataConsulta(DateTimeUtil.getMillis(DateTimeUtil.convertToTimezone(DateTimeUtil.getNowLocalDateTime())));
 			return status;
 		}
 		return null;
@@ -216,7 +216,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		RetornoConsulta queryResult = queryResultsCache.get(ticketNumber);
 
 		// The time that the client API bases the calculations
-		queryResult.setDataConsulta(DateTimeUtil.getMillis(LocalDateTime.now()));
+		queryResult.setDataConsulta(DateTimeUtil.getNow());
 
 		return queryResult;
 	}
@@ -230,8 +230,9 @@ public class TestingParkingLotStatusInMemoryRepository {
 	 */
 	public ParkingTicketStatus updateStatus(String ticketNumber, ParkingTicketState parkingTicketState) {
 		ParkingTicketStatus testingTicketStatus = this.getStatus(ticketNumber);
-		testingTicketStatus.setState(parkingTicketState);
-
+		if (parkingTicketState != null) {
+			testingTicketStatus.setState(parkingTicketState);
+		}
 		// The ticket status is always free, testing weekends, holidays, etc
 		// Make the whole transition of the status based on the type
 		if (testingTicketStatus.getStatus().getMensagem() != null && testingTicketStatus.getStatus().getMensagem().isEmpty()) {
@@ -264,7 +265,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 			}
 
 			// We can now update if the current time is greater than the grace period
-			LocalDateTime now = DateTimeUtil.getLocalDateTime(DateTimeUtil.getNow());
+			LocalDateTime now = DateTimeUtil.getNowLocalDateTime();
 			LocalDateTime gracePeriodMax = testingGracePeriod.minusSeconds(ParkingTicketsStateTransitionService.GRACE_PERIOD_MINUS_SECONDS_OFFSET);
 			if (now.isAfter(gracePeriodMax)) {
 				LOG.debug("The testing ticket {}'s grace period timedout so setting it to NOT_PAID: entrance={} testingGracePeriod={} now={}",
@@ -290,7 +291,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		ParkingTicketStatus ticketStatus = this.getStatus(ticketNumber);
 
 		// record the payment on the ticket status and the exit time being 3 minutes later for testing
-		LocalDateTime exitDateTimeAfterPayment = DateTimeUtil.convertToTimezone(LocalDateTime.now().plusMinutes(3));
+		LocalDateTime exitDateTimeAfterPayment = DateTimeUtil.getNowLocalDateTime().plusMinutes(3);
 		ticketStatus.getStatus().setDataPermitidaSaidaUltimoPagamento(DateTimeUtil.getMillis(exitDateTimeAfterPayment));
 
 		// just a hack to make the prices to be the same to what it was submitted
@@ -304,7 +305,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		// Create the fake payment done
 		RetornoPagamento paymentDone = new RetornoPagamento();
 		paymentDone.setDataHoraSaida(ticketStatus.getStatus().getDataPermitidaSaidaUltimoPagamento());
-		paymentDone.setDataPagamento(DateTimeUtil.getMillis(LocalDateTime.now()));
+		paymentDone.setDataPagamento(DateTimeUtil.getNow());
 		paymentDone.setErrorCode(0);
 		paymentDone.setMensagem("Pagamento efetuado com sucesso (ticket test)");
 		paymentDone.setNumeroTicket(ticketNumber);

@@ -2,6 +2,7 @@ package cash.super_.platform.service.parkinglot.ticket;
 
 import cash.super_.platform.service.parkinglot.AbstractController;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
+import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketStatusProxyService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

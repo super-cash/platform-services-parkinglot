@@ -19,7 +19,7 @@ import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketPayment;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
 import cash.super_.platform.repository.PaymentRepository;
-import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketAuthorizePaymentProxyService;
+import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.model.supercash.amount.Amount;
 import cash.super_.platform.model.supercash.card.CardRequest;
 import cash.super_.platform.model.supercash.types.charge.*;

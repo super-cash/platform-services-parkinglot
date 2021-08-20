@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkinglot.ticket;
+package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import java.time.LocalDateTime;
 
@@ -8,6 +8,7 @@ import cash.super_.platform.error.parkinglot.*;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
+import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
 import cash.super_.platform.util.DateTimeUtil;
 import cash.super_.platform.util.SecretsUtil;
 import com.google.common.base.Strings;
@@ -72,7 +73,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
-      return testingParkinglotTicketRepository.updateStatus(ticketNumber, parkingTicketState);
+      return testingParkinglotTicketRepository.getStatus(ticketNumber);
     }
 
     // Store the ticket state transition
@@ -186,7 +187,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   public void resetTestTickets() {
     String transactionId = supercashRequestContext.getTransactionId();
     Long marketplaceId = supercashRequestContext.getMarketplaceId();
-    Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
     LOG.info("Resetting testing tickets requested transactionId={} marketplaceId={} userId={}", transactionId, marketplaceId, userId);

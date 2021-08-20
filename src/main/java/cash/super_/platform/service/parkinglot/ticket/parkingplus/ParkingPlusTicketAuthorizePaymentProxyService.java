@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkinglot.ticket;
+package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
