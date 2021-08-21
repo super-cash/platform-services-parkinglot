@@ -1,7 +1,7 @@
 package cash.super_.platform.service.parkinglot;
 
 import cash.super_.Application;
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class    SwaggerApiDocsGeneratorTests {
     private int serverPort;
 
     @Autowired
-    private ParkinglotServiceProperties properties;
+    private ParkingPlusServiceClientProperties properties;
 
     /**
      * Based on https://stackoverflow.com/questions/41808417/how-to-generate-swagger-json/47569970#47569970

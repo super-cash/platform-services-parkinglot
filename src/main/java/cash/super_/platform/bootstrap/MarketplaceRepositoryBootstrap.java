@@ -1,6 +1,6 @@
 package cash.super_.platform.bootstrap;
 
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.model.parkinglot.Marketplace;
 import cash.super_.platform.repository.MarketplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.*;
 
 // https://reflectoring.io/spring-boot-conditionals/ only loads if the property is defined
 @ConditionalOnProperty(
-		value=ParkinglotServiceProperties.PROPERTY_ROOT_PREFIX + ".bootstrapData",
+		value= ParkingPlusServiceClientProperties.PROPERTY_ROOT_PREFIX + ".bootstrapData",
 		havingValue = "true",
 		matchIfMissing = false)
 public class MarketplaceRepositoryBootstrap extends  AbstractRepositoryBootstrap {

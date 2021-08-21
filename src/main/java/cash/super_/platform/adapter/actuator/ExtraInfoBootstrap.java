@@ -1,6 +1,6 @@
 package cash.super_.platform.adapter.actuator;
 
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class ExtraInfoBootstrap implements InfoContributor {
 
     @Autowired
-    private ParkinglotServiceProperties parkingPlusProperties;
+    private ParkingPlusServiceClientProperties parkingPlusProperties;
 
     @Autowired
     private DataSourceProperties dataSourceProperties;
@@ -33,7 +33,7 @@ public class ExtraInfoBootstrap implements InfoContributor {
     @Override
     public void contribute(Info.Builder builder) {
         Map<String, String> parkingPlusProps = new HashMap<>();
-        parkingPlusProps.put("host", parkingPlusProperties.getBaseUrl());
+        parkingPlusProps.put("host", parkingPlusProperties.getBaseUrl().toString());
         parkingPlusProps.put("apiKey", String.valueOf(parkingPlusProperties.getApiKeyId()));
         builder.withDetail("parkingPlus", parkingPlusProps);
 

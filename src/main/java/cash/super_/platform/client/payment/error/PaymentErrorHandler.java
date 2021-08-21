@@ -1,6 +1,6 @@
 package cash.super_.platform.client.payment.error;
 
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.adapter.feign.SupercashAbstractErrorHandler;
 import cash.super_.platform.util.JsonUtil;
@@ -19,7 +19,7 @@ public class PaymentErrorHandler implements SupercashAbstractErrorHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PaymentErrorHandler.class);
 
   @Autowired
-  private ParkinglotServiceProperties properties;
+  private ParkingPlusServiceClientProperties properties;
 
   @Override
   public SupercashSimpleException handle(Response response, String responseBody) {

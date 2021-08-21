@@ -1,7 +1,8 @@
 package cash.super_.platform.adapter.actuator.healthcheck;
 
 import cash.super_.platform.adapter.actuator.HealthProbeVerifier;
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
+import cash.super_.platform.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 
@@ -25,7 +25,7 @@ public class ParkingPlusApiEndpointHealthContributor implements HealthIndicator,
     private static final Logger LOG = LoggerFactory.getLogger(HealthProbeVerifier.class);
 
     @Autowired
-    private ParkinglotServiceProperties properties;
+    private ParkingPlusServiceClientProperties properties;
 
     /**
      * If the URL is connected
@@ -36,24 +36,18 @@ public class ParkingPlusApiEndpointHealthContributor implements HealthIndicator,
         return this.hasConnection;
     }
 
-    public String getUrl() {
+    public URL getUrl() {
         return this.properties.getBaseUrl();
     }
 
     @Override
     public Health health() {
-        // Check if the URL is correct
-        URL url = null;
-        try {
-            url = new URL(properties.getBaseUrl());
-
-        } catch (MalformedURLException urlError) {
-            LOG.error("The WPS URL seems to be malformed: {}", properties.getBaseUrl());
-            return Health.down().withDetail("error", urlError.getMessage()).build();
-        }
+        // The service URL
+        URL url = properties.getBaseUrl();
 
         // Check if the URL can be reached
-        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
+        int port = URLUtil.getPort(url);
+        try (Socket socket = new Socket(url.getHost(), port)) {
             this.hasConnection = true;
             LOG.debug("Connection with WPS working: {}", properties.getBaseUrl());
 

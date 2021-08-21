@@ -1,5 +1,6 @@
 package cash.super_.platform.adapter.filter;
 
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
@@ -26,7 +27,7 @@ public class AddBuildInfoToAllHttpResponsesFilter implements Filter {
     BuildProperties buildProperties;
 
     @Autowired
-    ParkinglotServiceProperties parkingPlusProperties;
+    ParkinglotServiceProperties serviceProperties;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
@@ -36,7 +37,7 @@ public class AddBuildInfoToAllHttpResponsesFilter implements Filter {
         String buildVersion = String.join("-", new String[]{ buildProperties.get("git.commit"),
                 buildProperties.get("git.branch")});
         httpServletResponse.setHeader("X-Supercash-Build-Version", buildVersion);
-        httpServletResponse.setHeader("X-Supercash-Api-Version", parkingPlusProperties.getApiVersion());
+        httpServletResponse.setHeader("X-Supercash-Api-Version", serviceProperties.getApiVersion());
         chain.doFilter(request, response);
     }
 }

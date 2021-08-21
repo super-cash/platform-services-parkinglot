@@ -160,19 +160,7 @@ cash:
         payment:
           baseUrl: http://localhost:8120/v2/payments
 
-        orchestrator:
-          # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
-          apiUrl: http://orchestrator:8501
-
-          # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
-          defaultHeathCheckPort: 443
-
-      service:
-
-        parkinglot:
-          # Our API Version
-          apiVersion: v2
-
+        parkingplus:
           # Extracted from the REST API at https://demonstracao.parkingplus.com.br/servicos/v2/api-docs
           baseUrl: https://demonstracao.parkingplus.com.br/servicos
 
@@ -224,3 +212,16 @@ cash:
 
           # Time, in minutes, the user can leave the parking lot without paying the ticket
           gracePeriodInMinutes: 20
+
+        orchestrator:
+          # if you do not specify port we will use the ${cash.super.platform.configuration.healthCheck.defaultHeathCheckPort}
+          apiUrl: http://orchestrator:8501
+
+          # Also used as a default port in any URL used in this application, if not explicit defined in that URL.
+          defaultHeathCheckPort: 443
+
+      service:
+
+        parkinglot:
+          # Our API Version
+          apiVersion: v2

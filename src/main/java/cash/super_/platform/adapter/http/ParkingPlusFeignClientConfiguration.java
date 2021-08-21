@@ -1,13 +1,12 @@
 package cash.super_.platform.adapter.http;
 
 import cash.super_.platform.autoconfig.ClientProperties;
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.client.wps.error.WPSErrorHandler;
 import cash.super_.platform.adapter.feign.SupercashErrorDecoder;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.Retryer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cash.super_.platform.client.parkingplus.api.ServicoPagamentoTicket2Api;
@@ -32,13 +31,10 @@ import java.util.concurrent.TimeUnit;
 public class ParkingPlusFeignClientConfiguration {
 
     @Autowired
+    private ParkingPlusServiceClientProperties properties;
+
+    @Autowired
     private ClientProperties clientProperties;
-
-    @Autowired
-    private ServerProperties serverProperties;
-
-    @Autowired
-    private ParkinglotServiceProperties properties;
 
     @Bean
     public ServicoPagamentoTicket2Api ticketApi() {
@@ -46,7 +42,7 @@ public class ParkingPlusFeignClientConfiguration {
         client.getObjectMapper()
                 .setTimeZone(TimeZone.getTimeZone(clientProperties.getTimeZone()))
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
-        client.setBasePath(properties.getBaseUrl());
+        client.setBasePath(properties.getBaseUrl().toString());
         // https://stackoverflow.com/questions/42751269/feign-logging-not-working/59651045#59651045
         client.getFeignBuilder()
                 .logLevel(clientProperties.getLogLevel())

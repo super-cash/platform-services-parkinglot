@@ -22,7 +22,7 @@ import brave.Span;
 import brave.Tracer;
 import brave.Tracer.SpanInScope;
 import cash.super_.platform.client.parkingplus.model.Promocao;
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.model.parkinglot.ParkingGarageSales;
 import cash.super_.platform.util.JsonUtil;
 import cash.super_.platform.util.SecretsUtil;
@@ -41,7 +41,7 @@ public class ParkingPlusParkingSalesCachedProxyService
   private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusParkingSalesCachedProxyService.class);
 
   @Autowired
-  private ParkinglotServiceProperties properties;
+  private ParkingPlusServiceClientProperties properties;
 
   @Autowired
   private Tracer tracer;

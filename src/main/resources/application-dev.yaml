@@ -11,16 +11,17 @@ spring:
 cash:
   super:
     platform:
-      service:
-
+      client:
         payment:
           baseUrl: http://payment-service:8120/v2/payments
 
-        parkinglot:
-          bootstrapData: false
+        parkingplus:
           baseUrl: https://maceio.parkingplus.com.br/servicos
           userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
           retryableDestinationHosts:
             - maceio.parkingplus.com.br
             - demonstracao.parkingplus.com.br
             - payment-service
+
+      service:
+        bootstrapData: false

@@ -1,12 +1,14 @@
 package cash.super_.platform.service.parkinglot.ticket.testing;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
+import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
