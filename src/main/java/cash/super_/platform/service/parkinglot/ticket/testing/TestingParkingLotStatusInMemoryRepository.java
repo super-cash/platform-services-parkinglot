@@ -100,6 +100,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 		public void run() {
 			LOG.debug("Updating testing prices at specific schedule...");
 			statusCache.values().forEach(ticketStatus -> {
+				updateHeaderValues();
+
 				String ticketNumber = ticketStatus.getStatus().getNumeroTicket();
 				// Always increment the price of the non-free tickets that need payment at every PRICE_CHANGE_IN_MINUTES minutes for testing
 				if (!ALWAYS_FREE_TICKET_NUMBER.equals(ticketNumber)) {
@@ -159,10 +161,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
-		ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDateTime.now(),
-				ZoneId.of(DateTimeUtil.TIMEZONE_AMERICA_SAO_PAULO));
-		gracePeriodTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getGracePeriodInMinutes()).toInstant().toEpochMilli());
-		nextUpdateTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getNextPriceInMinutes()).toInstant().toEpochMilli());
+		updateHeaderValues();
 
 		stateChangeTimer = new Timer();
 		priceUpdater = new PriceUpdaterTask();
@@ -171,6 +170,13 @@ public class TestingParkingLotStatusInMemoryRepository {
 		long priceChangesRate = 1000 * 60 * getNextPriceInMinutes();
 		stateChangeTimer.schedule(priceUpdater, initialExecution, priceChangesRate);
     }
+
+    private void updateHeaderValues() {
+		ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDateTime.now(),
+				ZoneId.of(DateTimeUtil.TIMEZONE_AMERICA_SAO_PAULO));
+		gracePeriodTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getGracePeriodInMinutes()).toInstant().toEpochMilli());
+		nextUpdateTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getNextPriceInMinutes()).toInstant().toEpochMilli());
+	}
 
     public int getGracePeriodInMinutes() {
 		return this.optionalGracePeriod.orElse(MIN_GRACE_PERIOD_DURING_TESTING);
