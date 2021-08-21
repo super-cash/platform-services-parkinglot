@@ -2,6 +2,7 @@ package cash.super_.platform.service.parkinglot;
 
 import cash.super_.Application;
 import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ import java.util.*;
 )
 // Must be added to avoid https://newbedev.com/spring-boot-test-fails-saying-unable-to-start-servletwebserverapplicationcontext-due-to-missing-servletwebserverfactory-bean
 @EnableAutoConfiguration
-public class    SwaggerApiDocsGeneratorTests {
+public class SwaggerApiDocsGeneratorTests {
 
     protected static final Logger LOG = LoggerFactory.getLogger(SwaggerApiDocsGeneratorTests.class);
     public static final String GENERATED_SOURCES_DIR = "build/generated/sources/";
@@ -62,7 +63,7 @@ public class    SwaggerApiDocsGeneratorTests {
     private int serverPort;
 
     @Autowired
-    private ParkingPlusServiceClientProperties properties;
+    private ParkinglotServiceProperties properties;
 
     /**
      * Based on https://stackoverflow.com/questions/41808417/how-to-generate-swagger-json/47569970#47569970
