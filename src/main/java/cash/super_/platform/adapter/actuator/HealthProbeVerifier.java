@@ -4,7 +4,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.PostConstruct;
 
-import cash.super_.platform.autoconfig.PlatformAdaptorProperties;
+import cash.super_.platform.adapter.actuator.healthcheck.ParkingLotTicketsStatusAPICompositeHealthContributor;
+import cash.super_.platform.autoconfig.HealthcheckAdaptorProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,6 @@ import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.service.parkinglot.sales.ParkingPlusParkingSalesCachedProxyService;
 
 /**
  * This is explained on
@@ -37,13 +36,10 @@ public class HealthProbeVerifier {
   private ApplicationAvailability applicationAvailability;
 
   @Autowired
-  private ParkingPlusParkingSalesCachedProxyService salesCacheService;
+  private HealthcheckAdaptorProperties healthcheckAdaptorProperties;
 
   @Autowired
-  private PlatformAdaptorProperties configurationProperties;
-
-  @Autowired
-  private ParkinglotServiceProperties properties;
+  private ParkingLotTicketsStatusAPICompositeHealthContributor statusApiContributors;
 
   @Autowired
   private ApplicationContext appContext;
@@ -61,8 +57,8 @@ public class HealthProbeVerifier {
 
     LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
         applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-            configurationProperties.getHealthcheck().getReadinessInterval(),
-            configurationProperties.getHealthcheck().getReadinessTimeUnit());
+            healthcheckAdaptorProperties.getReadinessInterval(),
+            healthcheckAdaptorProperties.getReadinessTimeUnit());
 
     LOG.debug("Bootstrapping the probes helper");
     checkReadiness();
@@ -79,36 +75,45 @@ public class HealthProbeVerifier {
         // The ACCEPTING_TRAFFIC state represents that the application is ready to accept traffic
         // The REFUSING_TRAFFIC state means that the application is not willing to accept any requests yet
 
-        try {
-          // Fetch the supercash sales first and keep it in cache
-          // Since it throws a runtime exception, just try it and verify the state below
-          salesCacheService.fetchCurrentGarageSales();
+        // Fetch the supercash sales first and keep it in cache
+        // Since it throws a runtime exception, just try it and verify the state below
+        if (!statusApiContributors.parkingPlusApiEndpointHealthContributor.hasConnectivity()) {
+          LOG.error("Parking Plus Readiness Health Probe: Failed. URL is unreachable: {}",
+                  statusApiContributors.parkingPlusApiEndpointHealthContributor.getUrl());
+          AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+          AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
 
-        } catch (RuntimeException runtimeError) {
-          LOG.error("Error populating the Sales Cache: {}", runtimeError.getMessage());
-        }
+        } else
+          // if the payments API is running
+        if (!statusApiContributors.supercashPaymentsAPIHealthContributor.hasConnectivity()) {
+          LOG.error("Supercash database Readiness Health Probe: Failed. can't query tickets. DB: {}",
+                  statusApiContributors.parkingLotsDatabaseHealthContributor.getUrl());
+          AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
+          AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
+        } else
 
-        // The number of supercash sales must be available in order for the service to work as we depend on them
-        if (salesCacheService.getCacheSize() == 0 || salesCacheService.getNumberOfSales() == 0) {
-          LOG.error("Parking Plus Readiness Health Probe: Failed. Cache is Empty.");
+        // Fetch the supercash sales first and keep it in cache
+        // Since it throws a runtime exception, just try it and verify the state below
+        if (!statusApiContributors.parkingLotsDatabaseHealthContributor.isQueryValidOnConnection()) {
+          LOG.error("Supercash database Readiness Health Probe: Failed. can't query tickets. DB: {}",
+                  statusApiContributors.parkingLotsDatabaseHealthContributor.getUrl());
           AvailabilityChangeEvent.publish(appContext, ReadinessState.REFUSING_TRAFFIC);
           AvailabilityChangeEvent.publish(appContext, LivenessState.BROKEN);
 
         } else {
-          LOG.info("Parking Plus Readiness Health Probe: Built cache with {} entries",
-              salesCacheService.getNumberOfSales());
+          LOG.info("Parking Plus Readiness Health Probes worked");
           AvailabilityChangeEvent.publish(appContext, LivenessState.CORRECT);
           AvailabilityChangeEvent.publish(appContext, ReadinessState.ACCEPTING_TRAFFIC);
         }
 
         LOG.debug("Current readiness={} liveness={}; Will check probe again in {} {}", 
             applicationAvailability.getReadinessState(), applicationAvailability.getLivenessState(),
-                configurationProperties.getHealthcheck().getReadinessInterval(),
-                configurationProperties.getHealthcheck().getReadinessTimeUnit());
+                healthcheckAdaptorProperties.getReadinessInterval(),
+                healthcheckAdaptorProperties.getReadinessTimeUnit());
       }
 
-    }, 0L, configurationProperties.getHealthcheck().getReadinessInterval(),
-            configurationProperties.getHealthcheck().getReadinessTimeUnit());
+    }, 0L, healthcheckAdaptorProperties.getReadinessInterval(),
+            healthcheckAdaptorProperties.getReadinessTimeUnit());
   }
 
 }

@@ -117,6 +117,7 @@ management:
   # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
   endpoint:
     health:
+      show-details: always
       probes:
         enabled: true
 
