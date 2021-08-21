@@ -62,11 +62,11 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * When the grace period expires in minutes during tests
 	 */
-	public static final int MIN_GRACE_PERIOD_DURING_TESTING = 2;
+	public static final int MIN_GRACE_PERIOD_DURING_TESTING = 3;
 	/**
 	 * When the price expires during tests
 	 */
-	public static final int MIN_PRICE_CHANGE_IN_MINUTES = 2;
+	public static final int MIN_PRICE_CHANGE_IN_MINUTES = 3;
 
 	private Timer stateChangeTimer = new Timer();
 	private PriceUpdaterTask priceUpdater;
@@ -168,7 +168,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		// Initialize the timer with a new instance of the price updater task
 		long initialExecution = 1000 * 60 * getGracePeriodInMinutes();
 		long priceChangesRate = 1000 * 60 * getNextPriceInMinutes();
-		stateChangeTimer.schedule(priceUpdater, initialExecution, priceChangesRate);
+		stateChangeTimer.scheduleAtFixedRate(priceUpdater, initialExecution, priceChangesRate);
     }
 
     private void updateHeaderValues() {
