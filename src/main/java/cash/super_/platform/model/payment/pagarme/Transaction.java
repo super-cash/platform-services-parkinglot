@@ -13,8 +13,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
-@Entity
-@Table(name = "pagarme_transaction")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(value = { "cvm_pin", "address" }, ignoreUnknown = true)
 public class Transaction {

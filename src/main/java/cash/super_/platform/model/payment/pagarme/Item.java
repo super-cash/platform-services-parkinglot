@@ -6,12 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
-@Table(name = "pagarme_transaction_items")
 public class Item {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
     private Long itemId;
 

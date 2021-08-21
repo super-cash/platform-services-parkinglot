@@ -11,13 +11,13 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 
 @Entity
-//@Table(indexes = {
-//        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
-//        @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
-//        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
-//        @Index(name = "parking_ticket_payment_user_id_idx", columnList = "user_id"),
-//        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "store_id"),
-//})
+@Table(indexes = {
+        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
+        @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
+        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
+        @Index(name = "parking_ticket_payment_user_id_idx", columnList = "user_id"),
+        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "store_id"),
+})
 @JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
 

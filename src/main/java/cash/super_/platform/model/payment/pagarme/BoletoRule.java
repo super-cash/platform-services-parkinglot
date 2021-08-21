@@ -1,6 +1,7 @@
 package cash.super_.platform.model.payment.pagarme;
 
 public enum BoletoRule {
+
     STRICT_EXPIRATION_DATE("strict_expiration_date"),
     NO_STRICT("no_strict");
 
@@ -18,6 +19,5 @@ public enum BoletoRule {
     public String toString() {
         return value;
     }
-
 
 }

@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.Comparator;
 
 // Adding indexes https://www.baeldung.com/jpa-indexes#5-multiple-index-on-a-single-entity
+// // https://www.baeldung.com/jpa-composite-primary-keys#idclass
+// Adding the id class
 @Entity
 @Table(indexes = {
         @Index(name = "ticket_number_idx", columnList = "ticket_number"),
@@ -18,9 +20,6 @@ import java.util.Comparator;
         @Index(name = "created_at_idx", columnList = "createdAt"),
         @Index(name = "unique_ticket_idx", columnList = "ticket_number, user_id, store_id", unique = true)
 })
-
-// // https://www.baeldung.com/jpa-composite-primary-keys#idclass
-// Adding the id class
 @IdClass(ParkinglotTicketId.class)
 public class ParkinglotTicket {
 

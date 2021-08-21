@@ -7,13 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@Table(name = "pagarme_split_rule")
 public class SplitRule {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
     private Long splitRuleId;
 

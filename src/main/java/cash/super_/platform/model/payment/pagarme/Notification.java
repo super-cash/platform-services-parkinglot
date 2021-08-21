@@ -6,13 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 import java.time.Instant;
 
-@Entity(name = "pagarme_notification")
 public class Notification {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
-    @Column()
     private Long notificationId;
 
     private String object;

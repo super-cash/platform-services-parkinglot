@@ -11,14 +11,14 @@ import java.util.Objects;
  */
 // Adding indexes https://www.baeldung.com/jpa-indexes#5-multiple-index-on-a-single-entity
 @Entity
-//@Table(indexes = {
-//        @Index(name = "parking_ticket_transition_ticket_number_idx", columnList = "ticket_number"),
-//        @Index(name = "parking_ticket_transition_user_id_idx", columnList = "user_id"),
-//        @Index(name = "parking_ticket_transition_store_id_idx", columnList = "store_id"),
-//        @Index(name = "parking_ticket_transition_date_idx", columnList = "date"),
-//        @Index(name = "parking_ticket_transition_state_idx", columnList = "state"),
-////        @Index(name = "unique_ticket_state_transition_idx", columnList = "ticket_number, user_id, store_id, date, state", unique = true)
-//})
+@Table(indexes = {
+        @Index(name = "parking_ticket_transition_ticket_number_idx", columnList = "ticket_number"),
+        @Index(name = "parking_ticket_transition_user_id_idx", columnList = "user_id"),
+        @Index(name = "parking_ticket_transition_store_id_idx", columnList = "store_id"),
+        @Index(name = "parking_ticket_transition_date_idx", columnList = "date"),
+        @Index(name = "parking_ticket_transition_state_idx", columnList = "state"),
+        @Index(name = "unique_ticket_state_transition_idx", columnList = "ticket_number, user_id, store_id, date, state", unique = true)
+})
 public class ParkinglotTicketStateTransition {
 
     @Id
