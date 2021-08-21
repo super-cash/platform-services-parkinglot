@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import cash.super_.platform.adapter.feign.SupercashErrorCode;
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
@@ -22,6 +23,7 @@ import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import cash.super_.platform.util.JsonUtil;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -178,26 +180,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     } catch (JsonProcessingException jsonError) {
       LOG.error("Error deserializing status ticket to json.", jsonError);
       return null;
-    }
-  }
-
-  /**
-   * Reset the testing tickets starte back to how they are bootstrapped
-   */
-  public void resetTestTickets() {
-    String transactionId = supercashRequestContext.getTransactionId();
-    Long marketplaceId = supercashRequestContext.getMarketplaceId();
-    Long userId = supercashRequestContext.getUserId();
-
-    LOG.info("Resetting testing tickets requested transactionId={} marketplaceId={} userId={}", transactionId, marketplaceId, userId);
-
-    try {
-      testingParkinglotTicketRepository.bootstrap();
-      LOG.info("Finished resetting testing tickets requested transactionId={} userId={}", transactionId, userId);
-
-    } catch (InterruptedException error) {
-      LOG.error("Couldn't reset testing tickets requested transactionId={} userId={}: {}", transactionId, userId, error.getMessage());
-      throw new IllegalStateException("Couldn't reset the state of the testing tickets: " + error.getMessage());
     }
   }
 

@@ -62,17 +62,40 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * When the grace period expires in minutes during tests
 	 */
-	public static final int GRACE_PERIOD_DURING_TESTING = 1;
+	public static final int MIN_GRACE_PERIOD_DURING_TESTING = 1;
 	/**
 	 * When the price expires during tests
 	 */
-	public static final int PRICE_CHANGE_IN_MINUTES = 2;
+	public static final int MIN_PRICE_CHANGE_IN_MINUTES = 1;
+
+	private Timer stateChangeTimer = new Timer();
+	private PriceUpdaterTask priceUpdater;
+	private Optional<Integer> optionalGracePeriod = Optional.empty();
+	private Optional<Integer> optionalNextPrice = Optional.empty();
+
+	// To display in the output of controllers
+	public static String gracePeriodTimestamp;
+	public static String nextUpdateTimestamp;
 
 	@Autowired
-	protected ParkinglotServiceProperties properties;
+	protected ParkingPlusServiceClientProperties properties;
+
+	public static void addTestingHeaders(Map<String, String> headers) {
+		String nextGracePeriod = TestingParkingLotStatusInMemoryRepository.gracePeriodTimestamp;
+		headers.put("X-Supercash-Test-Grace-Period-Timeout", nextGracePeriod);
+
+		String nextPriceUpdate = TestingParkingLotStatusInMemoryRepository.nextUpdateTimestamp;
+		headers.put("X-Supercash-Test-Price-Change-Timeout", nextPriceUpdate);
+
+		headers.put("X-Supercash-Test", "true");
+	}
 
 	// https://www.quora.com/How-do-I-create-a-thread-which-runs-every-one-minute-in-Java/answer/Anand-Dwivedi-4
-	class PriceUpdaterTask extends TimerTask {
+	private class PriceUpdaterTask extends TimerTask {
+
+		private PriceUpdaterTask() {
+			LOG.debug("Initializing the price updater task...");
+		}
 
 		public void run() {
 			LOG.debug("Updating testing prices at specific schedule...");
@@ -136,10 +159,77 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		LOG.debug("The current size of the cache is {}", statusCache.size());
 
-		Timer timer = new Timer();
-		long fiveMimutes = 1000 * 60 * GRACE_PERIOD_DURING_TESTING;
-		timer.schedule(new PriceUpdaterTask(), fiveMimutes, fiveMimutes);
+		ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDateTime.now(),
+				ZoneId.of(DateTimeUtil.TIMEZONE_AMERICA_SAO_PAULO));
+		gracePeriodTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getGracePeriodInMinutes()).toInstant().toEpochMilli());
+		nextUpdateTimestamp = DateTimeUtil.getFormatted(zonedDateTime.plusHours(3).plusMinutes(getNextPriceInMinutes()).toInstant().toEpochMilli());
+
+		stateChangeTimer = new Timer();
+		priceUpdater = new PriceUpdaterTask();
+		// Initialize the timer with a new instance of the price updater task
+		long initialExecution = 1000 * 60 * getGracePeriodInMinutes();
+		long priceChangesRate = 1000 * 60 * getNextPriceInMinutes();
+		stateChangeTimer.scheduleAtFixedRate(priceUpdater, initialExecution, priceChangesRate);
     }
+
+    public int getGracePeriodInMinutes() {
+		return this.optionalGracePeriod.orElse(MIN_GRACE_PERIOD_DURING_TESTING);
+	}
+
+	public int getNextPriceInMinutes() {
+		return this.optionalNextPrice.orElse(MIN_PRICE_CHANGE_IN_MINUTES);
+	}
+
+	/**
+	 * Reset the testing tickets starte back to how they are bootstrapped
+	 */
+	public void resetTestTickets(Optional<Integer> gracePeriodMin, Optional<Integer> nextPriceInMin) {
+		resetChangeRates(gracePeriodMin, nextPriceInMin);
+
+		LOG.info("Resetting values with gracePeriodMin={} nextPriceInMin={}", this.getGracePeriodInMinutes(),
+				this.getNextPriceInMinutes());
+
+		try {
+			bootstrap();
+			LOG.debug("Finished resetting testing tickets");
+
+		} catch (InterruptedException error) {
+			LOG.error("Couldn't reset testing tickets requested transactionId={} userId={}: {}", error.getMessage());
+			throw new IllegalStateException("Couldn't reset the state of the testing tickets: " + error.getMessage());
+		}
+	}
+
+	private void resetChangeRates(Optional<Integer> gracePeriodMin, Optional<Integer> nextPriceInMin) {
+		if (!gracePeriodMin.isPresent() && !nextPriceInMin.isPresent()) {
+			LOG.debug("Both Grace Period and Next Price were provided... keeping defaults: grace={}, and nextPrice={}",
+					this.getGracePeriodInMinutes(), this.getNextPriceInMinutes());
+			return;
+		}
+
+		Integer tempGracePeriod = gracePeriodMin.get();
+		Integer tempPriceRate = gracePeriodMin.get();
+
+		if (tempGracePeriod <= 0 || tempPriceRate <= 0) {
+			LOG.debug("Both Grace Period and Next Price were provided... keeping defaults: grace={}, and nextPrice={}",
+					this.getGracePeriodInMinutes(), this.getNextPriceInMinutes());
+			throw new IllegalArgumentException(String.format("Can't use negative numbers to reset the testing server. " +
+					"grace=%s , nextPrice=%s", tempGracePeriod, tempPriceRate));
+		}
+
+		if (tempGracePeriod <= MIN_GRACE_PERIOD_DURING_TESTING && tempPriceRate <= MIN_PRICE_CHANGE_IN_MINUTES) {
+			LOG.warn("Both Grace Period and Next Price are still the same or equal to the default... " +
+							"Increase the values: grace={}, and nextPrice={}", tempGracePeriod, tempPriceRate);
+			throw new IllegalArgumentException(String.format("Both Grace Period and Next Price are still the " +
+					"same or equal to the default... Increase the values: grace=%s, and nextPrice=%s",
+					tempGracePeriod, tempPriceRate, tempGracePeriod, tempPriceRate));
+		}
+
+		this.optionalGracePeriod = gracePeriodMin;
+		this.optionalNextPrice = nextPriceInMin;
+
+		// Removes the current execution of the price updater, if any is running
+		stateChangeTimer.cancel();
+	}
 
     private RetornoConsulta createTicketRetrieval(String ticketNumber, int price) {
     	LOG.debug("Creating ticket {} with price {}", ticketNumber, price);
@@ -186,7 +276,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
 		// Calculate the grace period
 		LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(statusRetrieval.getDataDeEntrada());
-		LocalDateTime gracePeriodMaxTime = entryDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
+		LocalDateTime gracePeriodMaxTime = entryDateTime.plusMinutes(MIN_GRACE_PERIOD_DURING_TESTING);
 		long gracePeriodMillis = DateTimeUtil.getMillis(gracePeriodMaxTime);
 
 		// Save the status
@@ -257,7 +347,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		// The calculate method used the production grace period, so no we just update it
 		if (ParkingTicketState.GRACE_PERIOD == testingTicketStatus.getState()) {
 			LocalDateTime entranceDateTime = DateTimeUtil.getLocalDateTime(testingTicketStatus.getStatus().getDataDeEntrada());
-			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(GRACE_PERIOD_DURING_TESTING);
+			LocalDateTime testingGracePeriod = entranceDateTime.plusMinutes(MIN_GRACE_PERIOD_DURING_TESTING);
 			LOG.debug("The testing ticket {} is in grace period: entrance={} testingGracePeriod={}",
 					ticketNumber, entranceDateTime, testingGracePeriod);
 

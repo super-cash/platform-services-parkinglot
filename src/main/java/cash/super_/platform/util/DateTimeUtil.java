@@ -1,6 +1,8 @@
 package cash.super_.platform.util;
 
+import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.TimeZone;
 
@@ -13,15 +15,20 @@ public enum DateTimeUtil {
     ;
 
     public static final String TIMEZONE_AMERICA_SAO_PAULO = "America/Sao_Paulo";
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss a z")
+            .withZone(TimeZone.getTimeZone(TIMEZONE_AMERICA_SAO_PAULO).toZoneId());
 
     public static long getMillis(LocalDateTime dateTime) {
-        // TODO: fix the calculation here
         return dateTime.atZone(TimeZone.getTimeZone(TIMEZONE_AMERICA_SAO_PAULO).toZoneId()).toInstant().toEpochMilli();
+    }
+
+    public static String getFormatted(long millis) {
+        return getLocalDateTime(millis).format(DATE_TIME_FORMATTER);
     }
 
     public static LocalDateTime getLocalDateTime(long milliseconds) {
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds), TimeZone.getDefault().toZoneId());
-        return dateTime.atZone(ZoneId.of("UTC"))
+        return dateTime.atZone(ZoneOffset.UTC)
                 .withZoneSameInstant(ZoneId.of(TIMEZONE_AMERICA_SAO_PAULO))
                 .toLocalDateTime();
     }

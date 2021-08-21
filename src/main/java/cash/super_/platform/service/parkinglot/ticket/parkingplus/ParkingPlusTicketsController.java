@@ -9,6 +9,7 @@ import cash.super_.platform.model.parkinglot.ParkingTicketPayment;
 import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketStatusProxyService;
+import cash.super_.platform.service.parkinglot.ticket.testing.TestingParkingLotStatusInMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,7 +51,7 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     Map<String, String> headers = new HashMap<>();
     if (statusService.isTicketForTesting(ticketNumber)) {
-      headers.put("X-Supercash-Test", "true");
+      TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
     }
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);
@@ -73,7 +74,7 @@ public class ParkingPlusTicketsController extends AbstractController {
 
     Map<String, String> headers = new HashMap<>();
     if (statusService.isTicketForTesting(ticketNumber)) {
-      headers.put("X-Supercash-Test", "true");
+      TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
     }
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);

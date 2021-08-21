@@ -324,7 +324,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
     // Make the grace period valud based on the entry date time
     LocalDateTime gracePeriodTime = testingParkinglotTicketRepository.containsTicket(ticketStatus.getNumeroTicket())
-            ? entryDateTime.plusMinutes(TestingParkingLotStatusInMemoryRepository.GRACE_PERIOD_DURING_TESTING)
+            ? entryDateTime.plusMinutes(TestingParkingLotStatusInMemoryRepository.MIN_GRACE_PERIOD_DURING_TESTING)
             : entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
     LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);
 
