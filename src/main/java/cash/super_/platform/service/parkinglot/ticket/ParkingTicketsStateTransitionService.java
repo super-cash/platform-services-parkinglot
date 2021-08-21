@@ -7,7 +7,7 @@ import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
 import cash.super_.platform.repository.ParkinglotTicketStateTransitionsRepository;
-import cash.super_.platform.repository.TestingParkingLotStatusInMemoryRepository;
+import cash.super_.platform.service.parkinglot.ticket.testing.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.util.DateTimeUtil;
 import cash.super_.platform.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;

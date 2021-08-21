@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
-import cash.super_.platform.service.parkinglot.ticket.ParkingPlusTicketsController;
+import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketsController;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;

@@ -1,4 +1,4 @@
-package cash.super_.platform.service.parkinglot.ticket;
+package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import java.util.HashMap;
 import java.util.Map;

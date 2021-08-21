@@ -1,4 +1,4 @@
-package cash.super_.platform.repository;
+package cash.super_.platform.service.parkinglot.ticket.testing;
 
 import java.time.LocalDateTime;
 import java.util.*;

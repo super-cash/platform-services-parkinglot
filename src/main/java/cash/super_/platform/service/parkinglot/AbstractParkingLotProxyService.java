@@ -5,7 +5,7 @@ import javax.annotation.Resource;
 
 import cash.super_.platform.adapter.http.SupercashRequestContext;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketId;
-import cash.super_.platform.repository.TestingParkingLotStatusInMemoryRepository;
+import cash.super_.platform.service.parkinglot.ticket.testing.TestingParkingLotStatusInMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
