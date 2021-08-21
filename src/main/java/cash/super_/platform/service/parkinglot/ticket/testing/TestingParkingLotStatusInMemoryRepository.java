@@ -62,11 +62,11 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * When the grace period expires in minutes during tests
 	 */
-	public static final int MIN_GRACE_PERIOD_DURING_TESTING = 1;
+	public static final int MIN_GRACE_PERIOD_DURING_TESTING = 2;
 	/**
 	 * When the price expires during tests
 	 */
-	public static final int MIN_PRICE_CHANGE_IN_MINUTES = 1;
+	public static final int MIN_PRICE_CHANGE_IN_MINUTES = 2;
 
 	private Timer stateChangeTimer = new Timer();
 	private PriceUpdaterTask priceUpdater;
@@ -169,7 +169,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		// Initialize the timer with a new instance of the price updater task
 		long initialExecution = 1000 * 60 * getGracePeriodInMinutes();
 		long priceChangesRate = 1000 * 60 * getNextPriceInMinutes();
-		stateChangeTimer.scheduleAtFixedRate(priceUpdater, initialExecution, priceChangesRate);
+		stateChangeTimer.schedule(priceUpdater, initialExecution, priceChangesRate);
     }
 
     public int getGracePeriodInMinutes() {
@@ -269,7 +269,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 
     	return statusRetrieval;
     }
-    
+
     private void saveTicketStatusRetrieval(RetornoConsulta statusRetrieval, ParkingTicketState state) {
     	LOG.debug("Saving testing sticket {}", statusRetrieval.getNumeroTicket());
 		queryResultsCache.put(statusRetrieval.getNumeroTicket(), statusRetrieval);

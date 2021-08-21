@@ -50,9 +50,7 @@ public class ParkingPlusTicketsController extends AbstractController {
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(ticketNumber, wasScanned);
 
     Map<String, String> headers = new HashMap<>();
-    if (statusService.isTicketForTesting(ticketNumber)) {
-      TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
-    }
+    TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
 
     return new ResponseEntity<>(parkingTicketStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);
   }
@@ -73,9 +71,7 @@ public class ParkingPlusTicketsController extends AbstractController {
     ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, ticketNumber);
 
     Map<String, String> headers = new HashMap<>();
-    if (statusService.isTicketForTesting(ticketNumber)) {
-      TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
-    }
+    TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
 
     return new ResponseEntity<>(paymentStatus, makeDefaultHttpHeaders(headers), HttpStatus.OK);
   }
