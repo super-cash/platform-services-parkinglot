@@ -1,1 +1,13 @@
-GET http://localhost:8082/actuator/info
+# https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html
+GET  {{host}}:{{port}}/actuator/info
+
+
+# Test with the CLI https://github.com/restcli/restcli
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "wrong status: " + response.status);
+    client.assert(response.headers.valueOf("X-Supercash-Build-Version") != null, "Response headers must include X-Supercash-Build-Version: RETURNED: " + response.headers);
+    client.assert(response.headers.valueOf("X-Supercash-Api-Version") != null, "Response headers must include X-Supercash-Api-Version: RETURNED: " + response.headers);
+    client.assert(response.headers.valueOf("X-B3-TraceId") != null, "Response headers must include X-Supercash-Api-Version: RETURNED: " + response.headers);
+  });
+%}
