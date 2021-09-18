@@ -102,8 +102,8 @@ springfox:
 
 # https://docs.spring.io/spring-boot/docs/2.1.11.RELEASE/reference/html/production-ready-monitoring.html
 management:
-#  server:
-#    port: 9090
+  #  server:
+  #    port: 9090
   # does not work
   #context-path: /admin
   endpoints:
@@ -114,13 +114,22 @@ management:
         include: "*"
         # https://github.com/springdoc/springdoc-openapi/issues/923#issuecomment-735443042
 
-  # Liveness and Readiness probe endpoints only work with this setup
-  # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
-  endpoint:
+    # Liveness and Readiness probe endpoints only work with this setup
+    # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
     health:
       show-details: always
       probes:
         enabled: true
+
+  # Prometheus p95 quantile https://tomgregory.com/spring-boot-default-metrics/
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            # Spring MVC metrics can also calculate quantiles and percentiles, which can be useful when you want to assess how slow is the request duration of an API while ignoring the very slowest requests.
+            # For example, the 95th percentile is the value at which 95% of the observed values are below, and 5% are above. In other words, it gives you the slowest request duration that 95% of requests are seeing.
+            percentiles: 0.95
 
 ## https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
 #feign.client.config.default.loggerLevel: full
