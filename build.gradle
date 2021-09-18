@@ -96,7 +96,9 @@ configurations {
 }
 
 ext {
-	set('springCloudVersion', "Hoxton.SR8")
+    // https://spring.io/blog/2021/07/07/spring-cloud-hoxton-sr12-has-been-released
+    set('springCloudVersion', "Hoxton.SR12")
+
 	jackson_version = "2.12.3"
 	feign_jackson_version = "11.1"
 	feign_version = "11.1"

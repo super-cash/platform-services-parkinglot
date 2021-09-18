@@ -34,6 +34,7 @@ spring:
   # https://medium.com/@lombos.monika/distributed-tracing-latency-analysis-for-microservices-4ae3b82f3537
   # Read Case 3 for these to propagate the the HTTP Headers
   sleuth:
+    correlation-enabled: true
     baggage:
       remote-fields:
         - "X-Supercash-Tid"

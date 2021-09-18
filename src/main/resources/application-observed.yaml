@@ -1,0 +1,27 @@
+spring:
+  # Zipkin is the destination environment for the traces and it's disabled in development
+  # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
+  zipkin:
+    # Enable it again
+    enabled: true
+    # Use the Zipkin port as defined https://grafana.com/docs/tempo/latest/api_docs/pushing-spans-with-http/
+    base-url: http://observe.super.cash:9411
+    message-timeout: 5
+    service:
+      # Application name
+      name: ${spring.application.name}
+
+  # https://www.baeldung.com/tracing-services-with-zipkin#5-gateway-service
+  # https://stackoverflow.com/questions/53692437/spans-not-being-sent-to-zipkin/53694198#53694198
+  sleuth:
+    enabled: true
+    sampler:
+      # Zipkin works by sampling actions on a server.
+      # By setting the spring.sleuth.sampler.percentage to 1.0, we are setting the sampling rate to 100%.
+      probability: 1.0
+      rate: 10
+    web:
+      # This will configure the gateway service not to send spans about the favicon or spring session.
+      client:
+        enabled: true
+      additional-skip-pattern: (^cleanup.*|.+favicon.*)
