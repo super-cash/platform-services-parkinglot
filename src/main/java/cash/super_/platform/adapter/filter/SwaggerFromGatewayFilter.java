@@ -1,4 +1,4 @@
-package cash.super_.platform.adapter.http;
+package cash.super_.platform.adapter.filter;
 
 import com.google.common.base.Strings;
 import io.swagger.models.Path;
