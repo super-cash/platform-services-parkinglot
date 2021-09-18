@@ -6,8 +6,6 @@ import org.springframework.http.HttpStatus;
 import java.util.HashMap;
 import java.util.Map;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties({"stackTrace", "cause"})
 public class SupercashExceptionModel {
 
     @JsonProperty(value = "error_code")
