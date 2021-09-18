@@ -5,7 +5,7 @@
 
 spring:
   application:
-    name: parking-plus-service
+    name: parkinglots-service
 
   datasource:
     url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
