@@ -23,6 +23,9 @@ public class SupercashPaymentsAPIHealthContributor implements HealthIndicator, H
 
     private static final Logger LOG = LoggerFactory.getLogger(SupercashPaymentsAPIHealthContributor.class);
 
+    private static final String SERVICE_NAME = SupercashPaymentsAPIHealthContributor.class.getName()
+            .replace("Supercash", "").replace("API", "");
+
     @Autowired
     private PaymentsServiceProperties properties;
 
@@ -52,13 +55,14 @@ public class SupercashPaymentsAPIHealthContributor implements HealthIndicator, H
         }
 
         // Check if the URL can be reached
+        // TODO: IT MUST CALL THE HEALTHCHECK OF THE SERVICE AND VERIFY IF IT'S UP. DEEP HEALTHCHECK
         try (Socket socket = new Socket(url.getHost(), url.getPort())) {
             this.hasConnection = true;
-            LOG.debug("Connection with WPS working: {}", properties.getBaseUrl());
+            LOG.debug("Connection with '{}' successfully made at {}", SERVICE_NAME, url);
 
         } catch (IOException errorConnecting) {
             this.hasConnection = false;
-            LOG.error("Failed healthcheck probe: Can't connect to {}: {}", url, errorConnecting.getMessage());
+            LOG.error("Failed healthcheck probe: Can't connect to service {} at {}: {}", SERVICE_NAME, url, errorConnecting.getMessage());
             return Health.down().withDetail("error", errorConnecting.getMessage()).build();
         }
         return Health.up().build();
