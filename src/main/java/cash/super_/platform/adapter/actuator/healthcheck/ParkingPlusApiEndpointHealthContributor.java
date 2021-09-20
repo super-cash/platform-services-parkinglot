@@ -24,6 +24,9 @@ public class ParkingPlusApiEndpointHealthContributor implements HealthIndicator,
 
     private static final Logger LOG = LoggerFactory.getLogger(HealthProbeVerifier.class);
 
+    private static final String SERVICE_NAME = ParkingPlusApiEndpointHealthContributor.class.getName()
+            .replace("EndpointHealthContributor", "");
+
     @Autowired
     private ParkingPlusServiceClientProperties properties;
 
@@ -46,14 +49,14 @@ public class ParkingPlusApiEndpointHealthContributor implements HealthIndicator,
         URL url = properties.getBaseUrl();
 
         // Check if the URL can be reached
-        int port = URLUtil.getPort(url);
-        try (Socket socket = new Socket(url.getHost(), port)) {
+        // TODO: IT MUST CALL THE HEALTHCHECK OF THE SERVICE AND VERIFY IF IT'S UP. DEEP HEALTHCHECK
+        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
             this.hasConnection = true;
-            LOG.debug("Connection with WPS working: {}", properties.getBaseUrl());
+            LOG.debug("Connection with '{}' successfully made at {}", SERVICE_NAME, url);
 
         } catch (IOException errorConnecting) {
             this.hasConnection = false;
-            LOG.error("Failed healthcheck probe: Can't connect to {}: {}", url, errorConnecting.getMessage());
+            LOG.error("Failed healthcheck probe: Can't connect to service {} at {}: {}", SERVICE_NAME, url, errorConnecting.getMessage());
             return Health.down().withDetail("error", errorConnecting.getMessage()).build();
         }
         return Health.up().build();
