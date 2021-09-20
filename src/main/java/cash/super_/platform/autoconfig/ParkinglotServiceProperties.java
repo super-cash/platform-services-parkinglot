@@ -60,9 +60,10 @@ public class ParkinglotServiceProperties {
 
     @Override
     public String toString() {
-        return "ServiceProperties{" +
+        return "ParkinglotServiceProperties{" +
                 "platformConfigurationProperties=" + platformConfigurationProperties +
                 ", apiVersion='" + apiVersion + '\'' +
+                ", healthcheckPostgresProbeQuery='" + healthcheckPostgresProbeQuery + '\'' +
                 ", retryableDestinationHosts=" + retryableDestinationHosts +
                 '}';
     }
