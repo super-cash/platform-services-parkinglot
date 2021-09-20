@@ -1,6 +1,6 @@
 # https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html
 # Requires https://micrometer.io/docs/registry/prometheus#_installing
-GET  {{host}}:{{port}}/actuator/prometheus
+GET  {{host}}:{{port}}/parkinglots/actuator/prometheus
 
 # Test with the CLI https://github.com/restcli/restcli
 > {%

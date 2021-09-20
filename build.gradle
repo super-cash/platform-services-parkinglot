@@ -99,6 +99,10 @@ ext {
     // https://spring.io/blog/2021/07/07/spring-cloud-hoxton-sr12-has-been-released
     set('springCloudVersion', "Hoxton.SR12")
 
+    // https://codecentric.github.io/spring-boot-admin/2.3.1/#_sba_client
+    // SpringBoot 2.3.x version support... Make sure to upgrade to 2.5.1 when upgrading springboot
+    set('adminVersion', "2.3.1")
+
 	jackson_version = "2.12.3"
 	feign_jackson_version = "11.1"
 	feign_version = "11.1"
@@ -108,6 +112,7 @@ ext {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "de.codecentric:spring-boot-admin-sample-custom-ui:${adminVersion}"
     }
 }
 
@@ -143,6 +148,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     // This must add the endpoint /actuator/prometheus
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+    // declare the admin server as a client, for self monitoring
+    implementation('de.codecentric:spring-boot-admin-starter-client')
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")

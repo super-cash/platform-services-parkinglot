@@ -1,1 +1,1 @@
-GET  {{host}}:{{port}}/actuator/health
+GET  {{host}}:{{port}}/parkinglots/actuator/health

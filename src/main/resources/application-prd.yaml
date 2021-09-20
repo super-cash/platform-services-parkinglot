@@ -1,9 +1,18 @@
 # SpringBoot
 spring:
 
-  zipkin:
-    base-url: http://localhost:9411/
-    enabled: false
+  #configs to connect to self register the admin server as a client
+  boot:
+    admin:
+      client:
+        instance:
+          # The Gateway will forward the calls to /auth/actuator/info...
+          management-base-url: https://api.super.cash/parkinglots
+          metadata:
+            tags:
+              env: prd
+              cluster: pdc
+              segment: prd
 
   datasource:
     url: jdbc:postgresql://supercash-db-prd.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true

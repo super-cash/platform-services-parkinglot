@@ -1,5 +1,5 @@
 # https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html
-GET  {{host}}:{{port}}/actuator/info
+GET  {{host}}:{{port}}/parkinglots/actuator/info
 
 
 # Test with the CLI https://github.com/restcli/restcli

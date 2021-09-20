@@ -1,4 +1,33 @@
+# https://docs.spring.io/spring-boot/docs/2.1.11.RELEASE/reference/html/production-ready-monitoring.html
+management:
+  endpoints:
+    web:
+      # The path for the callback of from the SpringBoot Admin through the Gateway must be with the name
+      # The list of the actuator URLs must be with that to go through the gateway
+      # TODO: When this is behind the firewall and in Kubernetes, remove it
+      base-path: /parkinglots/actuator
+
 spring:
+  # configs to connect to self register the admin server as a client
+  # https://codecentric.github.io/spring-boot-admin/2.3.1/#_sba_client
+  # Make sure to update the properties to 2.5.x when upgrading springboot
+  boot:
+    admin:
+      client:
+        enabled: true
+        url: http://observe.super.cash:9990
+        username: supercash
+        password: cashsuper
+        instance:
+          metadata:
+            user:
+              name: ${spring.security.user.name}
+              password: ${spring.security.user.password}
+            tags:
+              env: loc
+              cluster: pdc
+              segment: ppd
+
   # Zipkin is the destination environment for the traces and it's disabled in development
   # https://stackoverflow.com/questions/56525260/disable-distributed-tracing-for-development/56529683#56529683
   zipkin:

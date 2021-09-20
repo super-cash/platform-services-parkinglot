@@ -1,2 +1,2 @@
 # https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html
-GET  {{host}}:{{port}}/actuator/configprops
+GET  {{host}}:{{port}}/parkinglots/actuator/configprops

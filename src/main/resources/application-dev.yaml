@@ -1,4 +1,18 @@
 spring:
+
+  #configs to connect to self register the admin server as a client
+  boot:
+    admin:
+      client:
+        instance:
+          # The Gateway will forward the calls to /auth/actuator/info...
+          management-base-url: https://api-dev.super.cash/parkinglots
+          metadata:
+            tags:
+              env: dev
+              cluster: pdc
+              segment: ppd
+
   datasource:
     url: jdbc:postgresql://supercash-ppd-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
     username: supercash
