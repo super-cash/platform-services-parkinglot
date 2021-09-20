@@ -28,6 +28,9 @@ public class ParkinglotServiceProperties {
     @NotBlank
     private String apiVersion;
 
+    @NotBlank
+    private String healthcheckPostgresProbeQuery;
+
     @NotNull
     private List<String> retryableDestinationHosts = new ArrayList<String>();
 
@@ -45,6 +48,14 @@ public class ParkinglotServiceProperties {
 
     public void setApiVersion(String pagseguroApiVersion) {
         this.apiVersion = pagseguroApiVersion;
+    }
+
+    public String getHealthcheckPostgresProbeQuery() {
+        return healthcheckPostgresProbeQuery;
+    }
+
+    public void setHealthcheckPostgresProbeQuery(String healthcheckPostgresProbeQuery) {
+        this.healthcheckPostgresProbeQuery = healthcheckPostgresProbeQuery;
     }
 
     @Override

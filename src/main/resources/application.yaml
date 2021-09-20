@@ -14,6 +14,13 @@ spring:
       client:
         enabled: false
 
+  # https://stackoverflow.com/questions/41613397/the-health-endpoint-of-my-spring-boot-app-is-emitting-all-info-about-the-consul/69253071#69253071
+  cloud:
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
+
   datasource:
     url: jdbc:postgresql://localhost:5432/supercash?createDatabaseIfNotExist=true
     username: postgres
@@ -121,8 +128,8 @@ management:
         include: "*"
         # https://github.com/springdoc/springdoc-openapi/issues/923#issuecomment-735443042
 
-    # Liveness and Readiness probe endpoints only work with this setup
-    # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
+  # Liveness and Readiness probe endpoints only work with this setup
+  # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
   endpoint:
     health:
       show-details: always
@@ -243,3 +250,5 @@ cash:
         parkinglot:
           # Our API Version
           apiVersion: v2
+          # The probe just checks if the database has the table and counts the total
+          healthcheckPostgresProbeQuery: "SELECT count(ticket_number) AS total_tickets FROM parkinglot_ticket"

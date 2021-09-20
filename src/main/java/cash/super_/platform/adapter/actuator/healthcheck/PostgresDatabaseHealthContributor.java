@@ -1,5 +1,6 @@
 package cash.super_.platform.adapter.actuator.healthcheck;
 
+import cash.super_.platform.autoconfig.ParkinglotServiceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +20,12 @@ import java.sql.Statement;
  * https://reflectoring.io/spring-boot-health-check/
  */
 @Component("SupercashPostgresDB")
-public class ParkingLotsDatabaseHealthContributor implements HealthIndicator, HealthContributor {
+public class PostgresDatabaseHealthContributor implements HealthIndicator, HealthContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ParkingLotsDatabaseHealthContributor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PostgresDatabaseHealthContributor.class);
 
-    /**
-     * The SQL to execute for the probe of the database
-     */
-    private static final String PROBE_SQL = "SELECT count(str.id) AS total_parking_lots " +
-            "FROM stores str INNER JOIN store_category stc " +
-            "ON stc.name = 'Estacionamento' AND str.category_id=stc.id";
+    @Autowired
+    private ParkinglotServiceProperties parkinglotServiceProperties;
 
     @Autowired
     private DataSource dataSource;
@@ -55,13 +52,17 @@ public class ParkingLotsDatabaseHealthContributor implements HealthIndicator, He
     public Health health() {
         try (Connection conn = dataSource.getConnection()) {
             LOG.debug("Connected to {}", dataSourceProperties.getUrl());
+
+            final String probeSql = parkinglotServiceProperties.getHealthcheckPostgresProbeQuery();
+            LOG.debug("Checking the database with probe Query: {}", probeSql);
             Statement stmt = conn.createStatement();
             // SELECT 1 already added by Spring
             //  Verify if there's a need to see if
             // https://stackoverflow.com/questions/3668506/efficient-sql-test-query-or-validation-query-that-will-work-across-all-or-most/3670000#3670000
             // https://docs.oracle.com/javase/tutorial/jdbc/basics/processingsqlstatements.html
-            stmt.execute(PROBE_SQL);
+            stmt.execute(probeSql);
             isQueryValid = true;
+            LOG.debug("Probe executed successfully: {}", probeSql);
 
         } catch (SQLException ex) {
             LOG.error("Connection to the database at {} failed: {}", dataSourceProperties.getUrl(), ex.getMessage());

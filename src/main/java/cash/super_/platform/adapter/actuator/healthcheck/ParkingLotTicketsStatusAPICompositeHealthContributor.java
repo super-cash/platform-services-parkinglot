@@ -30,12 +30,12 @@ public class ParkingLotTicketsStatusAPICompositeHealthContributor implements Com
 
     private Map<String, HealthContributor> contributors = new LinkedHashMap<>();
 
-    public ParkingLotsDatabaseHealthContributor parkingLotsDatabaseHealthContributor;
+    public PostgresDatabaseHealthContributor parkingLotsDatabaseHealthContributor;
     public ParkingPlusApiEndpointHealthContributor parkingPlusApiEndpointHealthContributor;
     public SupercashPaymentsAPIHealthContributor supercashPaymentsAPIHealthContributor;
 
     @Autowired
-    public ParkingLotTicketsStatusAPICompositeHealthContributor(ParkingLotsDatabaseHealthContributor databaseHealthContributor,
+    public ParkingLotTicketsStatusAPICompositeHealthContributor(PostgresDatabaseHealthContributor databaseHealthContributor,
                                                                 ParkingPlusApiEndpointHealthContributor parkingPlusApiEndpointHealthContributor,
                                                                 SupercashPaymentsAPIHealthContributor supercashPaymentsAPIHealthContributor) {
         contributors.put("supercashPostgresDatabase", databaseHealthContributor);
