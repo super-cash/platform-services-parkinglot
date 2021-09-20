@@ -50,7 +50,7 @@ public class SupercashPaymentsAPIHealthContributor implements HealthIndicator, H
             url = new URL(properties.getBaseUrl());
 
         } catch (MalformedURLException urlError) {
-            LOG.error("The WPS URL seems to be malformed: {}", properties.getBaseUrl());
+            LOG.error("The {} URL seems to be malformed: {}", SERVICE_NAME, properties.getBaseUrl());
             return Health.down().withDetail("error", urlError.getMessage()).build();
         }
 
