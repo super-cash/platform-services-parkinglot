@@ -21,8 +21,8 @@ spring:
         instance:
           metadata:
             user:
-              name: ${spring.security.user.name}
-              password: ${spring.security.user.password}
+              name: ${spring.boot.admin.client.username}
+              password: ${spring.boot.admin.client.password}
             tags:
               env: loc
               cluster: pdc
