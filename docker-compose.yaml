@@ -12,8 +12,8 @@ networks:
 services:
 
   # The service for parking lots
-  parking-lot-service:    
-    image: supercash/parking-lot-service
+  parkinglots-service:    
+    image: supercash/parkinglots-service
     build:
       context: .
       args:
