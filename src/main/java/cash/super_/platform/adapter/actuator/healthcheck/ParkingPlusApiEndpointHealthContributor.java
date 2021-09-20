@@ -1,8 +1,6 @@
 package cash.super_.platform.adapter.actuator.healthcheck;
 
-import cash.super_.platform.adapter.actuator.HealthProbeVerifier;
 import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
-import cash.super_.platform.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,7 @@ import java.net.URL;
 @Component("ParkingPlusAPI")
 public class ParkingPlusApiEndpointHealthContributor implements HealthIndicator, HealthContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HealthProbeVerifier.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParkingPlusApiEndpointHealthContributor.class);
 
     private static final String SERVICE_NAME = ParkingPlusApiEndpointHealthContributor.class.getName()
             .replace("EndpointHealthContributor", "");
