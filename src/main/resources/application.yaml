@@ -123,6 +123,7 @@ management:
 
     # Liveness and Readiness probe endpoints only work with this setup
     # https://www.baeldung.com/spring-liveness-readiness-probes#actuator-probes
+  endpoint:
     health:
       show-details: always
       probes:

@@ -1,0 +1,2 @@
+# Kubernetes healthcheck
+GET  {{host}}:{{port}}/parkinglots/actuator/health/liveness
