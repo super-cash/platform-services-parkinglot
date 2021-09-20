@@ -7,7 +7,7 @@ spring:
       client:
         instance:
           # The Gateway will forward the calls to /auth/actuator/info...
-          management-base-url: https://api.super.cash/parkinglots
+          management-base-url: https://api.super.cash
           metadata:
             tags:
               env: prd
