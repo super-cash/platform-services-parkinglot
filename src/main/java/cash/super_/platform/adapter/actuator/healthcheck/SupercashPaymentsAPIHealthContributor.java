@@ -54,9 +54,13 @@ public class SupercashPaymentsAPIHealthContributor implements HealthIndicator, H
             return Health.down().withDetail("error", urlError.getMessage()).build();
         }
 
+        int port = url.getPort() == -1
+                ? (url.getProtocol().startsWith("https") ? 443 : 80)
+                :  url.getPort();
+
         // Check if the URL can be reached
         // TODO: IT MUST CALL THE HEALTHCHECK OF THE SERVICE AND VERIFY IF IT'S UP. DEEP HEALTHCHECK
-        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
+        try (Socket socket = new Socket(url.getHost(), port)) {
             this.hasConnection = true;
             LOG.debug("Connection with '{}' successfully made at {}", SERVICE_NAME, url);
 
