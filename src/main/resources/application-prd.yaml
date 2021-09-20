@@ -32,7 +32,8 @@ cash:
 
       service:
         payment:
-          baseUrl: http://payment-service:8120/v2/payments
+          # CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL MUST BE SET!
+          baseUrl: http://localhost:8120/v2/payments
         parkinglot:
           # https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html#_feign_logging
           baseUrl: https://maceio.parkingplus.com.br/servicos

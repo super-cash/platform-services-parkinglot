@@ -27,7 +27,8 @@ cash:
     platform:
       client:
         payment:
-          baseUrl: http://payment-service:8120/v2/payments
+          # CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL MUST BE SET!
+          baseUrl: http://localhost:8120/v2/payments
 
         parkingplus:
           baseUrl: https://maceio.parkingplus.com.br/servicos
