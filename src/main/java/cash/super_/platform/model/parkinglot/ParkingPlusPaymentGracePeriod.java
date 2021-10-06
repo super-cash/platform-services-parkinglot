@@ -13,10 +13,13 @@ public class ParkingPlusPaymentGracePeriod {
   @JsonProperty(value = "grace_period")
   private Integer gracePeriod;
 
+  private Long parkinglotId;
+
   public ParkingPlusPaymentGracePeriod() {
   }
 
-  public ParkingPlusPaymentGracePeriod(Integer gracePeriod) {
+  public ParkingPlusPaymentGracePeriod(Long parkinglotId, Integer gracePeriod) {
+    this.parkinglotId = parkinglotId;
     this.gracePeriod = gracePeriod;
   }
 

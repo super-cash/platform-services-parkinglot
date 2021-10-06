@@ -3,57 +3,72 @@ package cash.super_.platform.service.parkinglot.payment;
 import cash.super_.platform.service.parkinglot.AbstractController;
 import cash.super_.platform.model.parkinglot.ParkingPlusPaymentGracePeriod;
 import cash.super_.platform.model.parkinglot.ParkingPlusPaymentServiceFee;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 @Controller
+@Api(tags="ParkinglotsServiceClient")
 @RequestMapping("/${cash.super.platform.service.parkinglot.apiVersion}")
 public class ParkingLotPaymentController extends AbstractController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ParkingLotPaymentController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ParkingLotPaymentController.class);
 
   /**
    * The endpoint for the authorization
    */
-  private static final String PAYMENT_ENDPOINT = BASE_ENDPOINT + "/payment";
+  private static final String PAYMENT_ENDPOINT = BASE_ENDPOINT + "/payments";
 
-  @ApiOperation(value = "", nickname = PAYMENT_ENDPOINT + "/servicefee")
-  @RequestMapping(value = PAYMENT_ENDPOINT + "/servicefee", method = RequestMethod.GET,
-          produces = {"application/json"})
+    /**
+     * Retrieve the status of a given ticket for of a given user
+     * @param parkinglotId the the parkinglot Id
+     * @return ParkingTicketStatus
+     */
+    @ApiOperation(nickname = "getServiceFee", value = "Retrieves a ticket from the system.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "If the ticket exists. (Testing tickets: free-112233445566, existing-010101010101, exit-111111000000"),
+            @ApiResponse(code = 400, message = "When missing or with incorrect parameters"),
+            @ApiResponse(code = 404, message = "When the storeId or ticketId does not exist"),
+            @ApiResponse(code = 500, message = "Unidentified errors in the server"),
+            @ApiResponse(code = 501, message = "If the selected type is not implemented"),
+            @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
+    })
+  @GetMapping(value = PAYMENT_ENDPOINT + "/servicefee", produces = {"application/json"})
   public ResponseEntity<ParkingPlusPaymentServiceFee> getPaymentServiceFee(
-      @RequestHeader("X-Supercash-Tid") String transactionId,
-      @RequestHeader("X-Supercash-Uid") String userId,
-      @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-      @RequestHeader("X-Supercash-StoreId") String storeId) throws IOException, InterruptedException {
+      @PathVariable("parkinglot_id") Long parkinglotId) throws IOException, InterruptedException {
 
-    ParkingPlusPaymentServiceFee pppsf = new ParkingPlusPaymentServiceFee(properties.getOurFee());
+    LOGGER.debug("Retrieving the serviceFee for the parkinglot={}", parkinglotId);
+    ParkingPlusPaymentServiceFee pppsf = new ParkingPlusPaymentServiceFee(parkinglotId, properties.getOurFee());
 
-    return new ResponseEntity<>(pppsf,
-            makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+    return new ResponseEntity<>(pppsf, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 
-  @ApiOperation(value = "", nickname = PAYMENT_ENDPOINT + "/graceperiod")
-  @RequestMapping(value = PAYMENT_ENDPOINT + "/graceperiod", method = RequestMethod.GET,
-          produces = {"application/json"})
+  @ApiOperation(nickname = "getGracePeriod", value = "Retrieves the grace period for the given parkinglot.")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "If the given parkinglot exists and has graceperiod information"),
+          @ApiResponse(code = 400, message = "When missing or with incorrect parameters"),
+          @ApiResponse(code = 404, message = "When the the given parkinglotID does not exist"),
+          @ApiResponse(code = 500, message = "Unidentified errors in the server"),
+          @ApiResponse(code = 501, message = "If the selected type is not implemented"),
+          @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
+  })
+  @GetMapping(value = PAYMENT_ENDPOINT + "/graceperiod", produces = {"application/json"})
   public ResponseEntity<ParkingPlusPaymentGracePeriod> getPaymentGracePeriod(
-          @RequestHeader("X-Supercash-Tid") String transactionId,
-          @RequestHeader("X-Supercash-Uid") String userId,
-          @RequestHeader("X-Supercash-MarketplaceId") String marketplaceId,
-          @RequestHeader("X-Supercash-StoreId") String storeId) {
+          @PathVariable("parkinglot_id") Long parkinglotId) {
 
-    ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(properties.getGracePeriodInMinutes());
+      LOGGER.debug("Retrieving the graceperiod for the parkinglot={}", parkinglotId);
+      ParkingPlusPaymentGracePeriod pppgp = new ParkingPlusPaymentGracePeriod(parkinglotId, properties.getGracePeriodInMinutes());
 
-    return new ResponseEntity<>(pppgp,
-            makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
+    return new ResponseEntity<>(pppgp, makeDefaultHttpHeaders(new HashMap<>()), HttpStatus.OK);
   }
 }

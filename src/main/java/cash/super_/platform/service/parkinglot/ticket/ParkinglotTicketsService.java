@@ -32,11 +32,13 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
   /**
    * Retrieves tickets for a given user
    */
-  public List<ParkinglotTicket> retrieveTickets(Optional<String> ticketNumber, Optional<Long> createdAt,
+  public List<ParkinglotTicket> retrieveTickets(Long parkinglotId, Optional<String> ticketNumber, Optional<Long> createdAt,
                                                 Optional<Integer> pageOffset, Optional<Integer> pageLimit) {
+
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long userId = supercashRequestContext.getUserId();
     Long storeId = supercashRequestContext.getStoreId();
+    LOG.debug("Retrieving the tickets for the userId={} for parkinglotId={} exists!", userId, parkinglotId);
 
     AtomicReference<List<ParkinglotTicket>> userParkingTickets = new AtomicReference<>();
 

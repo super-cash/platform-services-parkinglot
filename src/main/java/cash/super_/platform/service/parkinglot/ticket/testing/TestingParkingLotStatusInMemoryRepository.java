@@ -189,7 +189,8 @@ public class TestingParkingLotStatusInMemoryRepository {
 	/**
 	 * Reset the testing tickets starte back to how they are bootstrapped
 	 */
-	public void resetTestTickets(Optional<Integer> gracePeriodMin, Optional<Integer> nextPriceInMin) {
+	public void resetTestTickets(Long parkinglotId, Optional<Integer> gracePeriodMin, Optional<Integer> nextPriceInMin) {
+        LOG.debug("Requested to reset the state of the tickets for parkinglotId={}", parkinglotId);
 		resetChangeRates(gracePeriodMin, nextPriceInMin);
 
 		LOG.info("Resetting values with gracePeriodMin={} nextPriceInMin={}", this.getGracePeriodInMinutes(),

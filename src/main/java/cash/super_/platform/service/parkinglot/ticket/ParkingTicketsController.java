@@ -3,7 +3,10 @@ package cash.super_.platform.service.parkinglot.ticket;
 import cash.super_.platform.service.parkinglot.AbstractController;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketStatusProxyService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
+@Api(tags="ParkinglotsServiceClient")
 @RequestMapping("/${cash.super.platform.service.parkinglot.apiVersion}")
 public class ParkingTicketsController extends AbstractController {
 
@@ -31,15 +35,24 @@ public class ParkingTicketsController extends AbstractController {
    * @param createdAt
    * @return ParkingTicketPaymentsMadeStatus
    */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT)
-  @RequestMapping(value = TICKETS_ENDPOINT, method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @ApiOperation(nickname = "list", value = "Retrieves the list of parkinglot tickets for the user stored in our system")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "If there is a list of 0 or more tickets for the userId"),
+          @ApiResponse(code = 400, message = "When missing or with incorrect parameters"),
+          @ApiResponse(code = 404, message = "When parkinglot ID does not exist"),
+          @ApiResponse(code = 500, message = "Unidentified errors in the server"),
+          @ApiResponse(code = 501, message = "If the selected type is not implemented"),
+          @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
+  })
+  @GetMapping(value = TICKETS_ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
+          @PathVariable("parkinglot_id") Long parkinglotId,
           @RequestParam("ticket_number") Optional<String> ticketNumber,
       @RequestParam("created_at") Optional<Long> createdAt,
       @RequestParam("page_offset") Optional<Integer> pageOffset,
       @RequestParam("page_limit") Optional<Integer> pageLimit) {
 
-    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(ticketNumber, createdAt, pageOffset, pageLimit);
+    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketNumber, createdAt, pageOffset, pageLimit);
     Map<String, String> paginationTotals = new HashMap<>();
 
     int numberOfTickets = parkingTickets != null ? parkingTickets.size() : 0;

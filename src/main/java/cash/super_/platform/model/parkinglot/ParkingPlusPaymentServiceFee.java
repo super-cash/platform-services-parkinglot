@@ -13,10 +13,13 @@ public class ParkingPlusPaymentServiceFee {
     @JsonProperty(value = "service_fee")
     private Long serviceFee;
 
+    private Long parkinglotId;
+
     public ParkingPlusPaymentServiceFee() {
     }
 
-    public ParkingPlusPaymentServiceFee(Long serviceFee) {
+    public ParkingPlusPaymentServiceFee(Long parkinglotId, Long serviceFee) {
+        this.parkinglotId = parkinglotId;
         this.serviceFee = serviceFee;
     }
 
@@ -26,6 +29,14 @@ public class ParkingPlusPaymentServiceFee {
 
     public void setServiceFee(Long serviceFee) {
         this.serviceFee = serviceFee;
+    }
+
+    public Long getParkinglotId() {
+        return parkinglotId;
+    }
+
+    public void setParkinglotId(Long parkinglotId) {
+        this.parkinglotId = parkinglotId;
     }
 
     @Override
