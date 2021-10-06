@@ -180,10 +180,20 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     return this.authorizedPaidTicket(payRequest);
   }
 
-  public ParkingTicketAuthorizedPaymentStatus process(ParkingTicketPayment paymentRequest, String ticketNumber) {
-    if (paymentRequest == null) {
+  public ParkingTicketAuthorizedPaymentStatus process(Long parkinglotId, ParkingTicketPayment paymentRequest, String ticketNumber) {
+      LOG.debug("Attepting to process the payment for ticket={} at the parkinglotId={}", ticketNumber, parkinglotId);
+
+      if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
+
+    // We will valida this in the future
+//    Long storeId = supercashRequestContext.getStoreId();
+//    if (storeId != parkinglotId) {
+//      LOG.error("Client calls must change: ticket={} must be the same as parkinglotId={}", ticketNumber, parkinglotId);
+//      throw new SupercashInvalidValueException(String.format("StoreID=%s must be the same as " +
+//              "ParkinglotId=%s", storeId, parkinglotId));
+//    }
 
     // just defined as not scanned, as we are already making the payment
     // This is to signal being scanned and it's not at this point
@@ -191,6 +201,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     if (paymentRequest.getPayTicketRequest() != null) {
+      Long userId = supercashRequestContext.getUserId();
+      LOG.debug("Requested the payment for ticket={} at the parkinglotId={} by the user={}", ticketNumber, parkinglotId, userId);
       Map<String, String> metadata = paymentRequest.getPayTicketRequest().getMetadata();
 
       if (Strings.isNullOrEmpty(metadata.get("device_id"))) {
@@ -209,10 +221,12 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       TransactionRequest request = paymentRequest.getPayTicketRequest();
 
       int paymentAmount = paymentRequest.getPayTicketRequest().getAmount().intValue();
-      RetornoConsulta ticketStatus = isTicketAndAmountValid(ticketNumber, paymentAmount, scanned);
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(parkinglotId, ticketNumber, paymentAmount, scanned);
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus);
 
     } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
+      LOG.debug("Requested the payment for ticket={} at the parkinglotId={} by the annonymous user", ticketNumber, parkinglotId);
+
       Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
 
       if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
@@ -233,7 +247,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       // anonymous ticket payment request (supercash format for anonymous payment request
       AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
       int payAmount =  request.getAmount().getValue().intValue();
-      RetornoConsulta ticketStatus = isTicketAndAmountValid(ticketNumber, payAmount, scanned);
+      RetornoConsulta ticketStatus = isTicketAndAmountValid(parkinglotId, ticketNumber, payAmount, scanned);
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus);
 
     } else if (paymentRequest.getAuthorizedRequest() != null) {
@@ -250,10 +264,11 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
               "payTicketRequest");
     }
 
-    return paymentStatus;
+      LOG.debug("Payment status generated: {}", paymentStatus);
+      return paymentStatus;
   }
 
-  protected RetornoConsulta isTicketAndAmountValid(String ticketNumber, long amount, boolean scanned) {
+  protected RetornoConsulta isTicketAndAmountValid(Long parkinglotId, String ticketNumber, long amount, boolean scanned) {
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided");
     }
@@ -271,12 +286,14 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       return testingParkinglotTicketRepository.getQueryResult(ticketNumber);
     }
 
-    // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
+    LOG.debug("Verifying that the ticket={} for parkinglot={} is new and just got scanned", ticketNumber, parkinglotId);
+      // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
     Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(Long.valueOf(ticketNumber), userId, storeId);
     if (ticket.isPresent()) {
+      LOG.debug("Ticket ticket={} for parkinglot={} exists!", ticketNumber, parkinglotId);
 
       ParkingTicketState lastRecordedState = null;
       if (ticket.get().getLastStateRecorded() != null) {
@@ -292,7 +309,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       }
     }
 
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(ticketNumber, scanned);
+    LOG.debug("Retrieving status again ticket ticket={} for parkinglot={} exists!", ticketNumber, parkinglotId);
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkinglotId, ticketNumber, scanned);
 
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
     int ticketFee = ticketStatus.getTarifa();

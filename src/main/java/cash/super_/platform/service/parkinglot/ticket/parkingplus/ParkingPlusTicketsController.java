@@ -10,6 +10,9 @@ import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketAuthorizePaymentProxyService;
 import cash.super_.platform.service.parkinglot.ticket.parkingplus.ParkingPlusTicketStatusProxyService;
 import cash.super_.platform.service.parkinglot.ticket.testing.TestingParkingLotStatusInMemoryRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +23,7 @@ import cash.super_.platform.service.parkinglot.AbstractController;
 import io.swagger.annotations.ApiOperation;
 
 @Controller
+@Api(tags="ParkinglotsServiceClient")
 @RequestMapping("/${cash.super.platform.service.parkinglot.apiVersion}")
 public class ParkingPlusTicketsController extends AbstractController {
 
@@ -40,14 +44,23 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param scanned if the ticket was scanned
    * @return ParkingTicketStatus
    */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_number}")
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}", method = RequestMethod.GET,
-          produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<ParkingTicketStatus> getTicketStatus(@PathVariable("ticket_number") String ticketNumber,
+  @ApiOperation(nickname = "retrieve", value = "Retrieves a ticket from the system.")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "If the ticket exists. (Testing tickets: free-112233445566, existing-010101010101, exit-111111000000"),
+          @ApiResponse(code = 400, message = "When missing or with incorrect parameters"),
+          @ApiResponse(code = 404, message = "When the storeId or ticketId does not exist"),
+          @ApiResponse(code = 500, message = "Unidentified errors in the server"),
+          @ApiResponse(code = 501, message = "If the selected type is not implemented"),
+          @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
+  })
+  @GetMapping(value = {TICKETS_ENDPOINT + "/{ticket_number}"}, produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<ParkingTicketStatus> getTicketStatus(
+          @PathVariable("parkinglot_id") Long parkinglotId,
+          @PathVariable("ticket_number") String ticketNumber,
           @RequestParam("scanned") Optional<Boolean> scanned) {
 
     boolean wasScanned = scanned.isPresent() ? scanned.get() : false;
-    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(ticketNumber, wasScanned);
+    ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkinglotId, ticketNumber, wasScanned);
 
     Map<String, String> headers = new HashMap<>();
     TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
@@ -61,14 +74,24 @@ public class ParkingPlusTicketsController extends AbstractController {
    * @param paymentRequest
    * @return ParkingTicketAuthorizedPaymentStatus
    */
-  @ApiOperation(value = "", nickname = TICKETS_ENDPOINT + "/{ticket_number}/pay")
-  @RequestMapping(value = TICKETS_ENDPOINT + "/{ticket_number}/pay", method = RequestMethod.POST,
-      consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @ApiOperation(nickname = "pay", value = "Pays a given ticket from the system")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message = "If the ticket exists"),
+          @ApiResponse(code = 400, message = "When missing or with incorrect parameters"),
+          @ApiResponse(code = 404, message = "When the storeId or ticketId does not exist"),
+          @ApiResponse(code = 500, message = "Unidentified errors in the server"),
+          @ApiResponse(code = 501, message = "If the selected type is not implemented"),
+          @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
+  })
+  @PostMapping(value = TICKETS_ENDPOINT + "/{ticket_number}/pay",
+          consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
+          @PathVariable("parkinglot_id") Long parkinglotId,
           @PathVariable("ticket_number") String ticketNumber,
       @RequestBody ParkingTicketPayment paymentRequest) {
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(paymentRequest, ticketNumber);
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(parkinglotId,
+            paymentRequest, ticketNumber);
 
     Map<String, String> headers = new HashMap<>();
     TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);

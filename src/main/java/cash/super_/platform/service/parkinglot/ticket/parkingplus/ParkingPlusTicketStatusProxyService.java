@@ -39,11 +39,21 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
   @Autowired
   ParkingTicketsStateTransitionService parkingTicketsStateTransitionService;
 
-  public ParkingTicketStatus getStatus(String ticketNumber, boolean scanned) {
-    LOG.debug("Looking for the status of ticket: {}", ticketNumber);
+  public ParkingTicketStatus getStatus(Long parkinglotId, String ticketNumber, boolean scanned) {
+    // TODO: THIS MUST ALSO VERIFY THE PARKINGLOT_ID == STORE_ID
+    LOG.debug("Looking for the status of ticket={} at the parkinglotId={}", ticketNumber, parkinglotId);
     if (Strings.isNullOrEmpty(ticketNumber)) {
       throw new SupercashInvalidValueException("Ticket ID must be provided.");
     }
+
+    // TODO Validate the store Id == parkinglot ID. It is not going to be because of the swagger endpoints must have
+      // the storeID as a parameter, but it's now in the context...
+//    Long storeId = supercashRequestContext.getStoreId();
+//    if (storeId != parkinglotId) {
+//        LOG.error("Client calls must change: ticket={} must be the same as parkinglotId={}", ticketNumber, parkinglotId);
+//        throw new SupercashInvalidValueException(String.format("StoreID=%s must be the same as " +
+//                "ParkinglotId=%s", storeId, parkinglotId));
+//    }
 
     Long userId = supercashRequestContext.getUserId();
 
