@@ -144,7 +144,10 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         parkinglotTicket.addTicketStateTransition(state, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
       }
 
-      LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
+      // always gurantee the store is set
+      parkinglotTicket.setStoreId(storeId);
+
+      LOG.debug("Saving new state {} for ticket {} on the parkinglot={}", state, ticketNumber, storeId);
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(parkinglotTicket);
 
@@ -161,11 +164,13 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       // Add 100 in the timestamp so it will be a bit higher on the first save
       parkinglotTicket.addTicketStateTransition(state, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
 
-      LOG.debug("Saving new state {} for ticket {}", state, ticketNumber);
+      // always gurantee the store is set
+      parkinglotTicket.setStoreId(storeId);
+
+      LOG.debug("Saving existing state {} for ticket {} at parkintlot={}", state, ticketNumber, storeId);
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(parkinglotTicket);
     }
-//    };
   }
 
   /**
@@ -221,6 +226,12 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         // solves the problem of when it's the first time scanning, during tests, or when the ticket has never been scanned
         ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentDateTime));
       }
+
+      // always gurantee the store is set
+      ticket.setStoreId(storeId);
+
+      LOG.debug("Saving the ticket={} from parkinglot={} before state transitions", ticketNumber, storeId);
+
       // Save the ticket states
       parkinglotTicketRepository.save(ticket);
     }
@@ -240,6 +251,9 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // Save the ticket with the new state transition
       ticket.addTicketStateTransition(exitState, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
+      ticket.setStoreId(storeId);
+
+      LOG.debug("Saving the ticket={} from parkinglot={} with exitState={}", ticketNumber, storeId, exitState);
 
       // Save the ticket and the transitions
       parkinglotTicketRepository.save(ticket);
