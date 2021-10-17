@@ -2,14 +2,13 @@ package cash.super_.platform.adapter.http;
 
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
 import cash.super_.platform.error.parkinglot.SupercashMarketplaceNotFoundException;
-import cash.super_.platform.service.parkinglot.AbstractController;
-import cash.super_.platform.repository.MarketplaceRepository;
 import cash.super_.platform.util.NumberUtil;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -22,15 +21,13 @@ import java.util.Map;
  * The SupercashSecurityInterceptor is the web security of calls for Supercash.
  * Based on https://dzone.com/articles/using-requestscope-with-your-api, https://gitlab.com/johnjvester/request-scope.
  */
+@Component
 public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupercashSecurityInterceptor.class);
 
     @Resource(name = "supercashRequestContextInstance")
     private SupercashRequestContext requestContext;
-
-    @Autowired
-    private MarketplaceRepository marketplaceRepository;
 
     @Value("/${cash.super.platform.service.parkinglot.apiVersion}")
     private String apiVersion;
@@ -43,9 +40,8 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
         // https://www.baeldung.com/spring-boot-security-autoconfiguration
         // Verify if any of the requested urls are valid according to our supported URLs
         String requestedPath = request.getRequestURI();
-        String protectedPaths = String.format("/%s/%s", apiVersion, AbstractController.BASE_ENDPOINT);
         // If it is not in the controller, allow them because it can be actuator, swagger, etc
-        if (!requestedPath.contains(protectedPaths)) {
+        if (!requestedPath.startsWith(apiVersion)) {
             return true;
         }
 
@@ -58,11 +54,11 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
         final String transactionId = request.getHeader(headerName);
 
         /* Validating marketplace id */
-        headerName = "X-Supercash-MarketplaceId";
+        headerName = "X-Supercash-Marketplace-Id";
         long marketPlaceId = NumberUtil.stringIsLongWithException(request.getHeader(headerName), headerName);
 
         /* Validating marketplace id */
-        headerName = "X-Supercash-StoreId";
+        headerName = "X-Supercash-Store-Id";
         long storeId = NumberUtil.stringIsLongWithException(request.getHeader(headerName), headerName);
 
         /* Validating app version and marketplace Id in the database */
@@ -77,19 +73,23 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
         // Update the context that will be provided to all the services
         requestContext.setContext(transactionId, marketPlaceId, storeId, userId, appVersion);
 
-            // Get the variable https://stackoverflow.com/questions/12249721/spring-mvc-3-how-to-get-path-variable-in-an-interceptor/23468496#23468496
+        LOG.debug("Created Supercash Request Context: {}", requestContext);
+
+        // Get the variable https://stackoverflow.com/questions/12249721/spring-mvc-3-how-to-get-path-variable-in-an-interceptor/23468496#23468496
         Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
         try {
             // make references locally
             final Double requestedAppVersion = requestContext.getRequestedAppVersion();
 
-            if (!marketplaceRepository.existsDistinctByIdAndAppVersionLessThanEqual(marketPlaceId, requestedAppVersion)) {
-                final String errorMsg = "Marketplace with Id '" + marketPlaceId + "' " +
-                        "not found at compatible version + '" + appVersion + "'";
-                requestContext = null;
-                throw new SupercashMarketplaceNotFoundException(errorMsg);
-            }
+            // TODO: We need to make sure the marketplace is correct by another trust validation
+//            if (!marketplaceRepository.existsDistinctByIdAndAppVersionLessThanEqual(marketPlaceId, requestedAppVersion)) {
+//                final String errorMsg = "Marketplace with Id '" + marketPlaceId + "' " +
+//                        "not found at compatible version + '" + appVersion + "'";
+//                requestContext = null;
+//                LOG.error("Error creating context: {}", errorMsg);
+//                throw new SupercashMarketplaceNotFoundException(errorMsg);
+//            }
 
         } catch (Exception error) {
             LOG.error("Request rejected due to error: {}", error.getMessage());
