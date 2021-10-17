@@ -27,11 +27,6 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/${cash.super.platform.service.parkinglot.apiVersion}")
 public class ParkingPlusTicketsController extends AbstractController {
 
-  /**
-   * The endpoint for the tickets status
-   */
-  protected static final String TICKETS_ENDPOINT = BASE_ENDPOINT + "/tickets";
-
   @Autowired
   protected ParkingPlusTicketStatusProxyService statusService;
 
@@ -53,7 +48,7 @@ public class ParkingPlusTicketsController extends AbstractController {
           @ApiResponse(code = 501, message = "If the selected type is not implemented"),
           @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
   })
-  @GetMapping(value = {TICKETS_ENDPOINT + "/{ticket_number}"}, produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(value = {TICKET_NUMBER_ENDPOINT}, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
           @PathVariable("parkinglot_id") Long parkinglotId,
           @PathVariable("ticket_number") String ticketNumber,
@@ -67,7 +62,7 @@ public class ParkingPlusTicketsController extends AbstractController {
     // validate the request context
     validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
-    boolean wasScanned = scanned.isPresent() ? scanned.get() : false;
+    boolean wasScanned = scanned.orElse(false);
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkinglotId, ticketNumber, wasScanned);
 
     Map<String, String> headers = new HashMap<>();
@@ -91,7 +86,7 @@ public class ParkingPlusTicketsController extends AbstractController {
           @ApiResponse(code = 501, message = "If the selected type is not implemented"),
           @ApiResponse(code = 503, message = "When the underlying service in use is not reachable"),
   })
-  @PostMapping(value = TICKETS_ENDPOINT + "/{ticket_number}/pay",
+  @PostMapping(value = TICKET_NUMBER_ENDPOINT + "/pay",
           consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
           @PathVariable("parkinglot_id") Long parkinglotId,

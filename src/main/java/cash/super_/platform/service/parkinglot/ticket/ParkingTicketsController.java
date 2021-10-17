@@ -47,7 +47,6 @@ public class ParkingTicketsController extends AbstractController {
   @GetMapping(value = TICKETS_ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
           @PathVariable("parkinglot_id") Long parkinglotId,
-          @RequestParam("ticket_number") Optional<String> ticketNumber,
           @RequestParam("created_at") Optional<Long> createdAt,
           @RequestParam("page_offset") Optional<Integer> pageOffset,
           @RequestParam("page_limit") Optional<Integer> pageLimit,
@@ -60,7 +59,8 @@ public class ParkingTicketsController extends AbstractController {
     // The context is added by the supercashSecurityInterceptor
     validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
-    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketNumber, createdAt, pageOffset, pageLimit);
+    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, Optional.empty(),
+            createdAt, pageOffset, pageLimit);
     Map<String, String> paginationTotals = new HashMap<>();
 
     int numberOfTickets = parkingTickets != null ? parkingTickets.size() : 0;

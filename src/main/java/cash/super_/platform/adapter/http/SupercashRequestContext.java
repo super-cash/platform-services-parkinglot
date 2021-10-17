@@ -58,7 +58,8 @@ public class SupercashRequestContext {
         this.requestedAppVersion = requestedAppVersion;
 
         // All requests pass through here.
-        LOG.info("Initializing supercash request context transactionId={} marketplaceId={} storeId={} userId{} requestedAppVersion={}",
+        LOG.info("Initializing supercash request context transactionId={} marketplaceId={} storeId={} userId={} " +
+                        "requestedAppVersion={}",
                 transactionId, marketplaceId, storeId, userId, requestedAppVersion);
     }
 }

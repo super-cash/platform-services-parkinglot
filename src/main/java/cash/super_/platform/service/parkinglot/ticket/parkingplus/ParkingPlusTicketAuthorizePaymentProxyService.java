@@ -180,7 +180,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     return this.authorizedPaidTicket(payRequest);
   }
 
-  public ParkingTicketAuthorizedPaymentStatus process(Long parkinglotId, ParkingTicketPayment paymentRequest, String ticketNumber) {
+  public ParkingTicketAuthorizedPaymentStatus process(Long parkinglotId, ParkingTicketPayment paymentRequest,
+                                                      String ticketNumber) {
       LOG.debug("Attepting to process the payment for ticket={} at the parkinglotId={}", ticketNumber, parkinglotId);
 
       if (paymentRequest == null) {
