@@ -57,7 +57,15 @@ public class ParkingPlusTicketsController extends AbstractController {
   public ResponseEntity<ParkingTicketStatus> getTicketStatus(
           @PathVariable("parkinglot_id") Long parkinglotId,
           @PathVariable("ticket_number") String ticketNumber,
-          @RequestParam("scanned") Optional<Boolean> scanned) {
+          @RequestParam("scanned") Optional<Boolean> scanned,
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Marketplace-Id") Long marketplaceId,
+          @RequestHeader("X-Supercash-Store-Id") Long storeId,
+          @RequestHeader("X-Supercash-App-Version") Double appVersion,
+          @RequestHeader("X-Supercash-Uid") Long userId) {
+
+    // validate the request context
+    validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
     boolean wasScanned = scanned.isPresent() ? scanned.get() : false;
     ParkingTicketStatus parkingTicketStatus = statusService.getStatus(parkinglotId, ticketNumber, wasScanned);
@@ -88,7 +96,15 @@ public class ParkingPlusTicketsController extends AbstractController {
   public ResponseEntity<ParkingTicketAuthorizedPaymentStatus> authorizeParkingTicketPayment(
           @PathVariable("parkinglot_id") Long parkinglotId,
           @PathVariable("ticket_number") String ticketNumber,
-      @RequestBody ParkingTicketPayment paymentRequest) {
+          @RequestBody ParkingTicketPayment paymentRequest,
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Marketplace-Id") Long marketplaceId,
+          @RequestHeader("X-Supercash-Store-Id") Long storeId,
+          @RequestHeader("X-Supercash-App-Version") Double appVersion,
+          @RequestHeader("X-Supercash-Uid") Long userId) {
+
+    // The context is added by the supercashSecurityInterceptor
+    validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(parkinglotId,
             paymentRequest, ticketNumber);

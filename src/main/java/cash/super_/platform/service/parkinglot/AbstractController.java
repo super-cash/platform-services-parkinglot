@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.adapter.feign.SupercashRetryableException;
+import cash.super_.platform.adapter.http.SupercashRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import cash.super_.platform.autoconfig.ParkingPlusServiceClientProperties;
 import feign.FeignException;
+
+import javax.annotation.Resource;
 
 /**
  * Abstract controller error that can be reused by other services.
@@ -39,7 +42,10 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   @Autowired
   protected ParkingPlusServiceClientProperties properties;
 
-  /**
+  @Resource(name = "supercashRequestContextInstance")
+  protected SupercashRequestContext supercashRequestContext;
+
+    /**
    * @return The default headers for all Controller Calls
    */
   protected HttpHeaders makeDefaultHttpHeaders(Map<String, String> additionalHeaders) {
@@ -141,6 +147,21 @@ public abstract class AbstractController extends ResponseEntityExceptionHandler 
   private ResponseEntity<Object> makeErrorResponse(SupercashSimpleException errorCause) {
     return new ResponseEntity<>(errorCause,
             errorCause.SupercashExceptionModel.getAdditionalErrorCodeAsHttpStatus());
+  }
+
+  protected void validateSupercashContext(String transactionId, Long marketplaceId, Long storeId, Long userId, Double appVersion, Long parkinglotId) {
+      if (!supercashRequestContext.getTransactionId().equals(transactionId) ||
+              !supercashRequestContext.getMarketplaceId().equals(marketplaceId) ||
+              !supercashRequestContext.getStoreId().equals(storeId) ||
+              !supercashRequestContext.getRequestedAppVersion().equals(appVersion) ||
+              !supercashRequestContext.getUserId().equals(userId)) {
+          LOG.error("The received request context does not match the one received by the controller received: {}", supercashRequestContext);
+          throw new IllegalStateException("The controller must receive the proper context object");
+      }
+
+      if (!parkinglotId.equals(storeId)) {
+          LOG.error("The storeId={} must be the same as the parkinglotId={} by the controller", parkinglotId, storeId);
+      }
   }
 
 }

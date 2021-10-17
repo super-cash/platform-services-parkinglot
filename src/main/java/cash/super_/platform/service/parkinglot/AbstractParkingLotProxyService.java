@@ -54,15 +54,9 @@ public abstract class AbstractParkingLotProxyService {
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
-    return properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
-  }
-
-  /**
-   * @param ticketNumber
-   * @return Whether or not the ticket is for testing
-   */
-  public boolean isTicketForTesting(String ticketNumber) {
-    return testingParkinglotTicketRepository.containsTicket(ticketNumber);
+    String udid = properties.getUdidPrefix() + "-" + marketplaceId + "-" + storeId + "-" + userId;
+    LOG.debug("Setting the WPS udid for the user as {}", udid);
+    return udid;
   }
 
   public ParkinglotTicketId makeTicketId(Long ticketNumber) {

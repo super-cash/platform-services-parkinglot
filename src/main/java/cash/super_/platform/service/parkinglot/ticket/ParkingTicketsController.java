@@ -48,9 +48,17 @@ public class ParkingTicketsController extends AbstractController {
   public ResponseEntity<List<ParkinglotTicket>> getParkingTicketsForUser(
           @PathVariable("parkinglot_id") Long parkinglotId,
           @RequestParam("ticket_number") Optional<String> ticketNumber,
-      @RequestParam("created_at") Optional<Long> createdAt,
-      @RequestParam("page_offset") Optional<Integer> pageOffset,
-      @RequestParam("page_limit") Optional<Integer> pageLimit) {
+          @RequestParam("created_at") Optional<Long> createdAt,
+          @RequestParam("page_offset") Optional<Integer> pageOffset,
+          @RequestParam("page_limit") Optional<Integer> pageLimit,
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Marketplace-Id") Long marketplaceId,
+          @RequestHeader("X-Supercash-Store-Id") Long storeId,
+          @RequestHeader("X-Supercash-App-Version") Double appVersion,
+          @RequestHeader("X-Supercash-Uid") Long userId) {
+
+    // The context is added by the supercashSecurityInterceptor
+    validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
     List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketNumber, createdAt, pageOffset, pageLimit);
     Map<String, String> paginationTotals = new HashMap<>();

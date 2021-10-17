@@ -43,9 +43,17 @@ public class ParkingPlusTestingTicketsController extends AbstractController {
   public ResponseEntity<String> resetTestingParkingTickets(
           @PathVariable("parkinglot_id") Long parkinglotId,
           @RequestParam("graceTimeMin") Optional<Integer> gracePeriodMin,
-          @RequestParam("priceChangeMin") Optional<Integer> nextPriceInMin) {
+          @RequestParam("priceChangeMin") Optional<Integer> nextPriceInMin,
+          @RequestHeader("X-Supercash-Tid") String transactionId,
+          @RequestHeader("X-Supercash-Marketplace-Id") Long marketplaceId,
+          @RequestHeader("X-Supercash-Store-Id") Long storeId,
+          @RequestHeader("X-Supercash-App-Version") Double appVersion,
+          @RequestHeader("X-Supercash-Uid") Long userId) {
 
-    // Just reset the values in memory
+    // The context is added by the supercashSecurityInterceptor
+    validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
+
+      // Just reset the values in memory
     testingParkinglotRepo.resetTestTickets(parkinglotId, gracePeriodMin, nextPriceInMin);
 
     Map<String, String> headers = new HashMap<>();
