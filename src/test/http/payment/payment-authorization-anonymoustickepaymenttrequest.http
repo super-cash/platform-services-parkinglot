@@ -2,8 +2,8 @@ POST {{host}}:{{port}}/v2/parking_lot/tickets/273647526466/pay
 accept: application/json
 X-Supercash-Uid: 99999
 X-Supercash-Tid: new-transaction202
-X-Supercash-MarketplaceId: 6115
-X-Supercash-StoreId: 51
+X-Supercash-Marketplace-Id: 6115
+X-Supercash-Store-Id: 51
 X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json
