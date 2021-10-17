@@ -146,6 +146,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // always gurantee the store is set
       parkinglotTicket.setStoreId(storeId);
+      parkinglotTicket.setUserId(userId);
 
       LOG.debug("Saving new state {} for ticket {} on the parkinglot={}", state, ticketNumber, storeId);
       // Save the ticket and the transitions
@@ -166,6 +167,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // always gurantee the store is set
       parkinglotTicket.setStoreId(storeId);
+      parkinglotTicket.setUserId(userId);
 
       LOG.debug("Saving existing state {} for ticket {} at parkintlot={}", state, ticketNumber, storeId);
       // Save the ticket and the transitions
@@ -183,6 +185,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber, "Número Ticket");
     ParkinglotTicket parkingTicket = new ParkinglotTicket();
     parkingTicket.setTicketNumber(validTicketNumber);
+    parkingTicket.setCreatedAt(DateTimeUtil.getNow());
 
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long storeId = supercashRequestContext.getStoreId();
@@ -190,19 +193,16 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
     Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
     if (!ticketSearch.isPresent()) {
-      LOG.error("Can't save the exit transition: parking ticket {} does not exit in storage", ticketNumber);
+      LOG.warn("There might have been errors to save the ticket={} before. DEV? Can't find it after it exited!", ticketNumber);
+      LOG.warn("Will create a new ticket after it exited, because it might be during DEV...");
 
-      ticketSearch = parkinglotTicketRepository.findByTicketNumberAndStoreId(validTicketNumber, storeId);
-      if (!ticketSearch.isPresent()) {
-        LOG.error("Can't find the ticket from another user");
-
-        return null;
-      }
+      // Since the user already exited, let's assume that the user paid the ticket
+      parkingTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getNow());
     }
 
     // the ticket exists and so it loads all needed
     // TODO: This is to quickly fix tickets that were created before the state transitions
-    ParkinglotTicket ticket = ticketSearch.get();
+    ParkinglotTicket ticket = ticketSearch.isPresent() ? ticketSearch.get() : parkingTicket;
     if (ticket.getStates() == null || ticket.getStates().isEmpty()) {
       ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, storeId, ticket.getCreatedAt());
       ticket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
@@ -229,6 +229,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // always gurantee the store is set
       ticket.setStoreId(storeId);
+      ticket.setUserId(userId);
 
       LOG.debug("Saving the ticket={} from parkinglot={} before state transitions", ticketNumber, storeId);
 
@@ -252,6 +253,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       // Save the ticket with the new state transition
       ticket.addTicketStateTransition(exitState, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
       ticket.setStoreId(storeId);
+      ticket.setUserId(userId);
 
       LOG.debug("Saving the ticket={} from parkinglot={} with exitState={}", ticketNumber, storeId, exitState);
 

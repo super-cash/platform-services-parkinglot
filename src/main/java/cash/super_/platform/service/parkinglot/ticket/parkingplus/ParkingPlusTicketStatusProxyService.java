@@ -72,7 +72,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.debug("LOADED Query TICKET STATUS: {}: {}", ticketNumber, ticketStatus);
 
     } else {
-      LOG.debug("Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
+      LOG.debug("Ticket not found in local cache. Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
       ticketStatus = retrieveFromWPS(ticketNumber);
     }
 
