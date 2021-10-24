@@ -1,16 +1,16 @@
-POST {{host}}:{{port}}/v2/parking_lot/tickets/273307956566/pay
-accept: application/json
-X-Supercash-Uid: 1200
-X-Supercash-Tid: new-transaction202
+POST {{host}}:{{port}}/v2/parkinglots/1/tickets/247475886066/pay
+Accept: application/json
+X-Supercash-Uid: 14727
+X-Supercash-Tid: new-transaction20303042
 X-Supercash-Marketplace-Id: 6115
-X-Supercash-Store-Id: 1
+X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json
 
 {
   "payTicketRequest": {
-    "amount": 900,
+    "amount": 700,
     "card_number": "4111111111111111",
     "card_cvv": "111",
     "card_expiration_date": "032026",
@@ -41,9 +41,10 @@ Accept-Encoding: application/json
       }
     },
     "metadata": {
+      "sale_id": "1",
       "device_id": "1",
-      "private_ip": "10.0.0.1",
-      "public_ip": "10.0.0.1"
+      "public_ip": "10.0.0.1",
+      "private_ip": "192.168.0.1"
     }
   }
 }

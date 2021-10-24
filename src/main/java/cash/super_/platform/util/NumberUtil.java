@@ -44,7 +44,6 @@ public class NumberUtil {
         Optional<Double> number = stringIsDouble(numberStr);
         if (number == null) {
             throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
-
         } else if (!number.isPresent()) {
             throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
         }

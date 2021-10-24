@@ -271,22 +271,19 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     fieldName = "CPF or CNPJ";
-    NumberUtil.stringIsDoubleWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+    NumberUtil.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
 
     fieldName = "CEP";
-    NumberUtil.stringIsDoubleWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+    NumberUtil.stringIsLongWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
 
     fieldName = "Card Number";
-    NumberUtil.stringIsDoubleWithException(payRequest.getCardNumber(), fieldName);
-
-    fieldName = "Card Name";
-    NumberUtil.stringIsDoubleWithException(payRequest.getCardHolderName(), fieldName);
+    NumberUtil.stringIsLongWithException(payRequest.getCardNumber(), fieldName);
 
     fieldName = "Card CVV";
-    NumberUtil.stringIsDoubleWithException(payRequest.getCardCvv(), fieldName);
+    NumberUtil.stringIsLongWithException(payRequest.getCardCvv(), fieldName);
 
     fieldName = "Card Expiration Date";
-    NumberUtil.stringIsDoubleWithException(payRequest.getCardExpirationDate(), fieldName);
+    NumberUtil.stringIsLongWithException(payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
