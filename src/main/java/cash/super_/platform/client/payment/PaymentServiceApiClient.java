@@ -15,14 +15,14 @@ import java.util.Map;
              configuration = SupercashDefaultFeignSettings.class)
 public interface PaymentServiceApiClient {
 
-    @RequestLine("POST /pay/charges")
+    @RequestLine("POST /charges")
     @Headers({
             "Content-Type: application/json",
             "Accept: application/json",
     })
     PaymentChargeResponse authorizePayment(AnonymousPaymentChargeRequest paymentOrderRequest);
 
-    @RequestLine("POST /pay/orders")
+    @RequestLine("POST /orders")
     @Headers({
             "Content-Type: application/json",
             "Accept: application/json",
