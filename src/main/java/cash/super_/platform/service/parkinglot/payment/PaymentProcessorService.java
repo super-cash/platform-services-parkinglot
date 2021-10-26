@@ -399,6 +399,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     paymentChargeCaptureRequest.setAmount(chargeResponse.getAmount());
     chargeResponse = paymentServiceApiClient.capturePayment(chargeResponse.getId(), chargeResponse.getPaymentId(),
             paymentChargeCaptureRequest);
+    LOG.debug("PAYMENT CAPTURE RESPONSE: payment response: {}", chargeResponse);
 
     // TODO: Review this situation, since the ticket is authorized, but the payment was not effectivelly
     //  possible, although AUTHORIZED. The best decision is to send a WPS request to rollback the request of
@@ -411,7 +412,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     // Save the value in our storage for the user's status
-    cacheParkingTicketPayment(ticketStatus, chargeResponse, serviceFeeItem, storeId, userId, paymentResponse, paymentStatus);
+    cacheParkingTicketPayment(ticketStatus, serviceFeeItem, storeId, userId, paymentResponse, paymentStatus);
 
     return paymentStatus;
   }
@@ -419,37 +420,41 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   /**
    * Cache (store) the ticket payment in our storage for user's retrieval.
    * @param ticketStatus
-   * @param chargeResponse
    * @param serviceFeeItem
    * @param storeId
-   * @param paymentResponse
    * @param paymentStatus
    */
-  private void cacheParkingTicketPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse, Item serviceFeeItem,
-                                         Long storeId, Long userId, PaymentOrderResponse paymentResponse,
+  private void cacheParkingTicketPayment(RetornoConsulta ticketStatus, Item serviceFeeItem, Long storeId, Long userId,
+                                         PaymentOrderResponse paymentOrderResponse,
                                          ParkingTicketAuthorizedPaymentStatus paymentStatus) {
+
+    Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
+    LOG.debug("Caching the parking payment order for parking ticketId={}: {}", ticketNumber, paymentOrderResponse);
+    LOG.debug("Caching the parking payment order for parking ticketId={}: {}", ticketNumber, paymentOrderResponse);
+
     // prepare the ticket payment information
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-    parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getPaid());
+    parkinglotTicketPayment.setAmount(paymentOrderResponse.getCharges().stream().findFirst().get().getAmount().getValue());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
     parkinglotTicketPayment.setUserId(Long.valueOf(userId));
     parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
-    Optional<Payment> paymentOpt = paymentRepository.findById(paymentResponse.getId());
+    Optional<Payment> paymentOpt = paymentRepository.findById(paymentOrderResponse.getId());
     if (paymentOpt.isPresent()) {
-      paymentResponse = (PaymentOrderResponse) paymentOpt.get();
-      parkinglotTicketPayment.setPayment(paymentResponse);
+      paymentOrderResponse = (PaymentOrderResponse) paymentOpt.get();
+      parkinglotTicketPayment.setPayment(paymentOrderResponse);
+        LOG.debug("Payment order ID is present for the ticketId={}: {}", ticketNumber, paymentOrderResponse);
     }
 
-    Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
     Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(ticketNumber, userId, storeId);
-
     ParkinglotTicket parkinglotTicket = null;
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
+      LOG.debug("Retrieved current parkinglot ticket to add payment={}: {}", ticketNumber, parkinglotTicket);
 
     } else {
+      LOG.debug("Creating new parkinglot ticket for first payment={}: {}", ticketNumber, parkinglotTicket);
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
       parkinglotTicket.setUserId(Long.valueOf(userId));
@@ -471,11 +476,14 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
       if (payment.getDate() == -1) {
         payment.setDate(paymentStatus.getStatus().getDataPagamento());
+        LOG.debug("Set payment date date for ticket={}: {}", ticketNumber, paymentStatus.getStatus().getDataPagamento());
         break;
       }
     }
 
     // Store in the repository
+    LOG.debug("Attempt to save the ticket payment for history={}: {}", ticketNumber, parkinglotTicket);
     parkinglotTicketRepository.save(parkinglotTicket);
+    LOG.debug("Set payment date date for ticket={}: {}", ticketNumber, paymentStatus.getStatus().getDataPagamento());
   }
 }
