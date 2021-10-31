@@ -25,6 +25,7 @@ import cash.super_.platform.model.supercash.card.CardRequest;
 import cash.super_.platform.model.supercash.types.charge.*;
 import cash.super_.platform.model.supercash.types.order.PaymentOrderResponse;
 import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.FieldType;
 import cash.super_.platform.util.NumberUtil;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -89,7 +90,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     paymentMethodRequest.setType(ChargePaymentMethodType.CREDIT_CARD);
     CardRequest card = paymentMethodRequest.getCard();
     fieldName = "Card Number";
-    NumberUtil.stringIsLongWithException(card.getNumber(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, card.getNumber(), fieldName);
 
     if (Strings.isNullOrEmpty(card.getHolder().getName())) {
       throw new SupercashInvalidValueException("Cart holder name must be provided");
@@ -203,7 +204,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    */
   private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
                                                   ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
-    Long marketplaceId = supercashRequestContext.getMarketplaceId();
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
@@ -271,19 +271,19 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     }
 
     fieldName = "CPF or CNPJ";
-    NumberUtil.stringIsLongWithException(payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, payRequest.getCustomer().getDocuments().get(0).getNumber(), fieldName);
 
     fieldName = "CEP";
-    NumberUtil.stringIsLongWithException(payRequest.getBilling().getAddress().getZipcode(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, payRequest.getBilling().getAddress().getZipcode(), fieldName);
 
     fieldName = "Card Number";
-    NumberUtil.stringIsLongWithException(payRequest.getCardNumber(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, payRequest.getCardNumber(), fieldName);
 
     fieldName = "Card CVV";
-    NumberUtil.stringIsLongWithException(payRequest.getCardCvv(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, payRequest.getCardCvv(), fieldName);
 
     fieldName = "Card Expiration Date";
-    NumberUtil.stringIsLongWithException(payRequest.getCardExpirationDate(), fieldName);
+    NumberUtil.stringIsLongWithException(FieldType.VALUE, payRequest.getCardExpirationDate(), fieldName);
 
     List<SplitRule> splitRules = new ArrayList<>();
     SplitRule ourClient = new SplitRule();
@@ -429,7 +429,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
                                          ParkingTicketAuthorizedPaymentStatus paymentStatus) {
 
     Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
-    LOG.debug("Caching the parking payment order for parking ticketId={}: {}", ticketNumber, paymentOrderResponse);
     LOG.debug("Caching the parking payment order for parking ticketId={}: {}", ticketNumber, paymentOrderResponse);
 
     // prepare the ticket payment information

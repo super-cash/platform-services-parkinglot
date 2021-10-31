@@ -4,6 +4,7 @@ import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
 import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.FieldType;
 import cash.super_.platform.util.JpaUtil;
 import cash.super_.platform.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
 
     // If the search is for a specific ticket number
     if (ticketNumber.isPresent()) {
-      Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber.get(), "Numero Ticket");
+      Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber.get(), "Numero Ticket");
       Optional<ParkinglotTicket> currentTicketStatus = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
       currentTicketStatus.ifPresent( ticketStatus -> {
         userParkingTickets.set(Arrays.asList(ticketStatus));

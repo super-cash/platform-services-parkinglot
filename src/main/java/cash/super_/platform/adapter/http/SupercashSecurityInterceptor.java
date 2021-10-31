@@ -1,12 +1,12 @@
 package cash.super_.platform.adapter.http;
 
+import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
-import cash.super_.platform.error.parkinglot.SupercashMarketplaceNotFoundException;
+import cash.super_.platform.util.FieldType;
 import cash.super_.platform.util.NumberUtil;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerMapping;
@@ -45,40 +45,40 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        /* Validating transaction id */
-        String headerName = "X-Supercash-Tid";
-        if (Strings.isNullOrEmpty(request.getHeader(headerName))) {
-            LOG.error("The required header {} was missing", headerName);
-            throw new SupercashInvalidValueException("Transaction ID must be provided.");
-        }
-        final String transactionId = request.getHeader(headerName);
-
-        /* Validating marketplace id */
-        headerName = "X-Supercash-Marketplace-Id";
-        long marketPlaceId = NumberUtil.stringIsLongWithException(request.getHeader(headerName), headerName);
-
-        /* Validating marketplace id */
-        headerName = "X-Supercash-Store-Id";
-        long storeId = NumberUtil.stringIsLongWithException(request.getHeader(headerName), headerName);
-
-        /* Validating app version and marketplace Id in the database */
-        headerName = "X-Supercash-App-Version";
-        double appVersion = NumberUtil.stringIsDoubleWithException(request.getHeader(headerName), headerName);
-
-        // TODO: Validate the user ID in the DB
-        /* Validating user id */
-        headerName = "X-Supercash-Uid";
-        long userId = NumberUtil.stringIsLongWithException(request.getHeader(headerName), headerName);
-
-        // Update the context that will be provided to all the services
-        requestContext.setContext(transactionId, marketPlaceId, storeId, userId, appVersion);
-
-        LOG.debug("Created Supercash Request Context: {}", requestContext);
-
-        // Get the variable https://stackoverflow.com/questions/12249721/spring-mvc-3-how-to-get-path-variable-in-an-interceptor/23468496#23468496
-        Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-
         try {
+            /* Validating transaction id */
+            String headerName = "X-Supercash-Tid";
+            if (Strings.isNullOrEmpty(request.getHeader(headerName))) {
+                LOG.error("The required header {} was missing", headerName);
+                throw new SupercashInvalidValueException("Transaction ID must be provided.");
+            }
+            final String transactionId = request.getHeader(headerName);
+
+            /* Validating marketplace id */
+            headerName = "X-Supercash-Marketplace-Id";
+            long marketPlaceId = NumberUtil.stringIsLongWithException(FieldType.HEADER, request.getHeader(headerName), headerName);
+
+            /* Validating marketplace id */
+            headerName = "X-Supercash-Store-Id";
+            long storeId = NumberUtil.stringIsLongWithException(FieldType.HEADER, request.getHeader(headerName), headerName);
+
+            /* Validating app version and marketplace Id in the database */
+            headerName = "X-Supercash-App-Version";
+            double appVersion = NumberUtil.stringIsDoubleWithException(FieldType.HEADER, request.getHeader(headerName), headerName);
+
+            // TODO: Validate the user ID in the DB
+            /* Validating user id */
+            headerName = "X-Supercash-Uid";
+            long userId = NumberUtil.stringIsLongWithException(FieldType.HEADER, request.getHeader(headerName), headerName);
+
+            // Update the context that will be provided to all the services
+            requestContext.setContext(transactionId, marketPlaceId, storeId, userId, appVersion);
+
+            LOG.debug("Created Supercash Request Context: {}", requestContext);
+
+            // Get the variable https://stackoverflow.com/questions/12249721/spring-mvc-3-how-to-get-path-variable-in-an-interceptor/23468496#23468496
+            Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+
             // make references locally
             final Double requestedAppVersion = requestContext.getRequestedAppVersion();
 
@@ -91,9 +91,12 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
 //                throw new SupercashMarketplaceNotFoundException(errorMsg);
 //            }
 
-        } catch (Exception error) {
-            LOG.error("Request rejected due to error: {}", error.getMessage());
-            throw error;
+        } catch (SupercashSimpleException error) {
+            // https://stackoverflow.com/questions/39554740/springboot-how-to-return-error-status-code-in-prehandle-of-handlerinterceptor/39555027#39555027
+            LOG.error("Error processing the request: {}", error.toString());
+            response.getWriter().write(error.toString());
+            response.setStatus(error.SupercashExceptionModel.getAdditionalErrorCode());
+            return false;
         }
         return true;
     }

@@ -37,26 +37,26 @@ public class NumberUtil {
         return StringUtils.isNumeric(numberStr) ? Optional.of(Long.valueOf(numberStr)) : null;
     }
 
-    public static Double stringIsDoubleWithException(String numberStr, String fieldName) {
+    public static Double stringIsDoubleWithException(FieldType kind, String numberStr, String fieldName) {
         if (Strings.isNullOrEmpty(numberStr)) {
-            throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
+            throw new SupercashMissingArgumentException(StringUtils.capitalize(kind.name().toLowerCase()) + " '" + fieldName + "' is required.");
         }
         Optional<Double> number = stringIsDouble(numberStr);
         if (number == null) {
-            throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
+            throw new SupercashMissingArgumentException(StringUtils.capitalize(kind.name().toLowerCase()) + " '" + fieldName + "' is required.");
         } else if (!number.isPresent()) {
-            throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
+            throw new SupercashInvalidValueException(StringUtils.capitalize(kind.name().toLowerCase()) + " '" + fieldName + "' is not a number.");
         }
         return number.get();
     }
 
-    public static Long stringIsLongWithException(String numberStr, String fieldName) {
+    public static Long stringIsLongWithException(FieldType kind, String numberStr, String fieldName) {
         Optional<Long> number = stringIsLong(numberStr);
         if (number == null) {
-            throw new SupercashMissingArgumentException("Field '" + fieldName + "' is required.");
+            throw new SupercashMissingArgumentException(StringUtils.capitalize(kind.name().toLowerCase()) + " '" + fieldName + "' is required.");
 
         } else  if (!number.isPresent()) {
-            throw new SupercashInvalidValueException("Field '" + fieldName + "' is not a number.");
+            throw new SupercashInvalidValueException(StringUtils.capitalize(kind.name().toLowerCase()) +" '" + fieldName + "' is not a number.");
         }
         return number.get();
     }

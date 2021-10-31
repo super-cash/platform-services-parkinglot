@@ -9,6 +9,7 @@ import cash.super_.platform.repository.ParkinglotTicketRepository;
 import cash.super_.platform.repository.ParkinglotTicketStateTransitionsRepository;
 import cash.super_.platform.service.parkinglot.ticket.testing.TestingParkingLotStatusInMemoryRepository;
 import cash.super_.platform.util.DateTimeUtil;
+import cash.super_.platform.util.FieldType;
 import cash.super_.platform.util.NumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public void saveTicketTransitionStateWhileUserInLot(RetornoConsulta ticketStatus, final ParkingTicketState state, boolean scanned) {
     final String ticketNumber = ticketStatus.getNumeroTicket();
-    final Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber, "Número Ticket");
+    final Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber, "Número Ticket");
 
     final Long storeId = supercashRequestContext.getStoreId();
     final Long userId = supercashRequestContext.getUserId();
@@ -182,7 +183,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    */
   public ParkinglotTicket saveTicketTransitionStateAfterUserExits(String ticketNumber) {
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
-    Long validTicketNumber = NumberUtil.stringIsLongWithException(ticketNumber, "Número Ticket");
+    Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber, "Número Ticket");
     ParkinglotTicket parkingTicket = new ParkinglotTicket();
     parkingTicket.setTicketNumber(validTicketNumber);
     parkingTicket.setCreatedAt(DateTimeUtil.getNow());
