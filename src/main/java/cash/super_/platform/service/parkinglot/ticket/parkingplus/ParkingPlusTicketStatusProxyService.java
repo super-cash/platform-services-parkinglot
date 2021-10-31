@@ -2,14 +2,18 @@ package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 import cash.super_.platform.adapter.feign.SupercashErrorCode;
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
 import cash.super_.platform.error.parkinglot.*;
+import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
+import cash.super_.platform.repository.ParkinglotTicketStateTransitionsRepository;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
+import cash.super_.platform.service.parkinglot.ticket.ParkinglotTicketsService;
 import cash.super_.platform.util.DateTimeUtil;
 import cash.super_.platform.util.SecretsUtil;
 import com.google.common.base.Strings;
@@ -23,7 +27,6 @@ import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
 import cash.super_.platform.client.parkingplus.model.TicketRequest;
 import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
 import cash.super_.platform.util.JsonUtil;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -37,7 +40,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxyService {
 
   @Autowired
+  ParkinglotTicketsService parkinglotTicketsService;
+
+  @Autowired
   ParkingTicketsStateTransitionService parkingTicketsStateTransitionService;
+
+  @Autowired
+  private ParkinglotTicketStateTransitionsRepository parkinglotTicketStateTransitionsRepository;
 
   public ParkingTicketStatus getStatus(Long parkinglotId, String ticketNumber, boolean scanned) {
     // TODO: THIS MUST ALSO VERIFY THE PARKINGLOT_ID == STORE_ID
@@ -65,8 +74,19 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.debug("LOADED Query TICKET STATUS: {}: {}", ticketNumber, ticketStatus);
 
     } else {
-      LOG.debug("Ticket not found in local cache. Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
-      ticketStatus = retrieveFromWPS(ticketNumber);
+        Set<ParkingTicketState> exitStates = Set.of(
+                ParkingTicketState.EXITED_ON_FREE, ParkingTicketState.EXITED_ON_PAID, ParkingTicketState.EXITED_ON_GRACE_PERIOD);
+        Optional<ParkinglotTicketStateTransition> ticketAlreadyExited =
+                parkinglotTicketStateTransitionsRepository.findFirstByTicketNumberAndStateIn(Long.valueOf(ticketNumber), exitStates);
+      if (ticketAlreadyExited.isPresent()) {
+          Optional<String> ticketId = Optional.of(ticketNumber);
+          ParkinglotTicket exitedTicket = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketId, null, null, null).stream().findFirst().get();
+          ticketStatus = parkingTicketsStateTransitionService.makeNewTicketTransitionAfterUserExits(exitedTicket);
+
+      } else {
+          LOG.debug("Ticket not found in local cache. Preparing to request TICKET STATUS from WPS: ticket={} useId={}", ticketNumber, userId);
+          ticketStatus = retrieveFromWPS(ticketNumber);
+      }
     }
 
     // The ticket is not a test one... We need to retrieve it from WPS

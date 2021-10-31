@@ -14,4 +14,6 @@ public interface ParkinglotTicketStateTransitionsRepository extends JpaRepositor
 
     Optional<List<ParkinglotTicketStateTransition>> findFirst1ByParkinglotTicket_TicketNumberAndStateNotInOrderByDateDesc(
             Long ticketNumber, Set<ParkingTicketState> notInStates);
+
+    Optional<ParkinglotTicketStateTransition> findFirstByTicketNumberAndStateIn(Long ticketNumber,  Set<ParkingTicketState> inState);
 }

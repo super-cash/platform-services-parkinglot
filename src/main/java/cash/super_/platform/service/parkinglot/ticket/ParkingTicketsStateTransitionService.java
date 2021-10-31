@@ -279,25 +279,43 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     long now = DateTimeUtil.getMillis(LocalDateTime.now());
     ticketStatus.setDataConsulta(now);
 
-    // The entrnce of the ticket
+    // The entrance of the ticket
     Optional<ParkinglotTicketStateTransition> entranceDate = parkinglotTicket.getStates().stream()
             .filter( ticketTransision -> ticketTransision.getState() == ParkingTicketState.PICKED_UP)
             .findFirst();
-    // let's consider the user got in and left 20min ago, most conservative
-    ticketStatus.dataDeEntrada(entranceDate.isPresent() ? entranceDate.get().getDate() : now - (1000 * 60 * 20));
+    // it is added by the method that clean up
+    ticketStatus.dataDeEntrada(entranceDate.get().getDate());
+
+    // TODO fill out the info about the garagem
+    ticketStatus.setGaragem("MACEIO SHOPPING");
+    ticketStatus.setIdGaragem(Long.valueOf(1));
+    ticketStatus.setCnpjGaragem("12.200.135/0001-80");
 
     // Total value paid the last time
-    ticketStatus.setTarifaPaga(
-            parkinglotTicket.getPayments().stream()
-                    .mapToInt(payment -> payment.getAmount().intValue() + payment.getServiceFee().intValue())
-                    .sum());
+    // https://stackoverflow.com/questions/40517977/sorting-a-list-with-stream-sorted-in-java/62384546#62384546
+    int paymentsSum = parkinglotTicket.getPayments().stream()
+          .map(parkinglotTicketPayment -> parkinglotTicketPayment.getAmount())
+          .collect(Collectors.summingInt(Long::intValue));
+    ticketStatus.setTarifaPaga(paymentsSum);
+    ticketStatus.setTarifaSemDesconto(paymentsSum);
 
     ticketStatus.setTicketValido(false);
 
-    // Values to -1 but the value paid
-    ticketStatus.setTarifa(-1);
-    ticketStatus.setTarifaSemDesconto(-1);
-    ticketStatus.setValorDesconto(-1);
+    // Values to -1 but the value paid is -1 so we can handle the scanned after exited
+    if (parkinglotTicket.getPayments() == null || parkinglotTicket.getPayments().isEmpty()) {
+        ticketStatus.setTarifa(-1);
+        ticketStatus.setTarifaSemDesconto(-1);
+        ticketStatus.setValorDesconto(-1);
+
+    } else {
+        // Get the last payment recorded for the ticket
+        ticketStatus.setTarifa(0);
+        ticketStatus.setTarifaSemDesconto(0);
+        ticketStatus.setValorDesconto(0);
+    }
+
+    ticketStatus.setPromocaoAtingida(false);
+    ticketStatus.setPromocoesDisponiveis(false);
 
     Optional<ParkinglotTicketStateTransition> lastTransition = parkinglotTicket.getStates().stream()
             // SORTED BY AT DESC
