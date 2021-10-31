@@ -50,6 +50,7 @@ public class ParkingTicketsController extends AbstractController {
           @RequestParam("created_at") Optional<Long> createdAt,
           @RequestParam("page_offset") Optional<Integer> pageOffset,
           @RequestParam("page_limit") Optional<Integer> pageLimit,
+          @RequestParam("ticket_number") Optional<String> ticketNumber,
           @RequestHeader("X-Supercash-Tid") String transactionId,
           @RequestHeader("X-Supercash-Marketplace-Id") Long marketplaceId,
           @RequestHeader("X-Supercash-Store-Id") Long storeId,

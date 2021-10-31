@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Retrieve the status of tickets, process payments, etc.
@@ -186,46 +187,43 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber, "Número Ticket");
     ParkinglotTicket parkingTicket = new ParkinglotTicket();
     parkingTicket.setTicketNumber(validTicketNumber);
-    parkingTicket.setCreatedAt(DateTimeUtil.getNow());
+
+    LocalDateTime now = LocalDateTime.now();
+    parkingTicket.setCreatedAt(DateTimeUtil.getMillis(now));
 
     // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
-    Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
-    if (!ticketSearch.isPresent()) {
-      LOG.warn("There might have been errors to save the ticket={} before. DEV? Can't find it after it exited!", ticketNumber);
-      LOG.warn("Will create a new ticket after it exited, because it might be during DEV...");
+    // find the ticket number and user
+    Optional<ParkinglotTicket> ticketSearch = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(
+            validTicketNumber, userId, storeId);
 
-      // Since the user already exited, let's assume that the user paid the ticket
-      parkingTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getNow());
-    }
-
-    // the ticket exists and so it loads all needed
+    // the ticket exists and so it loads all needed, because it was scanned/get status without any data
     // TODO: This is to quickly fix tickets that were created before the state transitions
     ParkinglotTicket ticket = ticketSearch.isPresent() ? ticketSearch.get() : parkingTicket;
     if (ticket.getStates() == null || ticket.getStates().isEmpty()) {
-      ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, storeId, ticket.getCreatedAt());
-      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
+      // entered the parking
+      ticket.addTicketStateTransition(ParkingTicketState.PICKED_UP, userId, storeId,
+              DateTimeUtil.getMillis(now.minusMinutes(5)));
 
-      // Adding the grace period
-      LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(ticket.getCreatedAt());
+      // drove for 5 minutes, parked and scanned
+      ticket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, storeId,
+              DateTimeUtil.getMillis(now));
+
+      // Adding the grace period at the same time the ticket was scanned, just add a plus of 45s
       ticket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId, storeId,
-              DateTimeUtil.getMillis(creationTime.plusMinutes(20)));
+              DateTimeUtil.getMillis(now.plusSeconds(45)));
+
+      // Adding the exit status after 10 min just as a guess
+      ticket.addTicketStateTransition(ParkingTicketState.EXITED_ON_GRACE_PERIOD, userId, storeId,
+              DateTimeUtil.getMillis(now.plusMinutes(10)));
 
       // The date of the last payment made
       if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
         long lastPaymentDateMillis = ticket.getLastPaymentDateTimeMillis();
         LocalDateTime lastPaymentTime = DateTimeUtil.getLocalDateTime(lastPaymentDateMillis);
         ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentTime));
-
-      } else {
-        // setting a payment time
-        final int MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT = 20;
-        LocalDateTime lastPaymentDateTime = DateTimeUtil.getLocalDateTime(DateTimeUtil.getMillis(LocalDateTime.now())).minusMinutes(MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT);
-
-        // solves the problem of when it's the first time scanning, during tests, or when the ticket has never been scanned
-        ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getMillis(lastPaymentDateTime));
       }
 
       // always gurantee the store is set
@@ -252,7 +250,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       };
 
       // Save the ticket with the new state transition
-      ticket.addTicketStateTransition(exitState, userId, storeId, DateTimeUtil.getMillis(LocalDateTime.now()));
+      ticket.addTicketStateTransition(exitState, userId, storeId, DateTimeUtil.getMillis(now));
       ticket.setStoreId(storeId);
       ticket.setUserId(userId);
 
