@@ -48,21 +48,14 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // TODO Validate the store Id == parkinglot ID. It is not going to be because of the swagger endpoints must have
       // the storeID as a parameter, but it's now in the context...
-//    Long storeId = supercashRequestContext.getStoreId();
-//    if (storeId != parkinglotId) {
-//        LOG.error("Client calls must change: ticket={} must be the same as parkinglotId={}", ticketNumber, parkinglotId);
-//        throw new SupercashInvalidValueException(String.format("StoreID=%s must be the same as " +
-//                "ParkinglotId=%s", storeId, parkinglotId));
-//    }
+    Long storeId = supercashRequestContext.getStoreId();
+    if (storeId.longValue() != parkinglotId.longValue()) {
+        LOG.error("Client calls must change: storeId={} must be the same as parkinglotId={}", storeId, parkinglotId);
+        throw new SupercashInvalidValueException(String.format("StoreID=%s must be the same as " +
+                "ParkinglotId=%s", storeId, parkinglotId));
+    }
 
     Long userId = supercashRequestContext.getUserId();
-
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
-    // TODO: VERIFY IF THE TICKET IS SAVED AND ON THE EXITED STATE!!!!!!
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;
