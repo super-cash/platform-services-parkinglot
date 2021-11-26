@@ -1,11 +1,11 @@
 # https://gitlab.com/supercash/apps-web/maceio-shopping-tickets-web/-/wikis/Backend-Testing-API
 # when getting status for ticket 010101010101, we should see a regular ticket that can be paid
-GET {{host}}:{{port}}/v2/parking_lot/tickets/010101010101
+GET {{host}}:{{port}}/v2/parkinglots/14791/tickets/010101010101
 Accept: application/json
-X-Supercash-Uid: 99999
+X-Supercash-Uid: 1200
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-Marketplace-Id: 6115
-X-Supercash-Store-Id: 51
+X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json
