@@ -1,14 +1,14 @@
 # Show all tickets latest by offset and limit
 # See ParkingTicketsController for the options
 # Use the HTTP Response Header X-Supercash-Pagination-Total
-# To verify if you can make calls, remember to calculate page numbers
+# To verify if you can make calls, remember to calculate page numbers 273647526466
 # page = offset/limit + 1
-GET {{host}}:{{port}}/v2/parking_lot/tickets?ticket_number=273647526466
+GET {{host}}:{{port}}/v2/parkinglots/14791/tickets?ticket_number=247545606279
 Accept: application/json
-X-Supercash-Uid: 99999
+X-Supercash-Uid: 14764
 X-Supercash-Tid: new-transaction20303040
-X-Supercash-Marketplace-Id: 6115
-X-Supercash-Store-Id: 51
+X-Supercash-Marketplace-Id: 14824
+X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
 Content-Type: application/json
 Accept-Encoding: application/json

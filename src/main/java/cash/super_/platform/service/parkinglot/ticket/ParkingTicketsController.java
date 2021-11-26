@@ -60,7 +60,7 @@ public class ParkingTicketsController extends AbstractController {
     // The context is added by the supercashSecurityInterceptor
     validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
-    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, Optional.empty(),
+    List<ParkinglotTicket> parkingTickets = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketNumber,
             createdAt, pageOffset, pageLimit);
     Map<String, String> paginationTotals = new HashMap<>();
 
