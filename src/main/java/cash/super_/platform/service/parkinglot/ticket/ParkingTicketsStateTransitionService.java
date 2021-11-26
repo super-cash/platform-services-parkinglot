@@ -320,7 +320,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
             .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate, Collections.reverseOrder()))
             .findFirst();
     // Just a hack to save the last state in the ticket message to capture it on the return
-    ticketStatus.setMensagem(lastTransition.get().getState().toString());
+    ticketStatus.setMensagem("supercash:" + lastTransition.get().getState().toString());
 
     return ticketStatus;
   }
@@ -334,15 +334,17 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
   public ParkingTicketState calculateTicketStatus(RetornoConsulta ticketStatus, long allowedExitMillis) {
     int ticketFee = ticketStatus.getTarifa();
 
-    if (!ticketStatus.isTicketValido() && ticketStatus.getTarifa() == -1 && ticketStatus.getTarifaPaga() == 0) {
+    if (ticketStatus.getMensagem().contains("supercash:")) {
+      ticketStatus.setMensagem(ticketStatus.getMensagem().split(":")[1]);
       // the value was added during the exit time
       return ParkingTicketState.valueOf(ticketStatus.getMensagem());
     }
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)
-    if (!ticketStatus.isTicketValido() && ticketStatus.getTarifaPaga() > 0 && ticketFee == -1) {
+    if (ticketStatus.getMensagem().contains("supercash:")) {
+      ticketStatus.setMensagem(ticketStatus.getMensagem().split(":")[1]);
       ParkingTicketState exitParkingLotState = ParkingTicketState.valueOf(ticketStatus.getMensagem());
-      ticketStatus.setMensagem(exitParkingLotState.toString());
+      ticketStatus.setMensagem("supercash:" + exitParkingLotState.toString());
       return exitParkingLotState;
     }
 

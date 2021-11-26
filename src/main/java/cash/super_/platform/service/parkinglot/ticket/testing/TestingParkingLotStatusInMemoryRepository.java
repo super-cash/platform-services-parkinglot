@@ -125,7 +125,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 					ticketStatus.getStatus().setTarifa(-1);
 					// set the message with the ticket exit status as a hack
 					// See the transition for details
-					ticketStatus.getStatus().setMensagem(ticketStatus.getState().toString());
+					ticketStatus.getStatus().setMensagem("supercash:" + ticketStatus.getState().toString());
 					// no need to set tarifaPaga because it was paid
 				}
 			});
