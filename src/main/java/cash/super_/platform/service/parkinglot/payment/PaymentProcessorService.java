@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -198,11 +200,12 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
   /**
    * Store the payment in our database
-   * @param ticketStatus
-   * @param chargeResponse
-   * @param parkingTicketAuthorizedPaymentStatus
+   * @param ticketStatus the ticket status from WPS
+   * @param chargeResponse from our payment system
+   * @param parkingTicketAuthorizedPaymentStatus the authorization status
    */
-  private void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
+  @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+  void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
                                                   ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
@@ -254,13 +257,13 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     // load the ticket status or load a testing ticket
     final String ticketNumberToProcess = ticketStatus.getNumeroTicket();
     if (testingParkinglotTicketRepository.containsTicket(ticketNumberToProcess)) {
-      LOG.debug("LOADING TESTING TICKET STATUS: {}", ticketNumberToProcess);
+      LOG.debug("Loading status for testing ticket: {}", ticketNumberToProcess);
 
       long amountToPay = payRequest.getAmount() + properties.getOurFee();
       ParkingTicketAuthorizedPaymentStatus paymentStatus = testingParkinglotTicketRepository.authorizePayment(
               ticketNumberToProcess, amountToPay);
 
-      LOG.debug("LOADED TESTING TICKET PAYMENT STATUS: {}: {}", ticketNumberToProcess, paymentStatus);
+      LOG.debug("Loading payments for testing ticket={}: {}", ticketNumberToProcess, paymentStatus);
       return paymentStatus;
     }
 
@@ -351,13 +354,13 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     PaymentOrderResponse paymentResponse = null;
     try {
       paymentResponse = paymentServiceApiClient.authorizePayment(payRequest.toSupercashPaymentOrderRequest());
-      LOG.debug("PAYMENT AUTHORIZATION RESPONSE: {}", paymentResponse);
+      LOG.debug("Payment authorization response: {}", paymentResponse);
 
     } catch (feign.RetryableException re) {
-      LOG.error("PAYMENT AUTHORIZATION FAILED: {}", re);
+      LOG.error("Payment authorization failed for ticket={}: {}", ticketNumberToProcess, re);
 
       if (re.getCause() instanceof UnknownHostException) {
-        LOG.error("PAYMENT AUTHORIZATION FAILED with unknown host: {}", re.getCause());
+        LOG.error("Payment authorization failed due unreachable host for ticket={}: {}", ticketNumberToProcess, re.getCause());
         throw new SupercashUnknownHostException("Host '" + re.getCause().getMessage() + "' unknown.");
       }
       throw re;
@@ -378,7 +381,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
       throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
     }
 
-    LOG.debug("PAYMENT AUTHORIZATION SUCCEEDED: User IS authorized to make this payment!");
+    LOG.debug("PAYMENT AUTHORIZATION SUCCEEDED: User IS authorized to make this payment for ticket={}!", ticketNumberToProcess);
 
     // Now the verification if the gateway knows whether the user has credit or not
     // The value to show in the parking lot gate screen, to report to the user, etc

@@ -1,8 +1,11 @@
-POST {{host}}:{{port}}/v2/parkinglots/1/tickets/247475886066/pay
+#####
+##### Get the status first and then build
+#####
+POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/247475886066/pay
 Accept: application/json
-X-Supercash-Uid: 14727
+X-Supercash-Uid: 14764
 X-Supercash-Tid: new-transaction20303042
-X-Supercash-Marketplace-Id: 6115
+X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
 Content-Type: application/json
