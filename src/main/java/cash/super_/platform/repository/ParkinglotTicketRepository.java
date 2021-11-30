@@ -35,7 +35,7 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
      * @param storeId
      * @return The ticket for the current user in the current store
      */
-    Optional<ParkinglotTicket> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
+    Optional<List<ParkinglotTicket>> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
 
     /**
      * @param ticketNumber

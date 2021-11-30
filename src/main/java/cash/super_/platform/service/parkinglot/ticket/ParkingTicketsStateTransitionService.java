@@ -316,6 +316,8 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ticketStatus.setPromocoesDisponiveis(false);
 
     Optional<ParkinglotTicketStateTransition> lastTransition = parkinglotTicket.getStates().stream()
+            // NOT scanned, as it will be when scanned by multiple people the value is newer
+            .filter( transition -> !transition.getState().equals(ParkingTicketState.SCANNED))
             // SORTED BY AT DESC
             .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate, Collections.reverseOrder()))
             .findFirst();

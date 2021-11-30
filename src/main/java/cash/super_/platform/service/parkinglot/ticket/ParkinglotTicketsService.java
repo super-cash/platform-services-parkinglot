@@ -1,5 +1,7 @@
 package cash.super_.platform.service.parkinglot.ticket;
 
+import cash.super_.platform.model.parkinglot.ParkingTicketState;
+import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkinglotTicket;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
@@ -13,10 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
 /**
  * Retrieve the list of tickets for a given user from our local cache
@@ -41,14 +40,14 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
     Long storeId = supercashRequestContext.getStoreId();
     LOG.debug("Retrieving the tickets for the userId={} for parkinglotId={} exists!", userId, parkinglotId);
 
-    AtomicReference<List<ParkinglotTicket>> userParkingTickets = new AtomicReference<>();
+    final List<ParkinglotTicket> userParkingTickets = new ArrayList<>();
 
     // If the search is for a specific ticket number
     if (ticketNumber.isPresent()) {
       Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber.get(), "Numero Ticket");
       Optional<ParkinglotTicket> currentTicketStatus = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(validTicketNumber, userId, storeId);
       currentTicketStatus.ifPresent( ticketStatus -> {
-        userParkingTickets.set(Arrays.asList(ticketStatus));
+        userParkingTickets.addAll(Arrays.asList(ticketStatus));
       });
 
     } else if (pageOffset.isPresent() || pageLimit.isPresent()) {
@@ -65,7 +64,7 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
 
       // If present, add them to the result
       allTickets.ifPresent( ticketPages -> {
-        userParkingTickets.set(ticketPages.getContent());
+          userParkingTickets.addAll(ticketPages.getContent());
       });
 
     } else if (createdAt.isPresent()) {
@@ -83,7 +82,7 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
 
       // If there's anything, just return them all
       if (ticketsByUserAndDateSearch.isPresent() && ticketsByUserAndDateSearch.get().size() > 0) {
-        userParkingTickets.set(ticketsByUserAndDateSearch.get());
+          userParkingTickets.addAll(ticketsByUserAndDateSearch.get());
       }
 
     } else {
@@ -94,11 +93,47 @@ public class ParkinglotTicketsService extends AbstractParkingLotProxyService {
 
       // Add them to the result if anything was returned
       last10Tickets.ifPresent( latest10Tickets -> {
-        userParkingTickets.set(latest10Tickets);
+          userParkingTickets.addAll(latest10Tickets);
       });
     }
 
     // Ticket already has the exit transition recorded
-    return userParkingTickets.get();
+    return userParkingTickets;
+  }
+
+  public void saveClone(ParkinglotTicket currentExitedTicket, Long storeId, Long userId) {
+      // If they are different, we just create a copy of the entire state for the user, and add the info to the list
+      ParkinglotTicket clonedTicket = new ParkinglotTicket();
+      clonedTicket.setTicketNumber(currentExitedTicket.getTicketNumber());
+      clonedTicket.setStoreId(storeId);
+      clonedTicket.setUserId(userId);
+      clonedTicket.setCreatedAt(currentExitedTicket.getCreatedAt());
+
+      // Clone each transition
+      Set<ParkinglotTicketStateTransition> clonedTransitions = new HashSet<>();
+      currentExitedTicket.getStates().stream().forEach( transition -> {
+          // Don't set the ID so that it creates a new one
+          ParkinglotTicketStateTransition clonedTransition = new ParkinglotTicketStateTransition();
+          clonedTransition.setTicketNumber(transition.getTicketNumber());
+          clonedTransition.setStoreId(storeId);
+          clonedTransition.setUserId(userId);
+          clonedTransition.setParkinglotTicket(clonedTicket);
+          // We can keep the same states as it was performed by another user
+          clonedTransition.setState(transition.getState());
+          if (ParkingTicketState.SCANNED.equals(transition.getState())) {
+              clonedTransition.setDate(DateTimeUtil.getNow());
+
+          } else {
+              clonedTransition.setDate(transition.getDate());
+          }
+          clonedTransitions.add(clonedTransition);
+      });
+      clonedTicket.setStates(clonedTransitions);
+
+      // As this user didn't pay for the ticket, just show them empty
+      clonedTicket.setPayments(new HashSet<>());
+
+      // Save a copy of the ticket scanned by someone else
+      parkinglotTicketRepository.save(clonedTicket);
   }
 }
