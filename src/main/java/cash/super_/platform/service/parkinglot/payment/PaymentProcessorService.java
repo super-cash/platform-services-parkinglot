@@ -12,6 +12,7 @@ import cash.super_.platform.model.payment.pagarme.Item;
 import cash.super_.platform.model.payment.pagarme.SplitRule;
 import cash.super_.platform.model.payment.pagarme.Transaction;
 import cash.super_.platform.model.payment.pagarme.TransactionRequest;
+import cash.super_.platform.repository.ParkinglotTicketPaymentsRepository;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
 import cash.super_.platform.model.parkinglot.ParkingTicketState;
@@ -66,6 +67,9 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
+
+  @Autowired
+  private ParkinglotTicketPaymentsRepository parkinglotTicketPaymentsRepository;
 
   @Autowired
   private PaymentRepository paymentRepository;
@@ -215,19 +219,19 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getTotal() - properties.getOurFee());
     parkinglotTicketPayment.setServiceFee(properties.getOurFee());
     parkinglotTicketPayment.setUserId(Long.valueOf(userId));
-    parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
     Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
     ParkinglotTicket parkinglotTicket = null;
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(ticketNumber, userId, storeId);
+    Optional<ParkinglotTicket> parkinglotTicketOpt =
+            parkinglotTicketRepository.findByTicketNumberAndStoreId(ticketNumber, storeId);
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
 
     } else {
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(paidParkingTicketNumber);
-      parkinglotTicket.setUserId(Long.valueOf(userId));
+      parkinglotTicket.setStoreId(storeId);
       parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }
 
@@ -237,8 +241,10 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, storeId, DateTimeUtil.getNow());
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
+    parkinglotTicketPaymentsRepository.save(parkinglotTicketPayment);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
@@ -439,7 +445,6 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     parkinglotTicketPayment.setAmount(paymentOrderResponse.getCharges().stream().findFirst().get().getAmount().getValue());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
     parkinglotTicketPayment.setUserId(Long.valueOf(userId));
-    parkinglotTicketPayment.setStoreId(Long.valueOf(storeId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
     Optional<Payment> paymentOpt = paymentRepository.findById(paymentOrderResponse.getId());
@@ -449,7 +454,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
         LOG.debug("Payment order ID is present for the ticketId={}: {}", ticketNumber, paymentOrderResponse);
     }
 
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(ticketNumber, userId, storeId);
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndStoreId(ticketNumber, storeId);
     ParkinglotTicket parkinglotTicket = null;
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
@@ -459,7 +464,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
       LOG.debug("Creating new parkinglot ticket for first payment={}: {}", ticketNumber, parkinglotTicket);
       parkinglotTicket = new ParkinglotTicket();
       parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
-      parkinglotTicket.setUserId(Long.valueOf(userId));
+      parkinglotTicket.setStoreId(storeId);
       parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }
 
@@ -468,11 +473,13 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
      * when we need to get specific info about this specific payment.
      */
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-    parkinglotTicketPayment.setDate(-1L);
+//    parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
 
     // Save the parkinglot ticket
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
+    parkinglotTicketPaymentsRepository.save(parkinglotTicketPayment);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {

@@ -292,7 +292,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
-    Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndUserIdAndStoreId(Long.valueOf(ticketNumber), userId, storeId);
+    Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndStoreId(Long.valueOf(ticketNumber), storeId);
     if (ticket.isPresent()) {
       LOG.debug("Ticket ticket={} for parkinglot={} exists!", ticketNumber, parkinglotId);
 

@@ -1,11 +1,8 @@
 package cash.super_.platform.service.parkinglot.ticket.parkingplus;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import cash.super_.platform.adapter.feign.SupercashErrorCode;
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
@@ -63,7 +60,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     }
 
     // TODO Validate the store Id == parkinglot ID. It is not going to be because of the swagger endpoints must have
-      // the storeID as a parameter, but it's now in the context...
+    //  the storeID as a parameter, but it's now in the context...
     Long storeId = supercashRequestContext.getStoreId();
     if (storeId.longValue() != parkinglotId.longValue()) {
         LOG.error("Client calls must change: storeId={} must be the same as parkinglotId={}", storeId, parkinglotId);
@@ -75,7 +72,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;
-    Set<Long> scannedByOthers = new HashSet<>();
     long paidByUser = -1;
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING Query TESTING TICKET STATUS: {}", ticketNumber);
@@ -87,46 +83,9 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
         Set<ParkingTicketState> exitStates = Set.of(
                 ParkingTicketState.EXITED_ON_FREE, ParkingTicketState.EXITED_ON_PAID, ParkingTicketState.EXITED_ON_GRACE_PERIOD);
         Optional<ParkinglotTicketStateTransition> ticketAlreadyExited =
-                parkinglotTicketStateTransitionsRepository.findFirstByTicketNumberAndStateIn(Long.valueOf(ticketNumber), exitStates);
+                parkinglotTicketStateTransitionsRepository.findFirstByParkinglotTicket_TicketNumberAndStateIn(Long.valueOf(ticketNumber), exitStates);
         if (ticketAlreadyExited.isPresent()) {
-          // Now, let's find out if the ticket was scanned by the current user or another one
-            // 1. If it was scanned by the current user, use the current status
-            // 2. If the ticket was scanned by someone else, create a copy with the same value
           Optional<String> ticketId = Optional.of(ticketNumber);
-          Optional<List<ParkinglotTicket>> currentExitedTicket = parkinglotTicketRepository.findByTicketNumberAndStoreId(Long.valueOf(ticketNumber), storeId);
-          if (currentExitedTicket.isPresent() && !currentExitedTicket.get().isEmpty()) {
-              List<ParkinglotTicket> currentScans = currentExitedTicket.get();
-              ParkinglotTicket cloneTicketFrom = null;
-              for (ParkinglotTicket existingScan : currentScans) {
-                  // Add all the existing IDs, no matter which one
-                  scannedByOthers.add(existingScan.getUserId());
-
-                  if (!existingScan.getPayments().isEmpty()) {
-                      // Record the user who paid for the ticket
-                      paidByUser = existingScan.getUserId();
-                      // Clone from who paid for the ticket
-                      cloneTicketFrom = existingScan;
-                      // Record the list
-                  }
-                  // Just use the one from the user him/herself
-                  if (existingScan.getUserId().equals(userId)) {
-                      cloneTicketFrom = existingScan;
-                  }
-              }
-              // Just remove the current user's as it's others
-              scannedByOthers.remove(userId);
-
-              // The ticket exited without payment... Clone from the first scan
-              if (cloneTicketFrom == null) {
-                  cloneTicketFrom = currentScans.get(0);
-              }
-
-              // If the user who scanned is different, we need to save a clone
-              // Save the clone in case it existed, as the retrieval of the tickets will try to load this again
-              if (cloneTicketFrom.getUserId().longValue() != userId.longValue()) {
-                  parkinglotTicketsService.saveClone(cloneTicketFrom, storeId, userId);
-              }
-          }
           ParkinglotTicket exitedTicket = parkinglotTicketsService.retrieveTickets(parkinglotId, ticketId, null, null, null).stream().findFirst().get();
           ticketStatus = parkingTicketsStateTransitionService.makeNewTicketTransitionAfterUserExits(exitedTicket);
 
@@ -146,15 +105,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     // For the testing tickets, just set the status computed
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       return testingParkinglotTicketRepository.getStatus(ticketNumber);
-    }
-
-    // TODO: this is a bad hack to record who has scanned the ticket before, but it is needed for th
-    if (!scannedByOthers.isEmpty()) {
-        String scannedByUsers = scannedByOthers.stream().map( number -> number.toString()).collect(Collectors.joining(","));
-        ticketStatus.setMensagem(ticketStatus.getMensagem() + ",scannedByUsers=" + scannedByUsers);
-        if (paidByUser > -1) {
-            ticketStatus.setMensagem(ticketStatus.getMensagem() + ",paidByUser=" + paidByUser);
-        }
     }
 
     // Store the ticket state transition
