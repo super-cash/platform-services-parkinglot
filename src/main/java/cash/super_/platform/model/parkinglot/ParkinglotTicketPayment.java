@@ -12,11 +12,9 @@ import javax.persistence.*;
 
 @Entity
 @Table(indexes = {
-        @Index(name = "parking_ticket_payment_amount_idx", columnList = "amount"),
         @Index(name = "parking_ticket_payment_date_idx", columnList = "date"),
-        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
         @Index(name = "parking_ticket_payment_user_id_idx", columnList = "user_id"),
-        @Index(name = "parking_ticket_payment_store_id_idx", columnList = "store_id"),
+        @Index(name = "parking_ticket_payment_service_idx", columnList = "requesterService"),
 })
 @JsonIncludeProperties({"id", "amount", "service_fee", "date"})
 public class ParkinglotTicketPayment {
@@ -27,17 +25,11 @@ public class ParkinglotTicketPayment {
 
     private Long amount;
 
+    private Long date;
+
     @JsonProperty(value = "service_fee")
     private Long serviceFee;
 
-    private Long date;
-
-    // Need to annotate all columns
-    // Caused by: org.hibernate.DuplicateMappingException: Table [parkinglot_ticket_payment] contains physical column name [user_id] referred to by multiple logical column names: [user_id], [userId]
-    @Column(name = "store_id")
-    private Long storeId;
-
-    // https://stackoverflow.com/questions/57691377/a-column-in-a-table-is-referred-to-by-multiple-physical-column-names
     @Column(name = "user_id")
     private Long userId;
 
@@ -50,14 +42,6 @@ public class ParkinglotTicketPayment {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumns ({
-            // Caused by: org.hibernate.MappingException: Repeated column in mapping for entity:
-            // cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition column: store_id
-            // (should be mapped with insert="false" update="false")
-            @JoinColumn (name = "ticket_number", referencedColumnName = "ticket_number", updatable = false, insertable = false),
-            @JoinColumn (name = "user_id", referencedColumnName = "user_id", updatable = false, insertable = false),
-            @JoinColumn (name = "store_id", referencedColumnName = "store_id", updatable = false, insertable = false)
-    })
     private ParkinglotTicket parkinglotTicket;
 
     public Long getId() {
@@ -92,22 +76,6 @@ public class ParkinglotTicketPayment {
         this.serviceFee = serviceFee;
     }
 
-    public Long getDate() {
-        return date;
-    }
-
-    public void setDate(Long date) {
-        this.date = date;
-    }
-
-    public Long getStoreId() {
-        return storeId;
-    }
-
-    public void setStoreId(Long storeId) {
-        this.storeId = storeId;
-    }
-
     public String getRequesterService() {
         return requesterService;
     }
@@ -132,20 +100,28 @@ public class ParkinglotTicketPayment {
         this.payment = paymentOrderResponse;
     }
 
+    public Long getDate() {
+        return date;
+    }
+
+    public void setDate(Long date) {
+        this.date = date;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final ParkinglotTicketPayment other = (ParkinglotTicketPayment) obj;
-        return Objects.equal(this.storeId, other.storeId)
+        return Objects.equal(this.parkinglotTicket.getStoreId(), other.parkinglotTicket.getStoreId())
                 && Objects.equal(this.userId, other.userId)
                 && Objects.equal(this.amount, other.amount)
                 && Objects.equal(this.date, other.date)
-                && Objects.equal(this.payment, other.payment);
+                && Objects.equal(this.payment.getPaymentId(), other.payment.getPaymentId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(userId, storeId, amount, date, payment);
+        return Objects.hashCode(userId, this.parkinglotTicket.getStoreId(), amount, date, payment.getPaymentId());
     }
 }

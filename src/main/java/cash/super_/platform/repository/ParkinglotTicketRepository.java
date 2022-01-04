@@ -24,18 +24,10 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
 
     /**
      * @param ticketNumber
-     * @param userId
      * @param storeId
      * @return The ticket for the current user in the current store
      */
-    Optional<ParkinglotTicket> findByTicketNumberAndUserIdAndStoreId(Long ticketNumber, Long userId, Long storeId);
-
-    /**
-     * @param ticketNumber
-     * @param storeId
-     * @return The ticket for the current user in the current store
-     */
-    Optional<List<ParkinglotTicket>> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
+    Optional<ParkinglotTicket> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
 
     /**
      * @param ticketNumber
@@ -53,7 +45,7 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
      * @return the list of parking tickets
      */
     @EntityGraph(attributePaths = {"states", "payments"})
-    Optional<List<ParkinglotTicket>> findFirst10ByUserIdAndStoreIdOrderByCreatedAtDesc(Long userId, Long storeId);
+    List<ParkinglotTicket> findFirst10ByStates_UserIdAndStoreIdOrderByCreatedAtDesc(Long userId, Long storeId);
 
     /**
      * Adding EntityGraph to fetch all properties https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/#method1retrievingandloadingobjectswithquery
@@ -61,7 +53,7 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
      * @return All the times that there's a ticket for a given user in a parking lot store
      */
     @EntityGraph(attributePaths = {"states", "payments"})
-    Optional<Page<ParkinglotTicket>> findAllByUserIdAndStoreId(Long userId, Long storeId, Pageable page);
+    Optional<Page<ParkinglotTicket>> findAllByStates_UserIdAndStoreId(Long userId, Long storeId, Pageable page);
 
     /**
      * Adding EntityGraph to fetch all properties https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/#method1retrievingandloadingobjectswithquery
@@ -72,5 +64,6 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
      * @return The list of parking lot between two dates.
      */
     @EntityGraph(attributePaths = {"states", "payments"})
-    Optional<List<ParkinglotTicket>> findByUserIdAndStoreIdAndCreatedAtBetween(Long userId, Long storeId, Long createdAt, Long createdAtOffset);
+    Optional<List<ParkinglotTicket>> findByStates_UserIdAndStoreIdAndCreatedAtBetween(Long userId, Long storeId,
+                                                                                      Long createdAt, Long createdAtOffset);
 }

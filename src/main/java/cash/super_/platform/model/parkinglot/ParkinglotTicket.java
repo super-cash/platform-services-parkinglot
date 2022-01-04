@@ -1,6 +1,7 @@
 package cash.super_.platform.model.parkinglot;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -14,27 +15,20 @@ import java.util.Comparator;
 // Adding the id class
 @Entity
 @Table(indexes = {
-        @Index(name = "ticket_number_idx", columnList = "ticket_number"),
-        @Index(name = "user_id_idx", columnList = "user_id"),
-        @Index(name = "store_id_idx", columnList = "store_id"),
-        @Index(name = "created_at_idx", columnList = "createdAt"),
-        @Index(name = "unique_ticket_idx", columnList = "ticket_number, user_id, store_id", unique = true)
+        @Index(name = "ticket_number_idx", columnList = "ticket_number, store_id", unique = true),
+        @Index(name = "created_at_idx", columnList = "createdAt")
 })
-@IdClass(ParkinglotTicketId.class)
 public class ParkinglotTicket {
 
-    // TODO: Ticket numbers must change to String as they will differ from each parkinglot
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    // TODO: Ticket numbers must change to String as they will differ from each parkinglot
     @Column(name = "ticket_number")
     private Long ticketNumber;
 
     // TODO: Map to the User bean after we do the shared libraries
-    @Id
-    @Column(name = "user_id")
-    private Long userId;
-
-    // TODO: Map to the User bean after we do the shared libraries
-    @Id
     @Column(name = "store_id")
     private Long storeId;
 
@@ -54,14 +48,14 @@ public class ParkinglotTicket {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER,
             mappedBy = "parkinglotTicket") // mappedBy value is the name of the java class attribute there in the child class
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Set<ParkinglotTicketStateTransition> states = new HashSet<>();
+    private List<ParkinglotTicketStateTransition> states = new ArrayList<>();
 
-    public Long getUserId() {
-        return userId;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getTicketNumber() {
@@ -100,16 +94,17 @@ public class ParkinglotTicket {
         this.payments.add(parkinglotTicketPayment);
     }
 
-    public Set<ParkinglotTicketStateTransition> getStates() {
+    public List<ParkinglotTicketStateTransition> getStates() {
         return states;
     }
 
-    public void setStates(Set<ParkinglotTicketStateTransition> states) {
+    public void setStates(List<ParkinglotTicketStateTransition> states) {
         this.states = states;
     }
 
-    public void addTicketStateTransition(ParkingTicketState state, Long userId, Long storeId, long time) {
-        ParkinglotTicketStateTransition transition = ParkinglotTicketStateTransition.makeNew(this, userId, storeId, state, time);
+    public void addTicketStateTransition(ParkingTicketState state, Long userId, long time) {
+        ParkinglotTicketStateTransition transition = ParkinglotTicketStateTransition.makeNew(this, userId,
+                state, time);
 
         // tickets can be only picked up and in grace period only once
         // Tickets can be scanned multiple times by the same or different users

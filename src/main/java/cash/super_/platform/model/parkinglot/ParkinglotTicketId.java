@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * https://www.baeldung.com/jpa-composite-primary-keys#idclass
  */
-public class ParkinglotTicketId  implements Serializable {
+public class ParkinglotTicketId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

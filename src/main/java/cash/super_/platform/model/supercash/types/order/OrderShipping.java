@@ -7,7 +7,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
-@Entity(name = "payment_shipping")
+@Entity(name = "payment_address_shipping")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderShipping {
 
