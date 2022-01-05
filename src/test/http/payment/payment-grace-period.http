@@ -1,6 +1,6 @@
 GET {{host}}:{{port}}/v2/parking_lot/payment/graceperiod
 Accept: application/json
-X-Supercash-Uid: marcello-123
+X-Supercash-Uid: 14727
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-Marketplace-Id: 123
 X-Supercash-Store-Id: 456

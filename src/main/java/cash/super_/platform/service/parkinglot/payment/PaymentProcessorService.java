@@ -226,6 +226,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
    * @param chargeResponse from our payment system
    * @param parkingTicketAuthorizedPaymentStatus the authorization status
    */
+  // TODO: cacheAnonymousAuthorizationPayment is very similar to cacheParkingTicketPayment. Refactory needed.
   @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
   void cacheAnonymousAuthorizationPayment(RetornoConsulta ticketStatus, PaymentChargeResponse chargeResponse,
                                                   ParkingTicketAuthorizedPaymentStatus parkingTicketAuthorizedPaymentStatus) {
@@ -264,25 +265,16 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
      * when we need to get specific info about this specific payment.
      */
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-    parkinglotTicketPayment.setDate(-1L);
+    // Set the dataPagamento for future use, since this information is returned by the WPS.
+    parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
     parkinglotTicket.addPayment(parkinglotTicketPayment);
 
     // Save the parkinglot ticket
-//    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
-    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
-    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-    parkinglotTicketPaymentsRepository.save(parkinglotTicketPayment);
-
-    // Set the dataPagamento for future use, since this information is returned by the WPS.
-    for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
-      if (payment.getDate() == null || payment.getDate() == -1) {
-        payment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
-        break;
-      }
-    }
-
     // Store in the repository
-    parkinglotTicketRepository.save(parkinglotTicket);
+    LOG.debug("Attempt to save the ticket payment for history={}: {}", ticketNumber, parkinglotTicket);
+    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+    LOG.debug("Ticket saved ticket={}", parkinglotTicket);
+
   }
 
   // TODO: Refactor this method (processPayment)
@@ -486,8 +478,10 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     // prepare the ticket payment information
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
-    parkinglotTicketPayment.setAmount(paymentOrderResponse.getCharges().stream().findFirst().get().getAmount().getValue());
     parkinglotTicketPayment.setServiceFee(serviceFeeItem.getUnitPrice());
+    long amount =
+            paymentOrderResponse.getCharges().stream().findFirst().get().getAmount().getValue() - parkinglotTicketPayment.getServiceFee();
+    parkinglotTicketPayment.setAmount(amount);
     parkinglotTicketPayment.setUserId(Long.valueOf(userId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
@@ -517,26 +511,14 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
      * when we need to get specific info about this specific payment.
      */
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-    parkinglotTicketPayment.setDate(-1L);
+    // Set the dataPagamento for future use, since this information is returned by the WPS.
+    parkinglotTicketPayment.setDate(paymentStatus.getStatus().getDataPagamento());
     parkinglotTicket.addPayment(parkinglotTicketPayment);
 
     // Save the parkinglot ticket
-    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
-    parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-    parkinglotTicketPaymentsRepository.save(parkinglotTicketPayment);
-
-    // Set the dataPagamento for future use, since this information is returned by the WPS.
-    for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
-      if (payment.getDate() == null || payment.getDate() == -1) {
-        payment.setDate(paymentStatus.getStatus().getDataPagamento());
-        LOG.debug("Set payment date date for ticket={}: {}", ticketNumber, paymentStatus.getStatus().getDataPagamento());
-        break;
-      }
-    }
-
     // Store in the repository
     LOG.debug("Attempt to save the ticket payment for history={}: {}", ticketNumber, parkinglotTicket);
-    parkinglotTicketRepository.save(parkinglotTicket);
-    LOG.debug("Set payment date date for ticket={}: {}", ticketNumber, paymentStatus.getStatus().getDataPagamento());
+    parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
+    LOG.debug("Ticket saved ticket={}", parkinglotTicket);
   }
 }

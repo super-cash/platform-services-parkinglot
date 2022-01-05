@@ -12,7 +12,7 @@ Accept-Encoding: application/json
   "anonymousTicketPaymentRequest": {
     "reference_id": "248334038711",
     "amount": {
-      "value": 600,
+      "value": 400,
       "currency": "BRL"
     },
     "payment_method": {

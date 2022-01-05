@@ -51,6 +51,9 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
    * @param ticketStatus
    * @param state
    */
+
+  // TODO: review the method due to incompatiblity related to PAID state.
+
   public void saveTicketTransitionStateWhileUserInLot(RetornoConsulta ticketStatus, final ParkingTicketState state, boolean scanned) {
     final String ticketNumber = ticketStatus.getNumeroTicket();
     final Long validTicketNumber = NumberUtil.stringIsLongWithException(FieldType.VALUE, ticketNumber, "Número Ticket");
@@ -75,7 +78,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       // When the status is  scanned, it means the user scanned the ticket again orrequested with in any other device
       if (scanned) {
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
+        parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getNow());
       }
 
       if (parkinglotTicket.getLastStateRecorded() != null) {
@@ -95,7 +98,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         // The ticket was picked up by someone else, so just add scanned
 
         if (scanned) {
-          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getMillis(LocalDateTime.now()));
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getNow());
           alreadyScannedBySomeoneElse = true;
 
           Set<ParkingTicketState> exclusionLast = ParkinglotTicket.lastRecordedExclusionType();
@@ -126,9 +129,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       if (!alreadyScannedBySomeoneElse && ticketStatus.getDataPermitidaSaidaUltimoPagamento() != null && ticketStatus.getDataPermitidaSaidaUltimoPagamento() > 0
               && ticketStatus.getTarifaPaga() != null && ticketStatus.getTarifaPaga() > 0) {
 
-        final int MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT = 20;
-        LocalDateTime lastPaymentDateTime = LocalDateTime.now().minusMinutes(MINUTES_TO_EXIT_PARKING_AFTER_PAYMENT);
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getMillis(lastPaymentDateTime));
+        parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
       }
     }
 
@@ -139,7 +140,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       if (!stillInPaid) {
         // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
         // Add 100 in the timestamp so it will be a bit higher on the first save
-        parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
+        parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getNow());
       }
 
       // always guarantee the store is set
@@ -160,7 +161,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     if (state != lastRecordedState && !stillInPaid || (state == lastRecordedState && state == ParkingTicketState.SCANNED)) {
       // Save the current state at the time the user is in the parking lot (ticket still found by WPS)
       // Add 100 in the timestamp so it will be a bit higher on the first save
-      parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getMillis(LocalDateTime.now()) + 100);
+      parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getNow());
 
       // always guarantee the store is set
       parkinglotTicket.setStoreId(storeId);

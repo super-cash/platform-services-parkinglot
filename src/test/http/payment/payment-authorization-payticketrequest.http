@@ -3,7 +3,7 @@
 #####
 POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/248334038711/pay
 Accept: application/json
-X-Supercash-Uid: 16830
+X-Supercash-Uid: 14727
 X-Supercash-Tid: new-transaction20303044
 X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
@@ -13,7 +13,7 @@ Accept-Encoding: application/json
 
 {
   "payTicketRequest": {
-    "amount": 600,
+    "amount": 400,
     "card_number": "4111111111111111",
     "card_cvv": "111",
     "card_expiration_date": "032026",

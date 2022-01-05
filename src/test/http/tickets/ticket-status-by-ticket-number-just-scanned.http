@@ -1,7 +1,7 @@
 # Regular ticket status
-GET {{host}}:{{port}}/v2/parkinglots/14791/tickets/248088610924
+GET {{host}}:{{port}}/v2/parkinglots/14791/tickets/248334038711
 Accept: application/json
-X-Supercash-Uid: 16830
+X-Supercash-Uid: 14727
 X-Supercash-Tid: new-transaction20303043
 X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
