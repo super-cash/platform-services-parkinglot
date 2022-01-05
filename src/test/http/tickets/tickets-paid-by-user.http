@@ -1,6 +1,6 @@
 GET {{host}}:{{port}}/v2/parkinglots/14791/tickets
 Accept: application/json
-X-Supercash-Uid: 16830
+X-Supercash-Uid: 14727
 X-Supercash-Tid: new-transaction20303040
 X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
