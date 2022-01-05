@@ -12,7 +12,6 @@ public class CardHolder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private Long id;
 
     @JsonProperty(required = true)

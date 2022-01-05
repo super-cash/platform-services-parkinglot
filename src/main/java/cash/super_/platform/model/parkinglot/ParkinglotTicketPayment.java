@@ -1,5 +1,8 @@
 package cash.super_.platform.model.parkinglot;
 
+import cash.super_.platform.model.supercash.PaymentResponse;
+import cash.super_.platform.model.supercash.types.charge.PaymentCharge;
+import cash.super_.platform.model.supercash.types.charge.PaymentChargeResponse;
 import cash.super_.platform.model.supercash.types.order.PaymentOrderResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
@@ -37,8 +40,8 @@ public class ParkinglotTicketPayment {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "payment_id", foreignKey = @ForeignKey(name = "parking_ticket_payment_order_response_fk"))
-    private PaymentOrderResponse payment;
+    @JoinColumn(name = "payment_id", foreignKey = @ForeignKey(name = "parking_ticket_payment_charge_response_fk"))
+    private PaymentChargeResponse payment;
 
     @JsonIgnore
     @ManyToOne
@@ -92,12 +95,12 @@ public class ParkinglotTicketPayment {
         this.parkinglotTicket = parkinglotTicket;
     }
 
-    public PaymentOrderResponse getPayment() {
+    public PaymentChargeResponse getPayment() {
         return payment;
     }
 
-    public void setPayment(PaymentOrderResponse paymentOrderResponse) {
-        this.payment = paymentOrderResponse;
+    public void setPayment(PaymentChargeResponse paymentChargeResponse) {
+        this.payment = paymentChargeResponse;
     }
 
     public Long getDate() {

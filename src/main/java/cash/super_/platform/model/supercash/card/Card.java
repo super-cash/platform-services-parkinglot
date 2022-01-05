@@ -15,7 +15,6 @@ public abstract class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private Long id;
 
     @JsonProperty(value = "card_id")
