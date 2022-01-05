@@ -182,9 +182,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
   public ParkingTicketAuthorizedPaymentStatus process(Long parkinglotId, ParkingTicketPayment paymentRequest,
                                                       String ticketNumber) {
-      LOG.debug("Attepting to process the payment for ticket={} at the parkinglotId={}", ticketNumber, parkinglotId);
+    LOG.debug("Attepting to process the payment for ticket={} at the parkinglotId={}", ticketNumber, parkinglotId);
 
-      if (paymentRequest == null) {
+    if (paymentRequest == null) {
       throw new SupercashInvalidValueException("The payment request must be provided.");
     }
 
@@ -228,7 +228,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     } else if (paymentRequest.getAnonymousTicketPaymentRequest() != null) {
       LOG.debug("Requested the payment for ticket={} at the parkinglotId={} by the annonymous user", ticketNumber, parkinglotId);
 
-      Map<String, String> metadata = paymentRequest.getAnonymousTicketPaymentRequest().getMetadata();
+      AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
+      Map<String, String> metadata = request.getMetadata();
 
       if (Strings.isNullOrEmpty(metadata.get("public_ip"))) {
         throw new SupercashInvalidValueException("The key/value public_ip field must be provided in the metadata.");
@@ -246,7 +247,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
         throw new SupercashInvalidValueException("The key/value credit_card_issuer field must be provided in the metadata.");
       }
       // anonymous ticket payment request (supercash format for anonymous payment request
-      AnonymousPaymentChargeRequest request = paymentRequest.getAnonymousTicketPaymentRequest();
+
       int payAmount =  request.getAmount().getValue().intValue();
       RetornoConsulta ticketStatus = isTicketAndAmountValid(parkinglotId, ticketNumber, payAmount, scanned);
       paymentStatus = paymentProcessorService.processPayment(request, ticketStatus);
@@ -265,8 +266,8 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
               "payTicketRequest");
     }
 
-      LOG.debug("Payment status generated: {}", paymentStatus);
-      return paymentStatus;
+    LOG.debug("Payment status generated: {}", paymentStatus);
+    return paymentStatus;
   }
 
   protected RetornoConsulta isTicketAndAmountValid(Long parkinglotId, String ticketNumber, long amount, boolean scanned) {
@@ -330,8 +331,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
   }
 
   private String generateTransactionId(String ticketNumber) {
-    ParkinglotTicketId ticketId = makeTicketId(Long.valueOf(ticketNumber));
-    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findById(ticketId);
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndStoreId(Long.valueOf(ticketNumber), supercashRequestContext.getStoreId());
     String transactionId = ticketNumber + "-0";
     if (parkinglotTicketOpt.isPresent()) {
       transactionId = ticketNumber + "-" + parkinglotTicketOpt.get().getPayments().size();

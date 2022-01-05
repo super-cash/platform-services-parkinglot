@@ -1,6 +1,7 @@
 package cash.super_.platform.service.parkinglot.payment;
 
 import cash.super_.platform.client.parkingplus.model.RetornoConsulta;
+import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 import cash.super_.platform.client.payment.PaymentServiceApiClient;
 import cash.super_.platform.client.wps.error.ParkingPlusPaymentNotApprovedException;
 import cash.super_.platform.error.parkinglot.SupercashInvalidValueException;
@@ -12,6 +13,7 @@ import cash.super_.platform.model.payment.pagarme.Item;
 import cash.super_.platform.model.payment.pagarme.SplitRule;
 import cash.super_.platform.model.payment.pagarme.Transaction;
 import cash.super_.platform.model.payment.pagarme.TransactionRequest;
+import cash.super_.platform.model.supercash.card.CardResponse;
 import cash.super_.platform.repository.ParkinglotTicketPaymentsRepository;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
@@ -41,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -169,12 +172,27 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
       throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment method not authorized.");
     }
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(
-            ticketStatus.getNumeroTicket(), ticketPriceWithoutFee, chargeResponse.summary());
+    ParkingTicketAuthorizedPaymentStatus paymentStatus;
+    Map<String, String> metadata = payRequest.getMetadata();
+    if (metadata.containsKey("testing") && metadata.get("testing") != null && metadata.get("testing").equals("true")) {
+      paymentStatus = new ParkingTicketAuthorizedPaymentStatus();
+      long now = DateTimeUtil.getNow();
+      RetornoPagamento retornoPagamento = new RetornoPagamento()
+              .dataHoraSaida(now)
+              .dataPagamento(now)
+              .errorCode(0)
+              .mensagem("Pagamento efetuado com sucesso.")
+              .numeroTicket(ticketNumber)
+              .ticketPago(true);
+      paymentStatus.setStatus(retornoPagamento);
 
-    if (!paymentStatus.getStatus().isTicketPago()) {
-      throw new SupercashPaymentErrorException("Parking lot service were unable to process payment gateway response. " +
-              "Ticket is set to not paid");
+    } else {
+      paymentStatus = paymentAuthService.authorizePayment(ticketStatus.getNumeroTicket(), ticketPriceWithoutFee,
+              chargeResponse.summary());
+      if (!paymentStatus.getStatus().isTicketPago()) {
+        throw new SupercashPaymentErrorException("Parking lot service were unable to process payment gateway response. " +
+                "Ticket is set to not paid");
+      }
     }
 
     LOG.debug("Payment Capture request for Anonymous Payments: amount={}", chargeResponse.getAmount());
@@ -214,41 +232,50 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     Long storeId = supercashRequestContext.getStoreId();
     Long userId = supercashRequestContext.getUserId();
 
-    Long paidParkingTicketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
+    Long ticketNumber = Long.parseLong(ticketStatus.getNumeroTicket());
     ParkinglotTicketPayment parkinglotTicketPayment = new ParkinglotTicketPayment();
     parkinglotTicketPayment.setAmount(chargeResponse.getAmount().getSummary().getTotal() - properties.getOurFee());
     parkinglotTicketPayment.setServiceFee(properties.getOurFee());
     parkinglotTicketPayment.setUserId(Long.valueOf(userId));
     parkinglotTicketPayment.setRequesterService(buildProperties.get("name"));
 
-    Long ticketNumber = Long.valueOf(ticketStatus.getNumeroTicket());
+    Optional<Payment> paymentOpt = paymentRepository.findById(chargeResponse.getId());
+    if (paymentOpt.isPresent()) {
+      parkinglotTicketPayment.setPayment((PaymentChargeResponse) paymentOpt.get());
+      LOG.debug("Payment order ID is present for the ticketId={}: {}", ticketNumber, chargeResponse);
+    }
+
+    Optional<ParkinglotTicket> parkinglotTicketOpt = parkinglotTicketRepository.findByTicketNumberAndStoreId(ticketNumber, storeId);
     ParkinglotTicket parkinglotTicket = null;
-    Optional<ParkinglotTicket> parkinglotTicketOpt =
-            parkinglotTicketRepository.findByTicketNumberAndStoreId(ticketNumber, storeId);
     if (parkinglotTicketOpt.isPresent()) {
       parkinglotTicket = parkinglotTicketOpt.get();
+      LOG.debug("Retrieved current parkinglot ticket to add payment={}: {}", ticketNumber, parkinglotTicket);
 
     } else {
+      LOG.debug("Creating new parkinglot ticket for first payment={}: {}", ticketNumber, parkinglotTicket);
       parkinglotTicket = new ParkinglotTicket();
-      parkinglotTicket.setTicketNumber(paidParkingTicketNumber);
+      parkinglotTicket.setTicketNumber(Long.valueOf(ticketNumber));
       parkinglotTicket.setStoreId(storeId);
       parkinglotTicket.setCreatedAt(ticketStatus.getDataDeEntrada());
     }
 
-    /* Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
+    /*
+     * Since each payment WPS doesn't store id for each payment, we are going to use the 'dataPagamento' as an id
      * when we need to get specific info about this specific payment.
-     * */
+     */
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
-    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
+
+    // Save the parkinglot ticket
+//    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
     parkinglotTicket = parkinglotTicketRepository.save(parkinglotTicket);
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
     parkinglotTicketPaymentsRepository.save(parkinglotTicketPayment);
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
-      if (payment.getDate() == -1) {
+      if (payment.getDate() == null || payment.getDate() == -1) {
         payment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
         break;
       }
@@ -395,12 +422,29 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     // Execute the payment for WPS
     LOG.debug("Requesting payment with WPS with the payment request...");
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.authorizePayment(
-            ticketStatus.getNumeroTicket(), wpsPaidAmountReported, paymentResponse.summary());
 
-    if (!paymentStatus.getStatus().isTicketPago()) {
-      LOG.error("PAYMENT FAILED: the ticket is not paid after authorization. Check with WPS!");
-      throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment not processed by WPS");
+    ParkingTicketAuthorizedPaymentStatus paymentStatus;
+    Map<String, String> metadata = payRequest.getMetadata();
+    if (metadata.containsKey("testing") && metadata.get("testing") != null && metadata.get("testing").equals("true")) {
+      paymentStatus = new ParkingTicketAuthorizedPaymentStatus();
+      long now = DateTimeUtil.getNow();
+      RetornoPagamento retornoPagamento = new RetornoPagamento()
+              .dataHoraSaida(now)
+              .dataPagamento(now)
+              .errorCode(0)
+              .mensagem("Pagamento efetuado com sucesso.")
+              .numeroTicket(ticketStatus.getNumeroTicket())
+              .ticketPago(true);
+      paymentStatus.setStatus(retornoPagamento);
+
+    } else {
+      paymentStatus = paymentAuthService.authorizePayment(ticketStatus.getNumeroTicket(), wpsPaidAmountReported,
+              paymentResponse.summary());
+
+      if (!paymentStatus.getStatus().isTicketPago()) {
+        LOG.error("PAYMENT FAILED: the ticket is not paid after authorization. Check with WPS!");
+        throw new SupercashPaymentErrorException(HttpStatus.FORBIDDEN, "Payment not processed by WPS");
+      }
     }
 
     LOG.debug("PAYMENT CAPTURE REQUEST: Requesting payment capture with the Payment Gateway");
@@ -450,7 +494,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     Optional<Payment> paymentOpt = paymentRepository.findById(paymentOrderResponse.getId());
     if (paymentOpt.isPresent()) {
       paymentOrderResponse = (PaymentOrderResponse) paymentOpt.get();
-      parkinglotTicketPayment.setPayment(paymentOrderResponse);
+      parkinglotTicketPayment.setPayment(paymentOrderResponse.getCharges().stream().findFirst().get());
         LOG.debug("Payment order ID is present for the ticketId={}: {}", ticketNumber, paymentOrderResponse);
     }
 
@@ -473,7 +517,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
      * when we need to get specific info about this specific payment.
      */
     parkinglotTicketPayment.setParkinglotTicket(parkinglotTicket);
-//    parkinglotTicketPayment.setDate(-1L);
+    parkinglotTicketPayment.setDate(-1L);
     parkinglotTicket.addPayment(parkinglotTicketPayment);
 
     // Save the parkinglot ticket
@@ -483,7 +527,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     for (ParkinglotTicketPayment payment : parkinglotTicket.getPayments()) {
-      if (payment.getDate() == -1) {
+      if (payment.getDate() == null || payment.getDate() == -1) {
         payment.setDate(paymentStatus.getStatus().getDataPagamento());
         LOG.debug("Set payment date date for ticket={}: {}", ticketNumber, paymentStatus.getStatus().getDataPagamento());
         break;

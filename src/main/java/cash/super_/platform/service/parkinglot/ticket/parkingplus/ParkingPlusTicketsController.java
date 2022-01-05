@@ -101,8 +101,8 @@ public class ParkingPlusTicketsController extends AbstractController {
     // The context is added by the supercashSecurityInterceptor
     validateSupercashContext(transactionId, marketplaceId, storeId, userId, appVersion, parkinglotId);
 
-    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(parkinglotId,
-            paymentRequest, ticketNumber);
+    ParkingTicketAuthorizedPaymentStatus paymentStatus = paymentAuthService.process(parkinglotId, paymentRequest,
+            ticketNumber);
 
     Map<String, String> headers = new HashMap<>();
     TestingParkingLotStatusInMemoryRepository.addTestingHeaders(headers);
