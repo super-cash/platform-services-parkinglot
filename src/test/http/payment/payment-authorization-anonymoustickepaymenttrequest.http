@@ -1,10 +1,11 @@
-POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/248334038711/pay
+POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/248342654966/pay
 accept: application/json
 X-Supercash-Uid: 14735
 X-Supercash-Tid: new-transaction202
 X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
+X-Supercash-Testing: wps.payments
 Content-Type: application/json
 Accept-Encoding: application/json
 
@@ -12,7 +13,7 @@ Accept-Encoding: application/json
   "anonymousTicketPaymentRequest": {
     "reference_id": "248334038711",
     "amount": {
-      "value": 400,
+      "value": 1300,
       "currency": "BRL"
     },
     "payment_method": {
@@ -30,8 +31,7 @@ Accept-Encoding: application/json
       "public_ip": "23.125.120.55",
       "user_agent": "Chrome 1.1",
       "lapsed_time": 6735,
-      "credit_card_issuer": "Visa",
-      "testing": true
+      "credit_card_issuer": "Visa"
     }
   }
 }

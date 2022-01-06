@@ -1,19 +1,20 @@
 #####
 ##### Get the status first and then build
 #####
-POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/248334038711/pay
+POST {{host}}:{{port}}/v2/parkinglots/14791/tickets/248342654966/pay
 Accept: application/json
 X-Supercash-Uid: 14727
 X-Supercash-Tid: new-transaction20303044
 X-Supercash-Marketplace-Id: 14824
 X-Supercash-Store-Id: 14791
 X-Supercash-App-Version: 1.0
+X-Supercash-Testing: wps.payments
 Content-Type: application/json
 Accept-Encoding: application/json
 
 {
   "payTicketRequest": {
-    "amount": 400,
+    "amount": 1300,
     "card_number": "4111111111111111",
     "card_cvv": "111",
     "card_expiration_date": "032026",
@@ -47,8 +48,7 @@ Accept-Encoding: application/json
       "sale_id": "1",
       "device_id": "1",
       "public_ip": "10.0.0.1",
-      "private_ip": "192.168.0.1",
-      "testing": true
+      "private_ip": "192.168.0.1"
     }
   }
 }
