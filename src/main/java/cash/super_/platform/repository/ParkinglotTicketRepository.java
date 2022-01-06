@@ -30,13 +30,6 @@ public interface ParkinglotTicketRepository extends PagingAndSortingRepository<P
     Optional<ParkinglotTicket> findByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
 
     /**
-     * @param ticketNumber
-     * @param storeId
-     * @return whether the storage contains the ticket from onother user in the same store
-     */
-    boolean existsDistinctByTicketNumberAndStoreId(Long ticketNumber, Long storeId);
-
-    /**
      * Adding EntityGraph to fetch all properties https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/#method1retrievingandloadingobjectswithquery
      * Getting the latest 10 tickets by default without
      *  https://stackoverflow.com/questions/24068884/spring-data-jpa-java-get-last-10-records-from-query/45334867#45334867

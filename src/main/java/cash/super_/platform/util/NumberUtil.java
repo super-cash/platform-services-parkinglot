@@ -60,4 +60,5 @@ public class NumberUtil {
         }
         return number.get();
     }
+
 }

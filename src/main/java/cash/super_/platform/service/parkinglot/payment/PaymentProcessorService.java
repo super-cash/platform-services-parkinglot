@@ -13,7 +13,6 @@ import cash.super_.platform.model.payment.pagarme.Item;
 import cash.super_.platform.model.payment.pagarme.SplitRule;
 import cash.super_.platform.model.payment.pagarme.Transaction;
 import cash.super_.platform.model.payment.pagarme.TransactionRequest;
-import cash.super_.platform.model.supercash.card.CardResponse;
 import cash.super_.platform.repository.ParkinglotTicketPaymentsRepository;
 import cash.super_.platform.service.parkinglot.AbstractParkingLotProxyService;
 import cash.super_.platform.model.parkinglot.ParkingTicketAuthorizedPaymentStatus;
@@ -174,11 +173,11 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     Map<String, String> metadata = payRequest.getMetadata();
-    if (metadata.containsKey("testing") && metadata.get("testing") != null && metadata.get("testing").equals("true")) {
+    if (supercashRequestContext.isModuleInTestMode("wps.payments")) {
       paymentStatus = new ParkingTicketAuthorizedPaymentStatus();
       long now = DateTimeUtil.getNow();
       RetornoPagamento retornoPagamento = new RetornoPagamento()
-              .dataHoraSaida(now)
+              .dataHoraSaida(DateTimeUtil.getMillis(DateTimeUtil.getLocalDateTime(now).plusHours(4))) // +4 hours
               .dataPagamento(now)
               .errorCode(0)
               .mensagem("Pagamento efetuado com sucesso.")
@@ -268,6 +267,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     parkinglotTicketPayment.setDate(parkingTicketAuthorizedPaymentStatus.getStatus().getDataPagamento());
     parkinglotTicket.addPayment(parkinglotTicketPayment);
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
 
     // Save the parkinglot ticket
     // Store in the repository
@@ -417,7 +417,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
 
     ParkingTicketAuthorizedPaymentStatus paymentStatus;
     Map<String, String> metadata = payRequest.getMetadata();
-    if (metadata.containsKey("testing") && metadata.get("testing") != null && metadata.get("testing").equals("true")) {
+    if (supercashRequestContext.isModuleInTestMode("wps.payments")) {
       paymentStatus = new ParkingTicketAuthorizedPaymentStatus();
       long now = DateTimeUtil.getNow();
       RetornoPagamento retornoPagamento = new RetornoPagamento()
@@ -514,6 +514,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
     // Set the dataPagamento for future use, since this information is returned by the WPS.
     parkinglotTicketPayment.setDate(paymentStatus.getStatus().getDataPagamento());
     parkinglotTicket.addPayment(parkinglotTicketPayment);
+    parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow());
 
     // Save the parkinglot ticket
     // Store in the repository

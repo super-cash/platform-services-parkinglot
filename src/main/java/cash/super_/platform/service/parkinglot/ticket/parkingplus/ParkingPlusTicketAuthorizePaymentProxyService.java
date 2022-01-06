@@ -22,7 +22,6 @@ import cash.super_.platform.client.parkingplus.model.PagamentoAutorizadoRequest;
 import cash.super_.platform.client.parkingplus.model.PagamentoRequest;
 import cash.super_.platform.client.parkingplus.model.RetornoPagamento;
 
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -279,12 +278,15 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING Query TESTING TICKET STATUS VALID: {}", ticketNumber);
       ParkingTicketStatus ticketStatus = testingParkinglotTicketRepository.getStatus(ticketNumber);
+
       if (!ticketStatus.canBePaid()) {
         throw new SupercashPaymentCantPayInNonNotPaidStateException("Can't pay ticket state " + ticketStatus.getState());
       }
-      if (ParkingTicketState.PAID == ticketStatus.getState()) {
+
+      if (supercashRequestContext.isModuleInTestMode("wps.payments") && ParkingTicketState.PAID == ticketStatus.getState()) {
         throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
       }
+
       return testingParkinglotTicketRepository.getQueryResult(ticketNumber);
     }
 
@@ -301,11 +303,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       if (ticket.get().getLastStateRecorded() != null) {
         lastRecordedState = ticket.get().getLastStateRecorded().getState();
 
-        if (!EnumSet.of(ParkingTicketState.NOT_PAID, ParkingTicketState.PAID).contains(lastRecordedState)) {
-          throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
-        }
-
-        if (ParkingTicketState.PAID == lastRecordedState) {
+        if (!supercashRequestContext.isModuleInTestMode("wps.payments") && ParkingTicketState.PAID == lastRecordedState) {
           throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
         }
       }

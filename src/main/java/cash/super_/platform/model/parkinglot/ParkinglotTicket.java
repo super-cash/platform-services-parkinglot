@@ -130,15 +130,22 @@ public class ParkinglotTicket {
         if (this.states == null || this.states.isEmpty()) {
             return null;
         }
+        // exclude the states that the ticket gets in the start when they are registered
+        // https://stackoverflow.com/questions/26568555/sorting-by-property-in-java-8-stream/26568724#26568724
+        // https://stackoverflow.com/questions/28607191/how-to-use-a-java8-lambda-to-sort-a-stream-in-reverse-order/62208724#62208724
+//        Optional<ParkinglotTicketStateTransition> firstElement = this.states.stream()
+//                // exclude the states that the ticket gets in the start when they are registered
+//                .filter(transition -> !lastRecordedExclusionType().contains(transition.getState()))
+//                // https://stackoverflow.com/questions/26568555/sorting-by-property-in-java-8-stream/26568724#26568724
+//                .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getEntryDate)
+//                        // https://stackoverflow.com/questions/28607191/how-to-use-a-java8-lambda-to-sort-a-stream-in-reverse-order/62208724#62208724
+//                        .reversed())
+//                .findFirst();
+
         Optional<ParkinglotTicketStateTransition> firstElement = this.states.stream()
-                // exclude the states that the ticket gets in the start when they are registered
-                .filter(transition -> !lastRecordedExclusionType().contains(transition.getState()))
-                // https://stackoverflow.com/questions/26568555/sorting-by-property-in-java-8-stream/26568724#26568724
-                .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate)
-                        // https://stackoverflow.com/questions/28607191/how-to-use-a-java8-lambda-to-sort-a-stream-in-reverse-order/62208724#62208724
-                        .reversed())
-                .findFirst();
-        return firstElement.isPresent() ? firstElement.get() : null;
+                .filter(transition -> !lastRecordedExclusionType().contains(transition.getState())).max(Comparator.comparing(ParkinglotTicketStateTransition::getEntryDate));
+
+        return firstElement.orElse(null);
     }
 
     @JsonIgnore

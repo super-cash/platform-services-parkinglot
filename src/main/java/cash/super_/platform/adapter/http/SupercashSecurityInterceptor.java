@@ -15,6 +15,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,8 +74,15 @@ public class SupercashSecurityInterceptor extends HandlerInterceptorAdapter {
             headerName = "X-Supercash-Uid";
             long userId = NumberUtil.stringIsLongWithException(FieldType.HEADER, request.getHeader(headerName), headerName);
 
+            /* Testing flag */
+            headerName = "X-Supercash-Testing";
+            List<String> modulesInTestingMode = new ArrayList<>();
+            if (!Strings.isNullOrEmpty(request.getHeader(headerName))) {
+                modulesInTestingMode = Arrays.asList(request.getHeader(headerName).split("\\s*,\\s*"));
+            }
+
             // Update the context that will be provided to all the services
-            requestContext.setContext(transactionId, marketPlaceId, storeId, userId, appVersion);
+            requestContext.setContext(transactionId, marketPlaceId, storeId, userId, appVersion, modulesInTestingMode);
 
             LOG.debug("Created Supercash Request Context: {}", requestContext);
 
