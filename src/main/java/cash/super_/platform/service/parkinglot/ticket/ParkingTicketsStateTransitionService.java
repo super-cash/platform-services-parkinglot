@@ -66,7 +66,6 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
     ParkinglotTicket parkinglotTicket = null;
     ParkinglotTicketStateTransition lastRecordedState = null;
-    boolean newTicket = false;
 
     if (requestingUserTicketSearch.isPresent()) {
       // the ticket has been created before
@@ -102,7 +101,6 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
 
       parkinglotTicket.setCreatedAt(DateTimeUtil.getNow());
       parkinglotTicket.setStoreId(storeId);
-      newTicket = true;
 
       ParkingTicketState currentState = calculateTicketStatus(ticketStatus, 0);
       if (currentState != ParkingTicketState.NOT_PAID && state != ParkingTicketState.NOT_PAID) {
@@ -111,37 +109,38 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     }
 
     // Adding the state received in this function
-    if (lastRecordedState == null) {
-      long offSet = newTicket ? 1 : 0;
-      parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getNow() + offSet);
+    if (state != null) {
+      if (lastRecordedState == null || state != ParkingTicketState.NOT_PAID) {
+        parkinglotTicket.addTicketStateTransition(state, userId, DateTimeUtil.getNow());
 
-    } else {
-      if (lastRecordedState.getState() == ParkingTicketState.NOT_PAID && state == ParkingTicketState.NOT_PAID) {
-        lastRecordedState.setEntryDate(DateTimeUtil.getNow());
-        LOG.debug("Updating latest NOT_PAID state entryDate: {}", lastRecordedState);
-        parkinglotTicketStateTransitionsRepository.save(lastRecordedState);
+      } else {
+        if (lastRecordedState.getState() == ParkingTicketState.NOT_PAID) {
+          lastRecordedState.setEntryDate(DateTimeUtil.getNow());
+          LOG.debug("Updating latest NOT_PAID state entryDate: {}", lastRecordedState);
+          parkinglotTicketStateTransitionsRepository.save(lastRecordedState);
+        }
       }
-    }
 
-    // Although we have added the provided state (step above), if ticket is still PAID, we need to keep the latest
-    // state as PAID, so that we update the PAID status entry date to now time.
-    boolean stillInPaid = ticketStatus.getTarifaPaga() != null &&
-            ticketStatus.getTarifa().intValue() == ticketStatus.getTarifaPaga().intValue();
-    if (stillInPaid && state != ParkingTicketState.PAID) {
-      if (lastRecordedState == null) {
-        parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow() + 1);
+      lastRecordedState = parkinglotTicket.getLastStateRecorded();
+      // Although we have added the provided state (step above), if ticket is still PAID, we need to keep the latest
+      // state as PAID, so that we update the PAID status entry date to now time.
+      boolean stillInPaid = ticketStatus.getTarifaPaga() != null &&
+              ticketStatus.getTarifa().intValue() == ticketStatus.getTarifaPaga().intValue();
+      if (stillInPaid && state != ParkingTicketState.PAID) {
+        if (lastRecordedState == null) {
+          parkinglotTicket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getNow() + 1);
 
-      } else if (lastRecordedState.getState() == ParkingTicketState.PAID) {
-        lastRecordedState.setEntryDate(DateTimeUtil.getNow() + 1);
-        LOG.debug("Updating latest PAID state entryDate: {}", lastRecordedState);
-        parkinglotTicketStateTransitionsRepository.save(lastRecordedState);
+        } else if (lastRecordedState.getState() == ParkingTicketState.PAID) {
+          lastRecordedState.setEntryDate(DateTimeUtil.getNow() + 1);
+          LOG.debug("Updating latest PAID state entryDate: {}", lastRecordedState);
+          parkinglotTicketStateTransitionsRepository.save(lastRecordedState);
+        }
       }
+
+      LOG.debug("Saving new state {} for ticket {} on the parkinglot={}", state, ticketNumber, storeId);
+      // Save the ticket and the transitions
+      parkinglotTicketRepository.save(parkinglotTicket);
     }
-
-    LOG.debug("Saving new state {} for ticket {} on the parkinglot={}", state, ticketNumber, storeId);
-    // Save the ticket and the transitions
-    parkinglotTicketRepository.save(parkinglotTicket);
-
   }
 
   /**
@@ -249,7 +248,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ticketStatus.dataDeEntrada(entranceDate.get().getDate());
 
     // TODO fill out the info about the garagem
-    ticketStatus.setGaragem("MACEIO SHOPPING");
+    ticketStatus.setGaragem("ESTACIONAMENTO");
     ticketStatus.setIdGaragem(Long.valueOf(1));
     ticketStatus.setCnpjGaragem("12.200.135/0001-80");
 
@@ -279,12 +278,12 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     ticketStatus.setPromocaoAtingida(false);
     ticketStatus.setPromocoesDisponiveis(false);
 
+    // NOT scanned, as it will be when scanned by multiple people the value is newer
+    // SORTED BY AT DESC
     Optional<ParkinglotTicketStateTransition> lastTransition = parkinglotTicket.getStates().stream()
             // NOT scanned, as it will be when scanned by multiple people the value is newer
-            .filter( transition -> !transition.getState().equals(ParkingTicketState.SCANNED))
-            // SORTED BY AT DESC
-            .sorted(Comparator.comparing(ParkinglotTicketStateTransition::getDate, Collections.reverseOrder()))
-            .findFirst();
+            .filter(transition -> !transition.getState().equals(ParkingTicketState.SCANNED))
+            .max(Comparator.comparing(ParkinglotTicketStateTransition::getDate));
     // Just a hack to save the last state in the ticket message to capture it on the return
     ticketStatus.setMensagem("supercash:" + lastTransition.get().getState().toString());
 
@@ -310,7 +309,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     if (ticketStatus.getMensagem().contains("supercash:")) {
       ticketStatus.setMensagem(ticketStatus.getMensagem().split(":")[1]);
       ParkingTicketState exitParkingLotState = ParkingTicketState.valueOf(ticketStatus.getMensagem());
-      ticketStatus.setMensagem("supercash:" + exitParkingLotState.toString());
+      ticketStatus.setMensagem("supercash:" + exitParkingLotState);
       return exitParkingLotState;
     }
 
@@ -344,13 +343,13 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       }
 
     } else {
-
       // the user is still in the parking lot after making a payment
       if (ticketStatus.getTarifa().intValue() == ticketStatus.getTarifaPaga().intValue()) {
         LOG.debug("The ticket {} is already paid and the user is still in the parking lot (since the ststus is still != 404)",
                 ticketStatus.getNumeroTicket());
         parkingTicketState = ParkingTicketState.PAID;
       }
+
     }
     return parkingTicketState;
   }

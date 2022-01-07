@@ -12,6 +12,7 @@ import cash.super_.platform.service.parkinglot.payment.PaymentProcessorService;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
 import cash.super_.platform.model.supercash.PaymentResponseSummary;
 import cash.super_.platform.model.supercash.types.charge.AnonymousPaymentChargeRequest;
+import cash.super_.platform.service.parkinglot.ticket.ParkingTicketsStateTransitionService;
 import cash.super_.platform.util.SecretsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,9 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
   @Autowired
   private ParkinglotTicketRepository parkinglotTicketRepository;
+
+  @Autowired
+  ParkingTicketsStateTransitionService parkingTicketsStateTransitionService;
 
   public ParkingTicketAuthorizedPaymentStatus authorizePayment(String ticketNumber, Long ticketPrice, PaymentResponseSummary payResponse) {
     LOG.debug("Payment auth request after Supercash payment request/response: {} {}", ticketNumber, payResponse);
@@ -293,19 +297,14 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     LOG.debug("Verifying that the ticket={} for parkinglot={} is new and just got scanned", ticketNumber, parkinglotId);
       // Verify if the ticket is new and just got scanned, and if so, it has 3 initial states
     Long storeId = supercashRequestContext.getStoreId();
-    Long userId = supercashRequestContext.getUserId();
 
+    ParkingTicketState lastRecordedState = null;
     Optional<ParkinglotTicket> ticket = parkinglotTicketRepository.findByTicketNumberAndStoreId(Long.valueOf(ticketNumber), storeId);
     if (ticket.isPresent()) {
       LOG.debug("Ticket ticket={} for parkinglot={} exists!", ticketNumber, parkinglotId);
 
-      ParkingTicketState lastRecordedState = null;
       if (ticket.get().getLastStateRecorded() != null) {
         lastRecordedState = ticket.get().getLastStateRecorded().getState();
-
-        if (!supercashRequestContext.isModuleInTestMode("wps.payments") && ParkingTicketState.PAID == lastRecordedState) {
-          throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
-        }
       }
     }
 
@@ -314,14 +313,18 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
     RetornoConsulta ticketStatus = parkingTicketStatus.getStatus();
     int ticketFee = ticketStatus.getTarifa();
-    int ticketPaidCharge = ticketStatus.getTarifaPaga();
+    int ticketPaidCharge = (ticketStatus.getTarifaPaga() != null) ? ticketStatus.getTarifaPaga() : 0;
 
-    // When the user pays the ticket multiple times, the value of ticketFee will always increase while the paid charge is the lumpsum of all payments
+    // When the user pays the ticket multiple times, the value of ticketFee will always increase while the paid charge
+    // is the lumpsum of all payments
     int valueToBePaid = ticketFee - ticketPaidCharge;
     if (valueToBePaid != amount) {
-        String message = "The amount has to be equal to ticket fee less the paid charge. amount=" + amount + " valueToBePaid=" + valueToBePaid;
-        LOG.debug(message);
-        throw new SupercashInvalidValueException(message);
+      parkingTicketsStateTransitionService.saveTicketTransitionStateWhileUserInLot(ticketStatus,
+              ParkingTicketState.NOT_PAID, false);
+      String message = "The amount has to be equal to ticket fee less the paid charge. amount=" + amount +
+              " valueToBePaid=" + valueToBePaid;
+      LOG.debug(message);
+      throw new SupercashInvalidValueException(message);
     }
 
     LOG.debug("Ticket status for {}: {}", ticketNumber, ticketStatus);

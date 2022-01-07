@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * The relation of the parking ticket and a given state
@@ -71,7 +72,7 @@ public class ParkinglotTicketStateTransition {
         transition.parkinglotTicket = parkinglotTicket;
         transition.state = state;
         transition.userId = userId;
-        transition.entryDate = DateTimeUtil.getNow();
+        transition.entryDate = DateTimeUtil.getNow() + 1;
 
         return transition;
     }
