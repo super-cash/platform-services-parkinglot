@@ -72,7 +72,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;
-    long paidByUser = -1;
     if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING Query TESTING TICKET STATUS: {}", ticketNumber);
       ticketStatus = testingParkinglotTicketRepository.getQueryResult(ticketNumber);
@@ -95,28 +94,32 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       }
     }
 
-    // The ticket is not a test one... We need to retrieve it from WPS
-    long allowedExitEpoch = !ticketExitedParkingLot(ticketStatus)
-            ? ParkingTicketStatus.calculateAllowedExitDateTime(ticketStatus)
-            : 0;
-    ParkingTicketState parkingTicketState = parkingTicketsStateTransitionService.calculateTicketStatus(
-            ticketStatus, allowedExitEpoch);
+    if (ticketStatus != null) {
+      // The ticket is not a test one... We need to retrieve it from WPS
+      long allowedExitEpoch = !ticketExitedParkingLot(ticketStatus)
+              ? ParkingTicketStatus.calculateAllowedExitDateTime(ticketStatus)
+              : 0;
+      ParkingTicketState parkingTicketState = parkingTicketsStateTransitionService.calculateTicketStatus(
+              ticketStatus, allowedExitEpoch);
 
-    // For the testing tickets, just set the status computed
-    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
-      return testingParkinglotTicketRepository.getStatus(ticketNumber);
+      // For the testing tickets, just set the status computed
+      if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+        return testingParkinglotTicketRepository.getStatus(ticketNumber);
+      }
+
+      // Store the ticket state transition
+      if (!ticketExitedParkingLot(ticketStatus)) {
+        parkingTicketsStateTransitionService.saveTicketTransitionStateWhileUserInLot(ticketStatus, parkingTicketState, scanned);
+        LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(ticketStatus.getDataDeEntrada());
+        LocalDateTime gracePeriodTime = entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
+        return new ParkingTicketStatus(ticketStatus, parkingTicketState, DateTimeUtil.getMillis(gracePeriodTime));
+      }
+
+      // ticket exited parking lot
+      return new ParkingTicketStatus(ticketStatus, parkingTicketState, -1);
     }
 
-    // Store the ticket state transition
-    if (!ticketExitedParkingLot(ticketStatus)) {
-      parkingTicketsStateTransitionService.saveTicketTransitionStateWhileUserInLot(ticketStatus, parkingTicketState, scanned);
-      LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(ticketStatus.getDataDeEntrada());
-      LocalDateTime gracePeriodTime = entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
-      return new ParkingTicketStatus(ticketStatus, parkingTicketState, DateTimeUtil.getMillis(gracePeriodTime));
-    }
-
-    // ticket exited parking lot
-    return new ParkingTicketStatus(ticketStatus, parkingTicketState, -1);
+    throw new SupercashNullTicketException();
   }
 
   private static boolean ticketExitedParkingLot(RetornoConsulta ticketStatus) {
@@ -171,13 +174,13 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
       // Verify if the ticket existed before by checking the third party error
       if (error instanceof SupercashThirdPartySystemException) {
-        SupercashThirdPartySystemException thirdPartySystemException = (SupercashThirdPartySystemException)error;
+        SupercashThirdPartySystemException thirdPartySystemException = (SupercashThirdPartySystemException) error;
 
         // Save the state transition error because the ticket existed before and the user left the parking lot
         // When that happens, the error_code from WPS is 1. In this case, the response should be 200.
         // https://gitlab.com/supercash/services/parking-lot-service/-/issues/2
         Object thirdPartyErrorCode = thirdPartySystemException.SupercashExceptionModel.getAdditionalFields().get("third_party_error_code");
-        if (thirdPartyErrorCode != null && Integer.valueOf(thirdPartyErrorCode.toString()) == 1) {
+        if (thirdPartyErrorCode != null && Integer.parseInt(thirdPartyErrorCode.toString()) == 1) {
           // The ticket actually was just removed but existed before, so it can't fail
           ParkinglotTicket savedTicket = parkingTicketsStateTransitionService.saveTicketTransitionStateAfterUserExits(ticketNumber);
 
@@ -204,7 +207,6 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
     try {
       LOG.debug("Ticket status: {}", JsonUtil.toJson(ticketStatus));
       return ticketStatus;
-
 
     } catch (JsonProcessingException jsonError) {
       LOG.error("Error deserializing status ticket to json.", jsonError);
