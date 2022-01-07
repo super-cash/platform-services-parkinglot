@@ -102,16 +102,16 @@ public class ParkinglotTicket {
         this.states = states;
     }
 
-    public void addTicketStateTransition(ParkingTicketState state, Long userId, long time) {
+    public ParkinglotTicketStateTransition addTicketStateTransition(ParkingTicketState state, Long userId, long time) {
         ParkinglotTicketStateTransition transition = ParkinglotTicketStateTransition.makeNew(this, userId,
                 state, time);
-
         // tickets can be only picked up and in grace period only once
         // Tickets can be scanned multiple times by the same or different users
         boolean inInitState = EnumSet.of(ParkingTicketState.PICKED_UP, ParkingTicketState.GRACE_PERIOD).contains(transition.getState());
         if (!inInitState || !this.contains(state)) {
             this.states.add(transition);
         }
+        return transition;
     }
 
     public boolean contains(ParkingTicketState stateToFind) {

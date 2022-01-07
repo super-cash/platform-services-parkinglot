@@ -188,6 +188,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       if (ticket.getPayments() != null && !ticket.getPayments().isEmpty()) {
         long lastPaymentDateMillis = ticket.getLastPaymentDateTimeMillis();
         LocalDateTime lastPaymentTime = DateTimeUtil.getLocalDateTime(lastPaymentDateMillis);
+        // TODO: set entryDate to be the same as lastPaymentTime
         ticket.addTicketStateTransition(ParkingTicketState.PAID, userId, DateTimeUtil.getMillis(lastPaymentTime));
       }
 

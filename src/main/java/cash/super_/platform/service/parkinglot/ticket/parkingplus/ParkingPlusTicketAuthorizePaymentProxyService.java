@@ -287,10 +287,6 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
         throw new SupercashPaymentCantPayInNonNotPaidStateException("Can't pay ticket state " + ticketStatus.getState());
       }
 
-      if (supercashRequestContext.isModuleInTestMode("wps.payments") && ParkingTicketState.PAID == ticketStatus.getState()) {
-        throw new SupercashPaymentAlreadyPaidException("Ticket is already paid!");
-      }
-
       return testingParkinglotTicketRepository.getQueryResult(ticketNumber);
     }
 
