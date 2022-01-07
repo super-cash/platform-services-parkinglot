@@ -14,6 +14,7 @@ public enum SupercashErrorCode {
     PAYMENT_ERROR(3999, "The payment request error."),
     WRONG_CLIENT_VERSION(4001, "The client version is wrong."),
     GENERIC_ERROR(9001, "Generic error."),
+    PARKING_LOT_TICKET_NULL_STATUS_EXCEPTION(9994, "Parking lot ticket status is null."),
     NOT_IMPLEMENTED_YET(9995, "Not implemented yet."),
     UNKNOWN_HOST(9996, "Unknown Host Exception."),
     MISSING_ARGUMENT(9997, "Missing argument."),
