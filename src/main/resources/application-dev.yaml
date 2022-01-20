@@ -14,7 +14,7 @@ spring:
               segment: ppd
 
   datasource:
-    url: jdbc:postgresql://supercash-ppd-dev.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
+    url: jdbc:postgresql://supercash-dev-ppd-prdt-supercash-sae1-aws.csdmsoazeise.sa-east-1.rds.amazonaws.com:5432/supercash?createDatabaseIfNotExist=true
     username: supercash
     password: _#super#_123
 
