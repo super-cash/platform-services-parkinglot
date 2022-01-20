@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 public class Amount {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private Long id;
 

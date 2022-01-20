@@ -21,7 +21,7 @@ public class Transaction {
      * Supercash transaction ID in the database.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     @Column(name = "transaction_id")
     private Long transactionId;

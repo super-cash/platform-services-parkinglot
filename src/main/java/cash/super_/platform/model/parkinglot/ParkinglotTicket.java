@@ -21,7 +21,7 @@ import java.util.Comparator;
 public class ParkinglotTicket {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // TODO: Ticket numbers must change to String as they will differ from each parkinglot

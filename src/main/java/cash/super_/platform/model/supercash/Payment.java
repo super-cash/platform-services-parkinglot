@@ -17,7 +17,7 @@ import java.util.List;
 public abstract class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Length(max = 41)

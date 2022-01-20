@@ -13,7 +13,7 @@ import javax.persistence.Id;
 public abstract class ChargePaymentMethod {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private Long id;
 
