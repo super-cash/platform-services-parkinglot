@@ -33,7 +33,7 @@ spring:
     show-sql: true
     hibernate:
 #      ddl-auto: create-drop
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate.temp.use_jdbc_metadata_defaults: false
       hibernate.jdbc.lob.non_contextual_creation: true
