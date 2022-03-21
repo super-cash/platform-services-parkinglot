@@ -1,8 +1,9 @@
-### Builder Arguments
+### Builder Arguments trigger
 ARG CI_JOB_URL=${CI_JOB_URL:---no-CI_JOB_URL-provided--}
 ARG UNMAZEDBOOT_BUILDER_GIT_SHA=${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
 ARG UNMAZEDBOOT_BUILDER_GIT_BRANCH=${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-master}
-ARG UNMAZEDBOOT_BUILDER_GRADLE_BUILD_CMD="gradle build -x test"
+# https://stackoverflow.com/questions/69960853/unable-to-list-file-systems-to-check-whether-they-can-be-watched
+ARG UNMAZEDBOOT_BUILDER_GRADLE_BUILD_CMD="gradle build -x test --no-watch-fs --no-daemon"
 ARG UNMAZEDBOOT_BUILDER_DIR="build/libs"
 ARG UNMAZEDBOOT_BUILDER_PACKAGE_EXTENSION="jar"
 ARG UNMAZEDBOOT_BUILDER_GRADLE_VERSION=${UNMAZEDBOOT_BUILDER_GRADLE_VERSION:-latest}
@@ -20,7 +21,7 @@ ARG UNMAZEDBOOT_RUNNER_VERSION=${UNMAZEDBOOT_RUNNER_VERSION:-latest}
 # #####################################################################
 # Build stage for building the target directory before running tests
 # #####################################################################
-FROM marcellodesales/unmazedboot-builder-gradle:${UNMAZEDBOOT_BUILDER_GRADLE_VERSION} as unmazedboot-builder-artifacts
+FROM marcellodesales/unmazedboot-builder-gradle:${UNMAZEDBOOT_BUILDER_GRADLE_VERSION} AS unmazedboot-builder-artifacts
 ENV UNMAZEDBOOT_BUILDER_GIT_SHA ${UNMAZEDBOOT_BUILDER_GIT_SHA:-000000}
 ENV UNMAZEDBOOT_BUILDER_GIT_BRANCH ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
 ENV UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-develop}
@@ -28,12 +29,19 @@ ENV UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL ${UNMAZEDBOOT_BUILDER_GIT_BRANCH:-devel
 # #####################################################################
 # Build stage for making a jlink specific for the app
 # #####################################################################
-FROM marcellodesales/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} as unmazedboot-jdk-linker
+FROM marcellodesales/unmazedboot-linker:${UNMAZEDBOOT_LINKER_VERSION} AS unmazedboot-jdk-linker
+
+
+# Hack to sync the parallel build and slow-down the build
+COPY --from=unmazedboot-builder-artifacts /app/build/resources/main/banner.txt /app/banner.txt
 
 # #####################################################################
 # Build stage for running the runtime image (MUST MATCH LINKER TYPE)
 # #####################################################################
-FROM intuit/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
+FROM marcellodesales/unmazedboot-runner:${UNMAZEDBOOT_RUNNER_VERSION}
+
+# Hack the sync the parallel build and slow-down the build to runtime
+COPY --from=unmazedboot-jdk-linker /app/banner.txt /banner.txt
 
 # Alpine needs the SSL certificates from the JVM
 # javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed
