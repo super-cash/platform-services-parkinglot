@@ -80,7 +80,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   public ParkingTicketAuthorizedPaymentStatus processPayment(AnonymousPaymentChargeRequest payRequest, RetornoConsulta ticketStatus) {
     // load the ticket status or load a testing ticket
     final String ticketNumber = ticketStatus.getNumeroTicket();
-    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+    if (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING TESTING Ticket Authorized Payment STATUS for Anonymous Payments: {}", ticketNumber);
 
       long amountToPay = payRequest.getAmount().getValue() + properties.getOurFee();
@@ -281,7 +281,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
   public ParkingTicketAuthorizedPaymentStatus processPayment(TransactionRequest payRequest, RetornoConsulta ticketStatus) {
     // load the ticket status or load a testing ticket
     final String ticketNumberToProcess = ticketStatus.getNumeroTicket();
-    if (testingParkinglotTicketRepository.containsTicket(ticketNumberToProcess)) {
+    if (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketNumberToProcess)) {
       LOG.debug("Loading status for testing ticket: {}", ticketNumberToProcess);
 
       long amountToPay = payRequest.getAmount() + properties.getOurFee();

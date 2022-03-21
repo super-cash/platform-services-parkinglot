@@ -31,7 +31,7 @@ import cash.super_.platform.model.parkinglot.ParkingTicketStatus;
  *
  */
 @Component
-@Profile({"dev", "default"})
+@Profile({"ppd_qal", "ppd_dev", "default"})
 public class TestingParkingLotStatusInMemoryRepository {
 
 	protected static final Logger LOG = LoggerFactory.getLogger(TestingParkingLotStatusInMemoryRepository.class);

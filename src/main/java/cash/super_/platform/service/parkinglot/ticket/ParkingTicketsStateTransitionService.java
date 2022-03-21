@@ -196,6 +196,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
       ticket.setStoreId(storeId);
 
       LOG.debug("Saving the ticket={} from parkinglot={} before state transitions", ticketNumber, storeId);
+      LOG.debug("Ticket object: {}", ticket);
 
       // Save the ticket states
       parkinglotTicketRepository.save(ticket);
@@ -323,8 +324,8 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
     LocalDateTime allowedExitDateTime = DateTimeUtil.getLocalDateTime(allowedExitMillis);
     LocalDateTime entryDateTime = DateTimeUtil.getLocalDateTime(entryDateTimeMillis);
 
-    // Make the grace period valud based on the entry date time
-    LocalDateTime gracePeriodTime = testingParkinglotTicketRepository.containsTicket(ticketStatus.getNumeroTicket())
+    // Make the grace period value based on the entry date time
+    LocalDateTime gracePeriodTime = (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketStatus.getNumeroTicket()))
             ? entryDateTime.plusMinutes(TestingParkingLotStatusInMemoryRepository.MIN_GRACE_PERIOD_DURING_TESTING)
             : entryDateTime.plusMinutes(properties.getGracePeriodInMinutes());
     LOG.debug("The ticket queryTime={} allowedExitTime={} gracePeriodTime={}", queryDateTime, allowedExitDateTime, gracePeriodTime);

@@ -72,7 +72,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
 
     // load the ticket status or load a testing ticket
     final RetornoConsulta ticketStatus;
-    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+    if (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING Query TESTING TICKET STATUS: {}", ticketNumber);
       ticketStatus = testingParkinglotTicketRepository.getQueryResult(ticketNumber);
       LOG.debug("LOADED Query TICKET STATUS: {}: {}", ticketNumber, ticketStatus);
@@ -103,7 +103,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
               ticketStatus, allowedExitEpoch);
 
       // For the testing tickets, just set the status computed
-      if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+      if (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
         return testingParkinglotTicketRepository.getStatus(ticketNumber);
       }
 

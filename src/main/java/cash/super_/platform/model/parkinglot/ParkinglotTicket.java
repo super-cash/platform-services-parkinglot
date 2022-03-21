@@ -155,4 +155,16 @@ public class ParkinglotTicket {
         }
         return this.getPayments().stream().mapToLong(p -> p.getDate()).sorted().max().getAsLong();
     }
+
+    @Override
+    public String toString() {
+        return "ParkinglotTicket{" +
+                "id=" + id +
+                ", ticketNumber=" + ticketNumber +
+                ", storeId=" + storeId +
+                ", createdAt=" + createdAt +
+                ", payments=" + payments +
+                ", states=" + states +
+                '}';
+    }
 }

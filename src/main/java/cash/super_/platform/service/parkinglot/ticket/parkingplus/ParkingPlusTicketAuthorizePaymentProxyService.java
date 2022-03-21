@@ -279,7 +279,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
     }
 
     // Return the testing ticket
-    if (testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
+    if (testingParkinglotTicketRepository != null && testingParkinglotTicketRepository.containsTicket(ticketNumber)) {
       LOG.debug("LOADING Query TESTING TICKET STATUS VALID: {}", ticketNumber);
       ParkingTicketStatus ticketStatus = testingParkinglotTicketRepository.getStatus(ticketNumber);
 
