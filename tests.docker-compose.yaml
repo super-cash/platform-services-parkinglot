@@ -4,7 +4,7 @@ services:
 
   # Test cases declared
   tests:
-    image: registry.gitlab.com/supercash/services/parkinglot-service/tests:local 
+    image: registry.gitlab.com/supercash/services/parkinglot-service/tests:local
     build:
       context: .
       dockerfile: tests.Dockerfile
