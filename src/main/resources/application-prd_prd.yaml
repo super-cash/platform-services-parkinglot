@@ -1,0 +1,33 @@
+# SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+spring:
+  #configs to connect to self register the admin server as a client
+  boot:
+    admin:
+      client:
+        instance:
+          # The Gateway will forward the calls to /auth/actuator/info...
+          management-base-url: https://api.super.cash
+          metadata:
+            tags:
+              env: prd
+              segment: prd
+              cluster: prdt
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/prd/{vendor}
+
+  mail:
+    host: smtp.gmail.com
+    username: noreply@super.cash
+    password: alsyuchopcytvfmz
+    test-connection: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      starttls.required: true
+      ssl.enable: true

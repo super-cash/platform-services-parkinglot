@@ -1,0 +1,21 @@
+# SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+spring:
+  #configs to connect to self register the admin server as a client
+  boot:
+    admin:
+      client:
+        instance:
+          # The Gateway will forward the calls to /auth/actuator/info...
+          management-base-url: https://api-stg-prd-prdt.super.cash
+          metadata:
+            tags:
+              env: stg
+              segment: prd
+              cluster: prdt
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  flyway:
+    locations: classpath:db/migration/stg/{vendor}

@@ -1,0 +1,67 @@
+# SpringBoot Properties: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html
+spring:
+  #configs to connect to self register the admin server as a client
+  boot:
+    admin:
+      client:
+        instance:
+          # The Gateway will forward the calls to /auth/actuator/info...
+          management-base-url: https://api-dev-ppd-prdt.super.cash
+          metadata:
+            tags:
+              env: dev
+              segment: ppd
+              cluster: prdt
+
+  datasource:
+    url: jdbc:postgresql://localhost:6433/supercash?createDatabaseIfNotExist=true
+    password: 9gpkMG7JqKQYpFJNhiIIy50INIZvlCqax4TIN9eMFd5VAvWfBigpYiK7XBsAL1iz
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    locations: classpath:db/migration/dev/{vendor}
+
+  mail:
+    host: smtp.gmail.com
+    username: noreply@super.cash
+    password: alsyuchopcytvfmz
+    test-connection: true
+    properties.mail.smtp:
+      auth: true
+      ssl.enable: true
+      starttls:
+        enable: true
+        required: true
+
+  devtools:
+    livereload:
+      port: 35730
+      enabled: true
+    restart:
+      enabled: true
+
+cash:
+  super:
+    platform:
+      client:
+        auth:
+          baseApiUrl: http://auth:8503
+
+cash:
+  super:
+    platform:
+      client:
+        payment:
+          # CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL MUST BE SET!
+          baseUrl: http://localhost:8120/v2/payments
+
+        parkingplus:
+          baseUrl: https://maceio.parkingplus.com.br/servicos
+          userKey: f313d6a3e46e2a1e1554ed7eb7d286310b924f8f
+          retryableDestinationHosts:
+            - maceio.parkingplus.com.br
+            - demonstracao.parkingplus.com.br
+            - payment-service
