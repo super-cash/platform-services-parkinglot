@@ -7,7 +7,7 @@ networks:
 
 x-supercash-build-envs: &supercash-build-envs
   # When upgrading Kotlin to support JDK 17, upgrade here
-  UNMAZEDBOOT_BUILDER_GRADLE_VERSION: 6.7.1-jdk15-hotspot-0.5.1 #7.2.0-jdk16-hotspot-0.5.3 # 7.3.3-jdk17-alpine-0.5.3 #7.4.0-jdk17-0.5.3
+  UNMAZEDBOOT_BUILDER_GRADLE_VERSION: 6.7.1-jdk15-hotspot-0.5.1 # 7.2.0-jdk16-hotspot-0.5.3 # 7.3.3-jdk17-alpine-0.5.3 #7.4.0-jdk17-0.5.3
   # Variables from https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
   UNMAZEDBOOT_BUILDER_GIT_SHA: ${CI_COMMIT_SHORT_SHA:-UNMAZEDBOOT_BUILDER_GIT_SHA}
   UNMAZEDBOOT_BUILDER_GIT_BRANCH: ${CI_COMMIT_REF_NAME:-UNMAZEDBOOT_BUILDER_GIT_BRANCH}
@@ -54,7 +54,7 @@ services:
 
     environment:
       - DEBUG_ENV=true
-      - SPRING_PROFILES_ACTIVE=test
+      - SPRING_PROFILES_ACTIVE=db,ppd_qal
       - CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL=${CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL:-http://payment:8120/v2/payments}
     ports:
       - 8082:8082
