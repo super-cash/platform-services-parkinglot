@@ -51,7 +51,6 @@ services:
       #cache_from:
       #  - registry.gitlab.com/supercash/services/auth-service/builder:local
       #  - registry.gitlab.com/supercash/services/auth-service/linter:local
-
     environment:
       - DEBUG_ENV=true
       - SPRING_PROFILES_ACTIVE=db,ppd_qal
