@@ -1,4 +1,4 @@
-FROM gradle:6.7.1-jdk15-hotspot
+FROM gradle:7.2-jdk16-hotspot
 
 # Just the builder tests
 WORKDIR /builder

@@ -4,10 +4,12 @@ services:
 
   # Test cases declared
   tests:
-    image: supercash/service-tests
+    image: registry.gitlab.com/supercash/services/parkinglot-service/tests:local 
     build:
       context: .
       dockerfile: tests.Dockerfile
+      cache_from:
+        - registry.gitlab.com/supercash/services/parkinglot-service/tests
     environment:
       - SPRING_PROFILES_ACTIVE=test
     volumes:

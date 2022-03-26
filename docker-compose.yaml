@@ -1,37 +1,61 @@
-### 
-### Must run with "DOCKER_BUILDKIT=0 docker-compose build"
-###
-
-version: "3.8"
+version: "3.6"
 
 networks:
   supercash-data-network:
     external:
       name: supercash-data-network
 
+x-supercash-build-envs: &supercash-build-envs
+  # When upgrading Kotlin to support JDK 17, upgrade here
+  UNMAZEDBOOT_BUILDER_GRADLE_VERSION: 6.7.1-jdk15-hotspot-0.5.1 #7.2.0-jdk16-hotspot-0.5.3 # 7.3.3-jdk17-alpine-0.5.3 #7.4.0-jdk17-0.5.3
+  # Variables from https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+  UNMAZEDBOOT_BUILDER_GIT_SHA: ${CI_COMMIT_SHORT_SHA:-UNMAZEDBOOT_BUILDER_GIT_SHA}
+  UNMAZEDBOOT_BUILDER_GIT_BRANCH: ${CI_COMMIT_REF_NAME:-UNMAZEDBOOT_BUILDER_GIT_BRANCH}
+  UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL: ${CI_PIPELINE_URL:-UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL}
+
+  # We can support linking using JDK17 without a problem, as long as gradle indicates a version lower or equal
+  UNMAZEDBOOT_LINKER_VERSION: jdk15-alpine-0.5.0
+
+  # Upgraded version of alpine
+  UNMAZEDBOOT_RUNNER_VERSION: custom-jdk-alpine3.8-0.5.0
+
 services:
 
-  # The service for parking lots
-  parkinglots-service:    
-    image: supercash/parkinglots-service
+  parkinglot-builder:
+    image: registry.gitlab.com/supercash/services/parkinglot-service/builder:local
     build:
       context: .
-      args:
-        # https://hub.docker.com/r/intuit/unmazedboot-builder-gradle/tags/
-        - UNMAZEDBOOT_BUILDER_GRADLE_VERSION=6.7.1-jdk15-hotspot-0.5.1
-        # https://hub.docker.com/r/intuit/unmazedboot-linker/tags/
-        - UNMAZEDBOOT_LINKER_VERSION=jdk15-alpine-0.5.0
-        # https://hub.docker.com/r/intuit/unmazedboot-runner/tags/
-        - UNMAZEDBOOT_RUNNER_VERSION=custom-jdk-alpine3.8-0.5.0
-        # Variables from https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
-        - UNMAZEDBOOT_BUILDER_GIT_SHA=${CI_COMMIT_SHORT_SHA:-UNMAZEDBOOT_BUILDER_GIT_SHA}
-        - UNMAZEDBOOT_BUILDER_GIT_BRANCH=${CI_COMMIT_REF_NAME:-UNMAZEDBOOT_BUILDER_GIT_BRANCH}
-        - UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL=${CI_PIPELINE_URL:-UNMAZEDBOOT_BUILDER_GIT_PIPELINE_URL}
-        ######### DEPENDENCIES
-        - CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL=${CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL:-http://payments:8120/v2/payments}
+      target: unmazedboot-builder-artifacts
+      args: *supercash-build-envs
+      cache_from:
+        - registry.gitlab.com/supercash/services/parkinglot-service/builder
+
+  parkinglot-linter:
+    image: registry.gitlab.com/supercash/services/parkinglot-service/linter:local
+    build:
+      context: .
+      target: unmazedboot-jdk-linker
+      args: *supercash-build-envs
+      cache_from:
+        - registry.gitlab.com/supercash/services/parkinglot-service/linter
+
+  # The parking lot service
+  parkinglot:    
+    image: supercash/services/parkinglot-service
+    container_name: parkinglot-service
+    build:
+      context: .
+      args: *supercash-build-envs
+
+      # No caches as the images are already linked
+      #cache_from:
+      #  - registry.gitlab.com/supercash/services/auth-service/builder:local
+      #  - registry.gitlab.com/supercash/services/auth-service/linter:local
+
     environment:
       - DEBUG_ENV=true
       - SPRING_PROFILES_ACTIVE=test
+      - CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL=${CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL:-http://payment:8120/v2/payments}
     ports:
       - 8082:8082
     networks:
