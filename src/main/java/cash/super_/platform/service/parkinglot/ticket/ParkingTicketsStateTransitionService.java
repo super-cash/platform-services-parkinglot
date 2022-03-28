@@ -95,9 +95,8 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
         parkinglotTicket.addTicketStateTransition(ParkingTicketState.SCANNED, userId, DateTimeUtil.getNow());
       }
       // Adding the grace period
-      LocalDateTime creationTime = DateTimeUtil.getLocalDateTime(ticketStatus.getDataDeEntrada());
       parkinglotTicket.addTicketStateTransition(ParkingTicketState.GRACE_PERIOD, userId,
-              DateTimeUtil.getMillis(creationTime.plusMinutes(properties.getGracePeriodInMinutes())));
+              ticketStatus.getDataDeEntrada() + 60000 * properties.getGracePeriodInMinutes());
 
       parkinglotTicket.setCreatedAt(DateTimeUtil.getNow());
       parkinglotTicket.setStoreId(storeId);
