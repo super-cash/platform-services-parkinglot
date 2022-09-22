@@ -70,21 +70,16 @@ public class ParkingPaidTicketStatus {
         codigoAutorizacao = pagamentoEfetuado.getCodigoAutorizacao();
         cpfCnpj = pagamentoEfetuado.getCpfCnpj();
         data = pagamentoEfetuado.getData();
-        estaticonamento = pagamentoEfetuado.getEstaticonamento();
+        estaticonamento = pagamentoEfetuado.getEstacionamento();
         linkLogoGaragem = pagamentoEfetuado.getLinkLogoGaragem();
         nfseCodigoVerificacao = pagamentoEfetuado.getNfseCodigoVerificacao();
         nfseNumero = pagamentoEfetuado.getNfseNumero();
         nfseQrCode = pagamentoEfetuado.getNfseQrCode();
         nsu = pagamentoEfetuado.getNsu();
-        permanencia = pagamentoEfetuado.getPermanencia();
-        permanenciaFim = pagamentoEfetuado.getPermanenciaFim();
-        prepago = pagamentoEfetuado.isPrepago();
         rps = pagamentoEfetuado.getRps();
         serieRps = pagamentoEfetuado.getSerieRps();
-        ticket = pagamentoEfetuado.getTicket();
         tipo = pagamentoEfetuado.getTipo();
         valorPago = pagamentoEfetuado.getValorPago();
-        valorDesconto = pagamentoEfetuado.getValorDesconto();
         serviceFee = Long.valueOf(0);
     }
 
@@ -95,6 +90,8 @@ public class ParkingPaidTicketStatus {
     public Long getServiceFee() {
         return this.serviceFee;
     }
+
+    public String getTicket() { return this.ticket; }
 
     @Override
     public String toString() {

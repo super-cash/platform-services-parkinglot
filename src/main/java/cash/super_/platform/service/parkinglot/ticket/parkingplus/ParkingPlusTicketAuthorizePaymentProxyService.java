@@ -86,7 +86,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
 
       // Authorize the payment
       authorizedPayment = parkingTicketPaymentsApi.pagarTicketAutorizadoUsingPOST(apiKey, pagamentoAutorizadoRequest,
-              properties.getApiKeyId());
+              properties.getApiKeyId().toString());
 
       if (authorizedPayment == null) {
         LOG.error("Couldn't authorize payment in WPS. WPS request: {}", pagamentoAutorizadoRequest);
@@ -149,7 +149,7 @@ public class ParkingPlusTicketAuthorizePaymentProxyService extends AbstractParki
       LOG.info("Requesting authorization for payment: {}", payRequest);
 
       // Authorize the payment
-      authorizedPayment = parkingTicketPaymentsApi.pagarTicketUsingPOST(apiKey, payRequest, apiKeyId);
+      authorizedPayment = parkingTicketPaymentsApi.pagarTicketUsingPOST(apiKey, payRequest, String.valueOf(apiKeyId));
 
       if (authorizedPayment == null) {
         LOG.error("Couldn't authorize payment: " + payRequest);

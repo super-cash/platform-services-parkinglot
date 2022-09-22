@@ -180,7 +180,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
               .dataHoraSaida(DateTimeUtil.getMillis(DateTimeUtil.getLocalDateTime(now).plusHours(4))) // +4 hours
               .dataPagamento(now)
               .errorCode(0)
-              .mensagem("Pagamento efetuado com sucesso.")
+              .message("Pagamento efetuado com sucesso.")
               .numeroTicket(ticketNumber)
               .ticketPago(true);
       paymentStatus.setStatus(retornoPagamento);
@@ -424,7 +424,7 @@ public class PaymentProcessorService extends AbstractParkingLotProxyService {
               .dataHoraSaida(now)
               .dataPagamento(now)
               .errorCode(0)
-              .mensagem("Pagamento efetuado com sucesso.")
+              .message("Pagamento efetuado com sucesso.")
               .numeroTicket(ticketStatus.getNumeroTicket())
               .ticketPago(true);
       paymentStatus.setStatus(retornoPagamento);

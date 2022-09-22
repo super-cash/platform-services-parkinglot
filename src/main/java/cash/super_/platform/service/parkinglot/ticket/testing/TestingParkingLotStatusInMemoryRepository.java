@@ -125,7 +125,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 					ticketStatus.getStatus().setTarifa(-1);
 					// set the message with the ticket exit status as a hack
 					// See the transition for details
-					ticketStatus.getStatus().setMensagem("supercash:" + ticketStatus.getState().toString());
+					ticketStatus.getStatus().setMessage("supercash:" + ticketStatus.getState().toString());
 					// no need to set tarifaPaga because it was paid
 				}
 			});
@@ -262,7 +262,7 @@ public class TestingParkingLotStatusInMemoryRepository {
     	statusRetrieval.setErrorCode(0);
     	statusRetrieval.setGaragem("MACEIO SHOPPING");
     	statusRetrieval.setIdGaragem(1L);
-    	statusRetrieval.setMensagem("");
+    	statusRetrieval.setMessage("");
     	statusRetrieval.setNotas(new ArrayList<>());
     	statusRetrieval.setNumeroTicket(ticketNumber);
     	statusRetrieval.setPromocaoAtingida(false);
@@ -334,18 +334,18 @@ public class TestingParkingLotStatusInMemoryRepository {
 		}
 		// The ticket status is always free, testing weekends, holidays, etc
 		// Make the whole transition of the status based on the type
-		if (testingTicketStatus.getStatus().getMensagem() != null && testingTicketStatus.getStatus().getMensagem().isEmpty()) {
+		if (testingTicketStatus.getStatus().getMessage() != null && testingTicketStatus.getStatus().getMessage().isEmpty()) {
 			switch (ticketNumber) {
 				case ALWAYS_FREE_TICKET_NUMBER:
-					testingTicketStatus.getStatus().setMensagem("TESTING TICKET, ALWAYS FREE!");
+					testingTicketStatus.getStatus().setMessage("TESTING TICKET, ALWAYS FREE!");
 					break;
 
 				case NEEDS_PAYMENT_ONE_PAYMENT_LEAVES_LOT_TICKET_NUMBER:
-					testingTicketStatus.getStatus().setMensagem("TESTING TICKET, NEEDS SINGLE PAYMENT USER LEAVES THE LOT!");
+					testingTicketStatus.getStatus().setMessage("TESTING TICKET, NEEDS SINGLE PAYMENT USER LEAVES THE LOT!");
 					break;
 
 				case ALWAYS_NEEDS_PAYMENT_TICKET_NUMBER:
-					testingTicketStatus.getStatus().setMensagem("TESTING TICKET, NEEDS MULTIPLE PAYMENTS NEVER EXISTS THE LOT!");
+					testingTicketStatus.getStatus().setMessage("TESTING TICKET, NEEDS MULTIPLE PAYMENTS NEVER EXISTS THE LOT!");
 					break;
 			}
 		}
@@ -406,7 +406,7 @@ public class TestingParkingLotStatusInMemoryRepository {
 		paymentDone.setDataHoraSaida(ticketStatus.getStatus().getDataPermitidaSaidaUltimoPagamento());
 		paymentDone.setDataPagamento(DateTimeUtil.getNow());
 		paymentDone.setErrorCode(0);
-		paymentDone.setMensagem("Pagamento efetuado com sucesso (ticket test)");
+		paymentDone.setMessage("Pagamento efetuado com sucesso (ticket test)");
 		paymentDone.setNumeroTicket(ticketNumber);
 		paymentDone.setTicketPago(true);
 

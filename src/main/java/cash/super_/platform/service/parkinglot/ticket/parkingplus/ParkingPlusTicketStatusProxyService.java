@@ -6,6 +6,7 @@ import java.util.Set;
 
 import cash.super_.platform.adapter.feign.SupercashErrorCode;
 import cash.super_.platform.adapter.feign.SupercashSimpleException;
+import cash.super_.platform.client.parkingplus.model.TicketBarrasRequest;
 import cash.super_.platform.error.parkinglot.*;
 import cash.super_.platform.model.parkinglot.ParkinglotTicketStateTransition;
 import cash.super_.platform.repository.ParkinglotTicketRepository;
@@ -132,7 +133,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
    * @return The query result
    */
   private RetornoConsulta retrieveFromWPS(String ticketNumber) {
-    TicketRequest request = new TicketRequest();
+    TicketBarrasRequest request = new TicketBarrasRequest();
     request.setIdGaragem(properties.getParkingLotId());
     request.setNumeroTicket(ticketNumber);
     request.setUdid(makeWpsUniqueUserId());
@@ -163,7 +164,7 @@ public class ParkingPlusTicketStatusProxyService extends AbstractParkingLotProxy
       LOG.debug("Request User ApiKey is: {}", properties.getUserKey());
       LOG.debug("Request ApiKey is: {}", apiKey);
 
-      ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId());
+      ticketStatus = parkingTicketPaymentsApi.getTicketUsingPOST(apiKey, request, properties.getApiKeyId().toString());
 
       // For the tracer
       newSpan.tag("ticketValue", String.valueOf(ticketStatus.getTarifa()));

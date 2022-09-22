@@ -286,7 +286,7 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
             .filter(transition -> !transition.getState().equals(ParkingTicketState.SCANNED))
             .max(Comparator.comparing(ParkinglotTicketStateTransition::getDate));
     // Just a hack to save the last state in the ticket message to capture it on the return
-    ticketStatus.setMensagem("supercash:" + lastTransition.get().getState().toString());
+    ticketStatus.setMessage("supercash:" + lastTransition.get().getState().toString());
 
     return ticketStatus;
   }
@@ -300,17 +300,17 @@ public class ParkingTicketsStateTransitionService extends AbstractParkingLotProx
   public ParkingTicketState calculateTicketStatus(RetornoConsulta ticketStatus, long allowedExitMillis) {
     int ticketFee = ticketStatus.getTarifa();
 
-    if (ticketStatus.getMensagem().contains("supercash:")) {
-      ticketStatus.setMensagem(ticketStatus.getMensagem().split(":")[1]);
+    if (ticketStatus.getMessage().contains("supercash:")) {
+      ticketStatus.setMessage(ticketStatus.getMessage().split(":")[1]);
       // the value was added during the exit time
-      return ParkingTicketState.valueOf(ticketStatus.getMensagem());
+      return ParkingTicketState.valueOf(ticketStatus.getMessage());
     }
 
     // ticket exited the parking lot, get the value from the message (hack from calculation)
-    if (ticketStatus.getMensagem().contains("supercash:")) {
-      ticketStatus.setMensagem(ticketStatus.getMensagem().split(":")[1]);
-      ParkingTicketState exitParkingLotState = ParkingTicketState.valueOf(ticketStatus.getMensagem());
-      ticketStatus.setMensagem("supercash:" + exitParkingLotState);
+    if (ticketStatus.getMessage().contains("supercash:")) {
+      ticketStatus.setMessage(ticketStatus.getMessage().split(":")[1]);
+      ParkingTicketState exitParkingLotState = ParkingTicketState.valueOf(ticketStatus.getMessage());
+      ticketStatus.setMessage("supercash:" + exitParkingLotState);
       return exitParkingLotState;
     }
 

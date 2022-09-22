@@ -56,15 +56,17 @@ public class ParkingPlusTicketPaymentsProxyService extends AbstractParkingLotPro
       long apiKeyId = properties.getApiKeyId();
       String apiKey = SecretsUtil.makeApiKey(udid, properties.getUserKey());
 
-      paymentsMade = parkingTicketPaymentsApi.pagamentosEfetuadosUsingGET(apiKey, udid, apiKeyId,
-          paymentsMadeQuery.getPaginationStart(), paymentsMadeQuery.getPaginationLimit());
+      paymentsMade = parkingTicketPaymentsApi.pagamentosEfetuadosUsingGET(apiKey, udid, String.valueOf(apiKeyId),
+          paymentsMadeQuery.getPaginationStart(), paymentsMadeQuery.getPaginationLimit(), "");
 
+      String ticketNumber = "";
       /* Getting ticket service fee */
       paymentsMade.forEach((pagamentoEfetuado) -> {
         ParkingPaidTicketStatus parkingPaidTicketStatus = new ParkingPaidTicketStatus(pagamentoEfetuado);
 
         Optional<ParkinglotTicket> parkinglotTicketOpt =
-                parkinglotTicketRepository.findByTicketNumberAndStoreId(Long.valueOf(pagamentoEfetuado.getTicket()),
+                parkinglotTicketRepository.findByTicketNumberAndStoreId(
+                        Long.valueOf(parkingPaidTicketStatus.getTicket()),
                         Long.valueOf(storeId));
         if (parkinglotTicketOpt.isPresent()) {
           Optional<ParkinglotTicketPayment> parkinglotTicketPayment = parkinglotTicketPaymentsRepository
