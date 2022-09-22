@@ -164,6 +164,6 @@ dependencies {
     /////////////////////////////////////////////////
     
     // Parking Plus
-    implementation group: "cash.super_.platform.client", name: "parking-plus-client-feign", version: "1.0.0-SNAPSHOT"
+    implementation group: "cash.super_.platform.client", name: "parking-plus-client-feign", version: "2.0.0-SNAPSHOT"
     implementation("org.postgresql:postgresql")
 }
