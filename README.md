@@ -8,6 +8,32 @@ Microservice to calculate distance and time.
 * The CI/CD infrastructure will create and push the docker images to the Container Registry.
   * How to load the image locally or in Kubernetes: https://gitlab.com/supercash/infra/k8s-cluster/-/wikis/Docker-Images
 
+# Continuous Integration (CI)
+
+The service is built and integrated automatically using Gitlab CI/CD with the end result of a new Docker Image published to Gitlab's Docker Registry.
+
+> **NOTE**: All microservices at Supercash reuses the same Dockerized CI/CD pipeline as parameterized to avoid drift as part of the platform.
+> * There are currently 7 microservices
+
+* [x] Checks integrity of all service config
+* [x] Runs all unit and integration tests 
+* [x] Publishes test results along with Code Coverage levels
+* [x] Builds, tags, and pushes the Docker Image to the Docker Registry
+* [x] Triggers a deploy to a GitOps environment based on the GitFlow.
+    
+<img width="1491" alt="Screen Shot 2022-12-30 at 11 02 32 AM" src="https://user-images.githubusercontent.com/131457/210078753-95777515-7733-4cbb-a3a0-bbd4dded8d66.png">
+
+# Continuous Delivery (CD)
+
+The service is deployed and reconciliated automatically using Gitlab CI/CD along with ArgoCD, which fetches the docker image from Gitlab's Docker Registry.
+
+* [x] Checks integrity of deployment config
+* [x] Requests ArgoCD reconciliation of deployed environment
+* [x] Verifies public health check of the service of new environment
+
+<img width="1502" alt="Screen Shot 2022-12-30 at 11 02 16 AM" src="https://user-images.githubusercontent.com/131457/210079103-f2710fbf-03fb-4028-b80e-12c62370a44e.png">
+
+
 ## Building and Running
 
 * Gradle: use `gradle bootRun`
