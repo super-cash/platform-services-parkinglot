@@ -50,10 +50,6 @@ cash:
         auth:
           baseApiUrl: http://auth:8503
 
-cash:
-  super:
-    platform:
-      client:
         payment:
           # CASH_SUPER_PLATFORM_CLIENT_PAYMENT_BASEURL MUST BE SET!
           baseUrl: http://localhost:8120/v2/payments
